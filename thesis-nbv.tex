@@ -1,0 +1,186 @@
+% -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
+
+\chapter{Semantic Mapping and Next-Best-View Planning} \label{chapNBV}
+
+% TODO: Chapter intro — tie back to Chapter~\ref{chapDataset}: given a
+% 2D detector, how do we build a 3D semantic disease map and plan views
+% to efficiently complete that map? Describe the chapter structure.
+
+\section{Semantic OctoMap Representation} \label{secSemanticOctoMap}
+
+% TODO: Describe your 3D semantic map representation in detail.
+
+\subsection{Volumetric Occupancy with OctoMap} \label{secOctoMapBase}
+
+% TODO: Review the OctoMap framework as a foundation.
+% - Octree structure; resolution parameter.
+% - Probabilistic occupancy with log-odds updates.
+% - Memory efficiency for large environments.
+% Cite Hornung et al. (2013).
+
+\subsection{Semantic Extension: Disease Class Labels} \label{secSemanticExtension}
+
+% TODO: Describe how each voxel is extended with a semantic state:
+% - Class label (healthy / infected / unknown).
+% - Per-class confidence from the 2D detector.
+% - Bayesian log-odds fusion rule for combining detections across views.
+% Include equations for the update rule.
+%
+% p(c | z_{1:t}) using log-odds:
+% l_t = l_{t-1} + log( p(c|z_t) / (1 - p(c|z_t)) ) - log( p(c) / (1-p(c)) )
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/nbv/semantic_octomap}
+%   \caption{TODO: Illustration of the semantic OctoMap: 3D voxel grid
+%            colored by disease class confidence.}
+%   \label{figSemanticOctoMap}
+% \end{figure}
+
+\subsection{Projection from 2D Detections to 3D Voxels} \label{secProjection}
+
+% TODO: Explain how bounding-box or mask detections in image space are
+% back-projected into 3D using depth/stereo and the known camera pose.
+% - Depth association: stereo disparity or ZED2i depth.
+% - Ray casting from camera origin through detected pixels.
+% - Handling of detection confidence in the update step.
+
+\section{Simulation Environment} \label{secSimulation}
+
+% TODO: Describe the simulation used to develop and evaluate NBV planners
+% before field deployment.
+
+\subsection{Orchard Simulation Setup} \label{secOrchardSim}
+
+% TODO: Describe the Gazebo / PyBullet simulation:
+% - Orchard model (tree geometry, row spacing).
+% - Simulated disease placement (location, density).
+% - Robot and sensor model (camera FOV, noise).
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.85\textwidth]{figs/nbv/simulation}
+%   \caption{TODO: Screenshot of orchard simulation with robot
+%            and simulated fire blight lesions.}
+%   \label{figSimulation}
+% \end{figure}
+
+\subsection{Ground Truth Generation with Gaussian Splatting} \label{secGSSplat}
+
+% TODO: Describe how Gaussian splatting (3DGS) was used on real data
+% to generate high-fidelity 3D ground-truth disease maps for quantitative
+% evaluation of the mapping pipeline.
+% - Data collection procedure for splat training.
+% - Rendering pipeline for ground-truth labels.
+% - How ground truth is used to compute mapping accuracy metrics.
+
+\section{Next-Best-View Planning} \label{secNBVPlanning}
+
+% TODO: Describe the NBV planning problem formulation and the three
+% planner variants you evaluate.
+
+\subsection{Problem Formulation} \label{secNBVFormulation}
+
+% TODO: Formally define the NBV planning problem.
+% - State: current semantic OctoMap, robot pose.
+% - Action space: candidate viewpoints (position + orientation).
+% - Objective: maximize information gain about disease distribution
+%   subject to kinematic and safety constraints.
+% - Evaluation metric: map completeness, semantic accuracy, path length.
+
+\subsection{Baseline: Grid Scan Planner} \label{secGridScan}
+
+% TODO: Describe the row-by-row grid scan baseline.
+% - Fixed waypoint spacing along orchard rows.
+% - No feedback from the current map state.
+% - Represents the common manual scouting approach.
+
+\subsection{Volumetric NBV Planner} \label{secVolNBVPlanner}
+
+% TODO: Describe the volumetric information-gain NBV planner.
+% - Candidate view sampling strategy.
+% - Information gain metric: expected number of unknown voxels observed.
+% - Ray-casting implementation for gain estimation.
+% - View selection and path planning to next view.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/nbv/vol_nbv_diagram}
+%   \caption{TODO: Diagram of volumetric NBV planner: candidate views,
+%            ray-casting, and gain scores.}
+%   \label{figVolNBV}
+% \end{figure}
+
+\subsection{Semantic NBV Planner} \label{secSemanticNBVPlanner}
+
+% TODO: Describe your proposed semantic NBV planner.
+% - Motivation: prioritize views that reduce uncertainty about disease
+%   specifically, not just any unknown space.
+% - Semantic information gain: entropy over disease class distribution
+%   in voxels visible from candidate view.
+% - Weighting: balance occupancy uncertainty and semantic uncertainty.
+% - How this differs from volumetric NBV in practice.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/nbv/semantic_nbv_diagram}
+%   \caption{TODO: Diagram of semantic NBV planner highlighting
+%            disease-uncertain regions driving view selection.}
+%   \label{figSemanticNBV}
+% \end{figure}
+
+\section{Simulation Experiments} \label{secSimExperiments}
+
+% TODO: Describe experiments comparing the three planners in simulation.
+
+\subsection{Experimental Setup} \label{secSimSetup}
+
+% TODO: Describe simulation scenarios:
+% - Disease density levels tested.
+% - Number of trials per condition.
+% - Budget: maximum number of views or total path length.
+% - Metrics: map completeness (F1 over voxels), semantic accuracy,
+%   detection recall, path efficiency.
+
+\subsection{Results} \label{secSimResults}
+
+% TODO: Report quantitative comparison of Grid Scan vs. Volumetric NBV
+% vs. Semantic NBV.
+% Include tables and plots (map completeness vs. views, path length).
+
+% \begin{table}[h]
+%   \centering
+%   \caption{TODO: Planner comparison in simulation.}
+%   \label{tabNBVSimResults}
+%   \begin{tabular}{lccc}
+%     \hline
+%     Planner & Map F1 & Semantic Accuracy & Path Length (m) \\
+%     \hline
+%     Grid Scan & & & \\
+%     Volumetric NBV & & & \\
+%     Semantic NBV (ours) & & & \\
+%     \hline
+%   \end{tabular}
+% \end{table}
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/nbv/sim_results}
+%   \caption{TODO: Map completeness vs. number of views for all planners.}
+%   \label{figSimResults}
+% \end{figure}
+
+\subsection{Qualitative Analysis} \label{secSimQualitative}
+
+% TODO: Show example semantic maps produced by each planner at
+% comparable view budgets. Discuss where semantic NBV improves over
+% volumetric NBV (regions of interest covered earlier).
+
+\section{Summary} \label{secNBVSummary}
+
+% TODO: Summarize:
+% - The semantic OctoMap representation and update rule.
+% - The three NBV planners and their design rationale.
+% - Key simulation result: semantic NBV achieves X\% higher disease
+%   recall at the same view budget compared to grid scan and volumetric NBV.
+% - These planners are deployed on the real robot in Chapter~\ref{chapErwin}.

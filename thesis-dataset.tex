@@ -1,0 +1,205 @@
+% -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
+
+\chapter{Data Collection and 2D Disease Detection} \label{chapDataset}
+
+% TODO: Brief chapter intro — describe the chapter's scope: building a
+% multi-modal orchard dataset and training 2D detection models that
+% serve as the perception backbone for later chapters.
+
+\section{Sensing Platform} \label{secSensingPlatform}
+
+% TODO: Describe the robot and sensor suite used for data collection.
+% Include a figure showing the sensor rig / robot.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.85\textwidth]{figs/dataset/sensor_rig}
+%   \caption{TODO: Sensor rig showing camera placement and mounting.}
+%   \label{figSensorRig}
+% \end{figure}
+
+\subsection{Flash Stereo RGB Camera (FLIR Firefly)} \label{secFlirCamera}
+
+% TODO: Describe the FLIR Firefly S stereo camera.
+% - Resolution, frame rate, lens specs.
+% - Flash illumination: motivation (controlled lighting in orchard rows,
+%   reduce shadow artifacts).
+% - Stereo baseline and depth range.
+
+\subsection{25-Band NIR Multispectral Camera (Ximea)} \label{secXimeaCamera}
+
+% TODO: Describe the Ximea multispectral camera.
+% - Spectral range and band layout (NIR wavelengths).
+% - Spatial resolution; snapshot vs. pushbroom.
+% - Integration with flash lighting.
+% - Expected spectral signatures for healthy vs. infected tissue.
+
+\subsection{ZED2i RGB-D Camera} \label{secZED2i}
+
+% TODO: Describe the ZED2i stereo RGB-D camera.
+% - Role in the system: wide-FOV RGB for overview; depth for mapping.
+% - Frame rate and depth range.
+
+\subsection{Platform and Mounting} \label{secPlatformMounting}
+
+% TODO: Describe the physical robot (Amiga base? custom cart?),
+% mounting arrangement, and any triggering/synchronization between sensors.
+% Include extrinsic calibration approach if relevant here.
+
+\section{Data Collection Protocol} \label{secDataCollection}
+
+% TODO: Describe how data was collected.
+% - Orchard location(s), dates, tree varieties.
+% - Disease severity levels present.
+% - Collection strategy: row traversal, distances to canopy, viewpoint angles.
+% - Number of collection sessions / total coverage.
+% - Environmental conditions (lighting, weather).
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/dataset/orchard_map}
+%   \caption{TODO: Map or photo of the orchard collection site
+%            with collection paths overlaid.}
+%   \label{figOrchardMap}
+% \end{figure}
+
+\section{Dataset Description} \label{secDatasetDescription}
+
+% TODO: Summarize the dataset statistics.
+% - Total number of image frames per modality.
+% - Number of annotated images.
+% - Class distribution (healthy vs. infected; parts: shoot, leaf, fruit, etc.).
+% - Train / validation / test split.
+% - Comparison to existing public datasets (if any).
+
+% \begin{table}[h]
+%   \centering
+%   \caption{TODO: Dataset statistics table.}
+%   \label{tabDatasetStats}
+%   \begin{tabular}{lcccc}
+%     \hline
+%     Modality & Total frames & Annotated & Infected & Healthy \\
+%     \hline
+%     Flash stereo RGB & & & & \\
+%     25-band NIR & & & & \\
+%     ZED2i RGB & & & & \\
+%     \hline
+%   \end{tabular}
+% \end{table}
+
+\section{Annotation Pipeline} \label{secAnnotation}
+
+% TODO: Describe how ground-truth labels were generated.
+
+\subsection{Expert Manual Annotation} \label{secManualAnnotation}
+
+% TODO: Describe how images were reviewed and labeled by domain experts
+% (or the authors + expert verification). Tools used (LabelImg, CVAT, etc.).
+% Inter-annotator agreement if applicable.
+
+\subsection{SAM-Assisted Annotation} \label{secSAMAnnotation}
+
+% TODO: Describe use of the Segment Anything Model (SAM) to accelerate
+% annotation. Workflow: expert provides seed points → SAM generates masks →
+% expert reviews/corrects. Quantify time savings.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/dataset/annotation_pipeline}
+%   \caption{TODO: Annotation pipeline diagram showing SAM-assisted workflow.}
+%   \label{figAnnotationPipeline}
+% \end{figure}
+
+\subsection{Cross-Modal Label Transfer} \label{secCrossModal}
+
+% TODO: Describe how RGB annotations are transferred to NIR frames.
+% - Camera calibration / extrinsics between FLIR and Ximea.
+% - Projection-based label mapping.
+% - Handling of occlusion, misalignment, and spectral differences.
+% Include a figure showing paired RGB + NIR frames with transferred labels.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/dataset/cross_modal_transfer}
+%   \caption{TODO: Example of cross-modal label transfer from RGB to NIR.}
+%   \label{figCrossModal}
+% \end{figure}
+
+\section{2D Disease Detection Models} \label{sec2DDetection}
+
+% TODO: Describe the detection models trained on this dataset.
+
+\subsection{Model Architecture} \label{secModelArch}
+
+% TODO: Describe the YOLO variant(s) used (e.g., YOLOv8, YOLOv11).
+% - Input resolution, number of classes.
+% - Pre-training (COCO weights) and fine-tuning procedure.
+% - Separate models for RGB vs. NIR; or fused model.
+% - Loss function, optimizer, augmentation strategy.
+
+\subsection{Training Details} \label{secTraining}
+
+% TODO: Hyperparameters, hardware, training duration.
+% \begin{table}[h]
+%   \centering
+%   \caption{TODO: Training configuration.}
+%   \label{tabTrainingConfig}
+%   \begin{tabular}{ll}
+%     \hline
+%     Hyperparameter & Value \\
+%     \hline
+%     Architecture & \\
+%     Input size & \\
+%     Optimizer & \\
+%     Learning rate & \\
+%     Epochs & \\
+%     Batch size & \\
+%     \hline
+%   \end{tabular}
+% \end{table}
+
+\subsection{Detection Results} \label{secDetectionResults}
+
+% TODO: Report quantitative results (mAP@0.5, precision, recall, F1)
+% on the test split. Compare RGB vs. NIR models; show per-class breakdown.
+% Include precision-recall curves.
+
+% \begin{table}[h]
+%   \centering
+%   \caption{TODO: Detection performance comparison.}
+%   \label{tabDetectionResults}
+%   \begin{tabular}{lcccc}
+%     \hline
+%     Model & mAP@0.5 & Precision & Recall & F1 \\
+%     \hline
+%     RGB (YOLOv?) & & & & \\
+%     NIR (YOLOv?) & & & & \\
+%     RGB+NIR fused & & & & \\
+%     \hline
+%   \end{tabular}
+% \end{table}
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/dataset/detection_examples}
+%   \caption{TODO: Qualitative detection examples on test images
+%            (RGB and NIR side by side with predicted bounding boxes).}
+%   \label{figDetectionExamples}
+% \end{figure}
+
+\subsection{Failure Mode Analysis} \label{secFailureModes}
+
+% TODO: Analyze where and why the detector fails.
+% - Small or partially occluded lesions.
+% - Lighting artifacts.
+% - Early-stage infection with subtle appearance.
+% Motivate downstream uncertainty-aware mapping and NBV planning.
+
+\section{Summary} \label{secDatasetSummary}
+
+% TODO: Summarize contributions of this chapter:
+% - Multi-modal dataset with N annotated images across M modalities.
+% - SAM-assisted + cross-modal annotation pipeline reducing labeling effort.
+% - Baseline detection performance of X mAP@0.5 (RGB) and Y mAP@0.5 (NIR).
+% - The trained detector is deployed in Chapter~\ref{chapNBV} as the
+%   perception front-end for semantic mapping.

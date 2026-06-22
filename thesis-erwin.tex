@@ -1,0 +1,173 @@
+% -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
+
+\chapter{Integrated System and Field Validation} \label{chapErwin}
+
+% TODO: Chapter intro — describe the full integrated system (Amiga +
+% xArm6, ROS 2, all pipeline components) and the field experiments
+% conducted to validate end-to-end performance in a real apple orchard.
+
+\section{Robot Platform} \label{secRobotPlatform}
+
+% TODO: Describe the full physical system.
+
+\subsection{Mobile Base: Amiga} \label{secAmiga}
+
+% TODO: Describe the Farm-ng Amiga robot base.
+% - Dimensions, drive configuration (differential/skid steer).
+% - Payload capacity, battery life, field navigation capability.
+% - Why it was chosen (open platform, orchard-compatible form factor).
+
+\subsection{Manipulator: xArm6} \label{secXArm6}
+
+% TODO: Describe the UFACTORY xArm6 arm.
+% - DOF, reach, payload.
+% - Mounting configuration on Amiga.
+% - Role: position the sensor rig at desired viewpoints.
+% - Workspace limitations and collision avoidance.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.75\textwidth]{figs/erwin/robot_platform}
+%   \caption{TODO: Photo of the full integrated Amiga + xArm6 robot
+%            platform with sensor rig deployed in an orchard row.}
+%   \label{figRobotPlatform}
+% \end{figure}
+
+\subsection{Sensor Integration and Calibration} \label{secSensorCalib}
+
+% TODO: Describe extrinsic and intrinsic calibration of all cameras
+% (FLIR Firefly, Ximea, ZED2i) with respect to the arm end-effector
+% and the robot base frame.
+% - Calibration target and procedure.
+% - Resulting calibration accuracy (reprojection error).
+% - TF tree in ROS 2.
+
+\section{System Architecture} \label{secSystemArch}
+
+% TODO: Describe the full software architecture.
+
+\subsection{ROS 2 Integration} \label{secROS2}
+
+% TODO: Describe the ROS 2 node graph.
+% - Sensor driver nodes (FLIR, Ximea, ZED2i).
+% - Detection inference node (YOLO).
+% - Mapping node (semantic OctoMap update).
+% - NBV planner node.
+% - Arm controller and waypoint execution.
+% - Include a node graph / architecture diagram.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/erwin/ros2_architecture}
+%   \caption{TODO: ROS 2 node graph showing data flow from sensors
+%            through detection, mapping, and planning.}
+%   \label{figROS2Arch}
+% \end{figure}
+
+\subsection{Perception Pipeline} \label{secPerceptionPipeline}
+
+% TODO: Describe end-to-end data flow from image capture to
+% semantic map update at runtime.
+% - Image capture trigger and synchronization.
+% - Inference latency and frame rate.
+% - Map update frequency.
+
+\subsection{Planning and Control Loop} \label{secPlanningControl}
+
+% TODO: Describe the closed-loop planning-execution cycle:
+% 1. Robot drives to row position.
+% 2. NBV planner queries current map; selects next viewpoint.
+% 3. Arm moves to viewpoint; images captured.
+% 4. Detections update semantic OctoMap.
+% 5. Repeat until row complete or budget exhausted.
+% Include a flowchart or pseudocode block.
+
+\section{Field Experiments} \label{secFieldExperiments}
+
+% TODO: Describe the real-world experiments.
+
+\subsection{Experimental Site} \label{secFieldSite}
+
+% TODO: Describe the orchard used for field validation.
+% - Location (general region, no private address needed).
+% - Tree variety, canopy type, row spacing.
+% - Disease presence: natural infection or inoculated?
+% - Environmental conditions during experiments (dates, weather).
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/erwin/field_site}
+%   \caption{TODO: Photos of the experimental orchard site.}
+%   \label{figFieldSite}
+% \end{figure}
+
+\subsection{Experimental Protocol} \label{secFieldProtocol}
+
+% TODO: Describe the field experiment procedure.
+% - Planner variants tested (Grid Scan, Volumetric NBV, Semantic NBV).
+% - Number of trials per planner.
+% - Evaluation procedure: how ground truth was established
+%   (expert walking survey, Gaussian splat, GPS-tagged disease locations).
+% - Metrics collected: detection recall, false positive rate,
+%   map coverage, mission time, path length.
+
+\subsection{Field Results} \label{secFieldResults}
+
+% TODO: Report quantitative results from field experiments.
+
+% \begin{table}[h]
+%   \centering
+%   \caption{TODO: Field experiment results comparing planners.}
+%   \label{tabFieldResults}
+%   \begin{tabular}{lcccc}
+%     \hline
+%     Planner & Recall & Precision & Coverage & Time (min) \\
+%     \hline
+%     Grid Scan & & & & \\
+%     Volumetric NBV & & & & \\
+%     Semantic NBV (ours) & & & & \\
+%     \hline
+%   \end{tabular}
+% \end{table}
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/erwin/field_maps}
+%   \caption{TODO: Semantic disease maps produced by each planner
+%            from the same orchard row.}
+%   \label{figFieldMaps}
+% \end{figure}
+
+\subsection{Qualitative Observations} \label{secFieldQualitative}
+
+% TODO: Discuss observations from field deployment.
+% - Robot behavior in unstructured conditions (terrain, wind, sunlight).
+% - Detection performance vs. lab / simulation.
+% - Unexpected failure modes encountered and how they were handled.
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/erwin/field_qualitative}
+%   \caption{TODO: Example field detections overlaid on RGB images,
+%            and corresponding semantic map updates.}
+%   \label{figFieldQualitative}
+% \end{figure}
+
+\section{Discussion} \label{secFieldDiscussion}
+
+% TODO: Discuss what the field results tell us.
+% - Does semantic NBV outperform baselines in the field as in simulation?
+%   If not, explain why (e.g., localization error, detection noise).
+% - How does detection performance change from lab to orchard conditions?
+% - What are the practical bottlenecks for deployment: compute, sensing,
+%   navigation, or planning?
+% - What would be needed to scale this to a full commercial orchard?
+
+\section{Summary} \label{secErwinSummary}
+
+% TODO: Summarize:
+% - The full integrated Amiga + xArm6 + ROS 2 system.
+% - Key field validation results.
+% - How simulation results translate (or do not) to real-world performance.
+% - Bridge to Chapter~\ref{chapConclusions}: what was demonstrated and
+%   what remains to be done.

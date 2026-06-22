@@ -1,18 +1,83 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
-\chapter{Introduction} \label{secIntro}
+\chapter{Introduction} \label{chapIntroduction}
 
-Introduction.
+% TODO: Opening hook — the agricultural and economic stakes of fire blight.
+% Describe how fire blight (Erwinia amylovora) is a major threat to apple
+% orchards worldwide, with brief mention of economic impact and the
+% difficulty of early detection in large-scale orchard settings.
 
-\section{Installation instructions}
+\section{Motivation} \label{secMotivation}
 
-This template was tested with TeX Live 2017, which includes all required packages~\cite{TUG2017}. Mac users: this is included as part of OSX and TeXShop. After successfully installing TeX Live, compile the PDF file using your favorite build tool (we tested with \verb!make! on OSX).
+% TODO: Motivate robotic inspection as a solution.
+% - Manual scouting is labor-intensive, inconsistent, and slow.
+% - Early detection enables targeted pruning before spread.
+% - Autonomous robots can cover large orchards systematically.
+% - Multi-modal sensing (RGB + NIR multispectral) may enable detection
+%   before visual symptoms are obvious to the human eye.
 
-\section{How to use this template}
-Write each chapter as a separate \LaTeX\ file and include them in \verb!thesis-main.tex!. Edit the abstract, acknowledgments, background, title, dedication, and funding files as necessary. Include additional packages in \verb!thesis-packages.tex! and define helpful macros in \verb!thesis-macros.tex!.
+% TODO: Include a compelling overview figure here.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/intro/overview}
+%   \caption{TODO: System overview figure showing robot in orchard,
+%            detection pipeline, and 3D disease map output.}
+%   \label{figOverview}
+% \end{figure}
 
-\subsection{Algorithms}
-Define each algorithm as a separate \LaTeX\ file in the algorithms folder using either the \verb!algorithmicx! or \verb!algpseudocode! packages. For example, see Algorithm~\ref{algTemplate}.
+\section{Problem Statement} \label{secProblem}
 
-\input{algorithms/alg-template.tex}
+% TODO: State the problem precisely.
+% Given an apple orchard with unknown disease distribution:
+%   1. Detect infected plant tissue at the branch/shoot level using
+%      on-board multi-modal cameras (RGB + 25-band NIR).
+%   2. Build a 3D semantic map (OctoMap) of disease location and severity.
+%   3. Plan robot viewpoints that maximize information gain about
+%      unmapped or uncertain regions (Next-Best-View planning).
+%   4. Validate the full system in a real orchard environment.
 
+\section{Contributions} \label{secContributions}
+
+% TODO: List your main technical contributions as a bulleted or numbered list.
+% Suggested structure (adapt to match final work):
+
+\begin{enumerate}
+  \item \textbf{Multi-modal orchard dataset.} % TODO: Describe the dataset:
+  % number of images, modalities (flash stereo RGB, 25-band NIR, ZED2i),
+  % annotation pipeline (SAM-assisted cross-modal label transfer),
+  % and public release details if applicable.
+
+  \item \textbf{2D fire blight detection pipeline.} % TODO: YOLO-based
+  % detection models trained on the dataset; quantitative results
+  % (mAP, precision/recall) comparing model variants.
+
+  \item \textbf{Semantic OctoMap for disease mapping.} % TODO: Describe
+  % the 3D occupancy + class-label + Bayesian log-odds confidence
+  % representation; how detections from multiple viewpoints are fused.
+
+  \item \textbf{Semantic Next-Best-View planner.} % TODO: Describe the
+  % NBV planner that prioritizes views of semantically uncertain regions,
+  % and how it compares to a baseline grid scan and volumetric NBV.
+
+  \item \textbf{Full-system field validation.} % TODO: Describe the
+  % Amiga + xArm6 platform, ROS 2 integration, and results from
+  % real-orchard experiments.
+\end{enumerate}
+
+\section{Thesis Outline} \label{secOutline}
+
+% TODO: Write a paragraph describing the structure of the rest of the
+% thesis. Template below:
+
+The remainder of this thesis is organized as follows.
+Chapter~\ref{chapBackground} provides background on fire blight biology,
+relevant sensing modalities, 3D semantic mapping, and prior work on
+agricultural robotics and NBV planning.
+Chapter~\ref{chapDataset} describes the data collection platform,
+multi-modal dataset, and 2D detection models.
+Chapter~\ref{chapNBV} presents the semantic OctoMap representation and
+the proposed NBV planners.
+Chapter~\ref{chapErwin} describes the full integrated system and reports
+field validation results.
+Chapter~\ref{chapConclusions} concludes the thesis and discusses
+directions for future work.
