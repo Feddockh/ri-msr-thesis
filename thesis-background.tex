@@ -2,73 +2,130 @@
 
 \chapter{Background} \label{chapBackground}
 
-% TODO: Brief chapter intro — what this chapter covers and how it
-% motivates the technical choices made in later chapters.
+This chapter provides the context needed to motivate the technical choices made in later chapters.
+Section~\ref{secAgRobotics} surveys agricultural robotics broadly, situating manipulator-equipped platforms like Erwin within the field.
+Section~\ref{secActivePerception} introduces active perception and next-best-view (NBV) planning, the methodological framework underlying our viewpoint-selection approach.
+Section~\ref{secFireBlight} describes the biology, economic impact, and management of fire blight, establishing why dormant-season canker and shepherd's crook detection is a high-value but currently manual task.
+Section~\ref{secCurrentEfforts} reviews prior automated and robotic approaches to fire blight and orchard disease diagnosis, identifying the specific gap this thesis addresses.
+Section~\ref{secBackgroundSummary} ties these threads together.
 
 \section{Agricultural Robotics} \label{secAgRobotics}
 
 \subsection{Agricultural Robots Today} \label{secAgRoboticsToday}
 
-% TODO: Survey robotic platforms and systems deployed in agricultural
-% settings today.
-% - Harvesting robots, pruning robots, scouting/inspection robots.
-% - Challenges: unstructured environments, occlusion, lighting variation,
-%   terrain.
-% - Relevant platforms: ground robots (Amiga, Thorvald, etc.),
-%   manipulator arms for targeted inspection.
-% - Cite key related systems; compare to your Amiga + xArm6 setup.
+Agricultural robotics has grown rapidly over the past decade in response to rising labor costs, a shrinking farm workforce, and increasing demand for precision interventions that reduce input waste \cite{droukas2023survey}.
+Deployed and research systems span harvesting, pruning, spraying, phenotyping, and scouting tasks, and typically combine a mobile platform with one or more sensing modalities and, in many cases, a manipulator for physical interaction with the crop \cite{droukas2023survey}.
+Robotic harvesters for high-value tree fruit, including apple, have demonstrated per-fruit cycle times of seconds with success rates approaching 90\% under favorable conditions \cite{droukas2023survey}, and ground platforms purpose-built for orchard rows---such as the Thorvald and Farm-ng Amiga---have become common research bases because their narrow footprint and modular mounting points suit the constrained geometry of a tree row.
+
+Despite this progress, orchard environments remain difficult for autonomous perception.
+Canopy variation between trees and seasons, severe self-occlusion from overlapping branches, thin and low-contrast branch geometry, and large swings in natural illumination across a single day all degrade the reliability of fixed-camera, fixed-trajectory sensing \cite{droukas2023survey}.
+These challenges are most acute for tasks, like disease detection, that depend on fine visual cues rather than large, high-contrast objects such as fruit.
+Two complementary responses have emerged in the literature: controlled illumination systems that remove ambient lighting as a source of variation, and manipulator-equipped platforms that can reposition a sensor to acquire a more favorable view rather than relying on a single fixed vantage point.
+
+Silwal et al.\ developed a robust illumination-invariant camera system that pairs a stereo camera with synchronized flash illumination so that image appearance is dominated by a controlled light source rather than ambient sunlight, substantially improving the consistency of crop detection across lighting conditions \cite{Silwal2021FlashCamera}.
+We adopt the same flash-stereo principle for our RGB sensing rig (Section~\ref{secFlirCamera}) to ensure that our 2D detector is not confounded by shadowing and dappled light inside the canopy.
+
+Manipulator arms mounted on mobile agricultural bases have been used to bring a sensor or end-effector into close, oriented contact with a target plant part rather than depending on the platform's nominal trajectory to produce a usable view.
+Freeman and Kantor used an arm-mounted camera and a next-best-view planner to size apple fruitlets that were otherwise occluded from a single fixed viewpoint, demonstrating that active viewpoint selection improves measurement coverage in cluttered canopy \cite{Freeman2024AppleFruitletSizing}.
+Similar arm-based active sensing has been explored in greenhouse settings for locating and reconstructing specific plant parts under heavy occlusion \cite{Burusa2024AttentionDrivenNBVPlantParts, Burusa2024SemanticsAwareNBVPlantParts}.
+Our platform, Erwin, follows this same design philosophy: an Amiga mobile base carries a UFACTORY xArm6 manipulator that positions our multi-modal sensor rig at task-relevant viewpoints, while the base remains stationary during inspection of a given tree (Chapter~\ref{chapErwin}).
+
+\section{Active Perception} \label{secActivePerception}
+
+\subsection{Active Perception as a Design Principle} \label{secActivePerceptionFoundations}
+
+The idea that a perceiving agent should control its own sensors to improve the information it gathers, rather than passively processing whatever data arrives, was formalized by Bajcsy as \textit{active perception} \cite{Bajcsy1988ActivePerception}.
+Under this framing, perception is not a one-shot mapping from a fixed image to a scene interpretation but a closed loop in which the agent's actions---where to look, how to move a sensor, what to illuminate---are chosen specifically to reduce uncertainty about quantities of interest.
+This principle motivates our approach to fire blight detection: rather than relying on whatever view of a tree is afforded by a fixed scouting trajectory, our system uses a manipulator to actively select viewpoints that are expected to resolve uncertainty about the presence and location of disease symptoms.
+
+\subsection{View Planning and Next-Best-View Algorithms} \label{secViewPlanning}
+
+The next-best-view (NBV) problem---given a partial model of a scene, choose the next sensor pose that will most improve that model---dates at least to Connolly's early formulation for range-sensor-based object reconstruction \cite{Connolly1985NextBestViewDetermination}.
+Zeng et al.\ provide a comprehensive survey of view planning in active vision, organizing approaches by their underlying representation (surface-based, volumetric, or semantic), their information metric, and their target application domain \cite{Zeng2020View}.
+A large family of NBV algorithms is volumetric: the scene is represented as an occupancy grid, and candidate views are scored by an information-theoretic measure of how many unknown voxels they are expected to resolve.
+Isler et al.\ formalized this as an information-gain maximization problem over a probabilistic occupancy map \cite{Isler2016IGFormulation}, and Delmerico et al.\ compared several volumetric information-gain metrics for active 3D reconstruction, finding meaningful differences in efficiency and reconstruction quality between metrics that nominally pursue the same objective \cite{Delmerico2018VolumeticIGFormulation}.
+These volumetric formulations are agnostic to the semantic content of the scene: a voxel near a flower is treated identically to one near a canker, provided both are equally uncertain.
+
+More recent work has incorporated task relevance directly into the view-planning objective.
+Burusa et al.\ proposed an attention-driven NBV planner that biases view selection toward task-relevant plant parts in greenhouse tomato plants, showing that reconstructing only the parts relevant to a downstream task (e.g., leaf nodes for de-leafing) is both faster and more accurate than reconstructing the whole plant \cite{Burusa2024AttentionDrivenNBVPlantParts}.
+A follow-up extended this idea to a semantics-aware formulation in which a semantic segmentation model directly drives which voxels are treated as informative for the search and detection of specific plant parts \cite{Burusa2024SemanticsAwareNBVPlantParts}.
+Freeman and Kantor applied NBV planning to apple fruitlet sizing under occlusion, an agricultural task closer to our own in platform and crop but not in objective: their planner pursues complete geometric measurement of a known target class, not detection of an a priori unknown disease state \cite{Freeman2024AppleFruitletSizing}.
+
+Our semantic NBV planner (Chapter~\ref{chapNBV}) extends this semantics-aware line of work to disease mapping: rather than scoring candidate views by occupancy uncertainty alone, we score them by uncertainty in the disease class confidence accumulated in our semantic occupancy map, so that the planner preferentially revisits low-confidence symptomatic regions of the canopy.
+We evaluate this planner against both a coverage-based grid-scan baseline and a purely volumetric NBV planner to isolate the benefit of semantic, disease-aware view selection.
 
 \section{Fire Blight Disease} \label{secFireBlight}
 
-% TODO: Brief intro to fire blight as the disease motivating this thesis.
+Fire blight is a bacterial disease of pome fruit and other rosaceous plants that has been recognized as a threat to North American orchards since the late eighteenth century and now occurs in more than sixty countries \cite{van1979FireBlight, acimovic2026fireblight}.
+Its combination of rapid spread, difficulty of in-season treatment, and capacity to kill young trees outright makes it one of the most economically significant diseases facing apple and pear growers, and motivates the detection problem addressed by this thesis.
 
 \subsection{Why Fire Blight Matters} \label{secWhyFireBlight}
 
-% TODO: Motivate the economic and agronomic importance of fire blight.
-% - Crops affected (apple, pear, other Rosaceae).
-% - Economic impact: cite orchard loss statistics.
-% - Speed of spread and risk of losing entire orchards/blocks.
+Fire blight affects apple (\textit{Malus} $\times$ \textit{domestica}), pear (\textit{Pyrus communis}), and a range of other Rosaceae, including ornamental hosts that can serve as inoculum reservoirs near commercial plantings \cite{acimovic2026fireblight}.
+Annual losses and management costs attributable to fire blight in the United States exceed \$100 million \cite{Norelli2003FireBlightManagementTwentyFirst, acimovic2026fireblight}, and individual regional outbreaks have caused tens of millions of dollars in losses within a single season, including a 2016 outbreak in New York that killed half the trees in affected young orchards and outbreaks in Washington State between 2017 and 2019 that caused approximately \$9 million in annual losses \cite{acimovic2026fireblight}.
+Internationally, an epidemic in Korla, China destroyed an estimated one million pear trees in 2017 \cite{Sun2023CurrentSituationChina, acimovic2026fireblight}.
+
+The disease is particularly dangerous to young, high-density plantings, which now dominate commercial apple production because they reach full yield faster and are easier to manage mechanically.
+On trees between one and ten years old, a canker that girdles the rootstock, trunk, or central leader can kill the entire tree within a season \cite{Acimovic2023RootstockFireBlight, acimovic2026fireblight}.
+This vulnerability is compounded by a broader shift in the U.S. apple industry toward high-value, fire-blight-susceptible cultivars: Gala, the most widely produced apple variety in the country, is rated highly susceptible with no genetic wood resistance, and other widely planted cultivars such as Granny Smith and Jonagold carry similarly high susceptibility ratings \cite{gerlach2025usapple, acimovic2026fireblight}.
+Because high-density plantings represent a substantial up-front capital investment that takes years to recoup, a severe fire blight outbreak in a young block can be financially devastating for a grower already operating on thin margins \cite{gerlach2025usapple}.
 
 \subsection{Disease Mechanism} \label{secFireBlightMechanism}
 
-% TODO: Biology and epidemiology of Erwinia amylovora.
-% - Infection mechanism: enters via blossoms and wounds, spreads through
-%   vascular tissue.
-% - Visible symptoms and progression: shepherd's crook wilt,
-%   water-soaked lesions, orange/brown discoloration of shoots and fruit.
-% - Detection challenges: early infection may not be visually obvious;
-%   NIR reflectance changes may precede visible symptoms.
+Fire blight is caused by \textit{Erwinia amylovora}, a Gram-negative, rod-shaped bacterium that overwinters within cankers---necrotic, often sunken lesions on the bark of branches, the trunk, or the central leader \cite{van1979FireBlight, Zeng2023PathogenSpotlightErwiniaAmylovora}.
+As temperatures rise above approximately 10\textdegree C in late winter and early spring, bacteria resume activity within these overwintering cankers and ooze from canker margins as a sticky, bacteria-laden exudate.
+This exudate is the primary source of inoculum for new infections, which are most commonly initiated during bloom: bacteria deposited on open flowers by rain splash, wind-driven rain, or pollinating insects multiply on the floral stigma and are washed into the nectary, where they enter the plant's vascular system \cite{acimovic2026fireblight, Ivey2016OhioAdvicePost}.
+
+From an infected flower, the bacterium moves systemically through the vascular tissue into the supporting shoot, producing the disease's hallmark symptom: a wilted, blackened shoot tip that curls downward into a distinctive ``shepherd's crook'' \cite{van1979FireBlight, acimovic2026fireblight}.
+Untreated, infection continues to progress basipetally from the shoot into woody tissue, where it produces a new canker at the base of the infected shoot.
+These cankers are the structures that persist through the dormant season and seed the following spring's epidemic, making the total canker load present in an orchard at the end of one season a strong predictor of disease pressure in the next.
+
+Detection of fire blight is complicated by the fact that the disease's most visually distinctive symptoms---water-soaked floral tissue, orange-brown discoloration of fruit, and the wilted, blackened foliage that contrasts sharply against healthy leaves later in summer---are confined to the growing season, whereas the canker and shepherd's crook symptoms that drive the epidemic cycle persist year-round and are comparatively subtle: a dark, often sunken patch on bark, or a wilted, blackened shoot tip, that can be difficult to distinguish from normal bark and branch variation, especially from a distance or under inconsistent lighting \cite{Peter2023PennStateExtension}.
+This thesis focuses on detecting these persistent canker and shepherd's crook symptoms specifically during the dormant season, since this is when growers must identify and prune them out to limit the inoculum available for the following bloom period.
+There is also evidence that physiological changes associated with infection, including altered water content and tissue structure, can produce spectral reflectance signatures detectable in the near-infrared range before or in the absence of obvious visible symptoms \cite{Bagheri2018DetectionFireBlightPearHyperspectral, Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}, which motivates the inclusion of a multispectral sensing modality in our data collection platform (Section~\ref{secXimeaCamera}).
 
 \subsection{Current Solutions and Problems} \label{secFireBlightCurrentSolutions}
 
-% TODO: Describe how orchardists currently detect and respond to fire
-% blight, and the shortcomings of these approaches.
-% - Manual scouting: labor-intensive, infrequent, error-prone.
-% - Management practices: pruning, copper/antibiotic sprays.
-% - Why current practice motivates automated, systematic detection.
+Because fire blight cankers cannot be eliminated chemically once formed, the standard management practice for reducing the overwintering inoculum reservoir is manual dormant-season pruning: an orchardist walks each row, visually identifies cankers, and removes them by cutting well below the visible margin of infection \cite{Peter2023PennStateExtension}.
+In-season management instead relies on predictive infection models that trigger preventive antibiotic application (most commonly streptomycin) during bloom, since once shoot blight symptoms are visible the infection is already systemic and antibiotics are no longer effective \cite{Norelli2003FireBlightManagementTwentyFirst, acimovic2026fireblight}.
 
-\section{Current Efforts on Automated Fire Blight and Orchard Disease Diagnosis} \label{secCurrentEfforts}
+Both halves of this management strategy depend on accurate knowledge of where disease is present in the orchard, and both are currently obtained through labor-intensive manual inspection.
+Dormant-season canker and shepherd's crook scouting in particular is slow, subjective, and produces no persistent spatial record: an orchardist's assessment of disease load is rarely logged with any geographic precision, which means growers cannot calibrate bloom-period spray intensity to actual local risk or prioritize pruning crews toward the highest-risk rows.
+As labor availability declines and labor costs rise \cite{gerlach2025usapple}, the frequency and spatial resolution of manual scouting that would be required to fully characterize disease pressure across a commercial orchard becomes increasingly impractical.
+This is precisely the gap that an autonomous detection and mapping system is positioned to fill, and it is the problem this thesis addresses.
 
-% TODO: Brief intro framing the gap this thesis addresses.
+\section{Remote Sensing for Fire Blight} \label{secCurrentEfforts}
 
-\subsection{Datasets} \label{secCurrentEffortsDatasets}
+A substantial body of prior work has applied remote sensing and computer vision to fire blight detection, but, as we review below, this work has concentrated on aerial and handheld sensing of foliar and floral symptoms during the growing season, leaving ground-based, dormant-season canker and shepherd's crook detection comparatively unexplored.
 
-% TODO: Review existing public/research datasets for fire blight and
-% orchard disease detection.
-% - Modalities used (RGB, hyperspectral/NIR).
-% - Scale and limitations (size, diversity, label quality).
-% - How your dataset (Chapter~\ref{chapDataset}) compares/improves on these.
+\subsection{Datasets and Detection Approaches} \label{secCurrentEffortsDatasets}
+
+Hyperspectral and multispectral sensing have been the dominant modalities in prior fire blight detection work, motivated by the spectral changes associated with infection discussed in Section~\ref{secFireBlightMechanism}.
+Bagheri et al.\ used hyperspectral imaging to distinguish fire blight-infected pear tissue from healthy tissue at leaf scale \cite{Bagheri2018DetectionFireBlightPearHyperspectral}, and Skoneczny et al.\ performed a similar hyperspectral analysis distinguishing healthy, infected, and dry apple leaves \cite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}.
+A related hyperspectral approach has been applied to Valsa canker, a different woody-tissue disease of apple, again at close range \cite{Kurihara2022DetectionValsaCankerHyperspectralCanker}.
+
+At the orchard scale, several efforts have moved to aerial platforms.
+Bagheri applied aerial remote sensing to detect fire blight-infected pear trees over whole blocks \cite{Bagheri2020AerialDetectionFireBlightPear}, Kang et al.\ trained a convolutional network on drone-acquired imagery of pear trees \cite{kang2020DroneDetectionFireBlightPear}, Schoofs et al.\ monitored pear orchards for fire blight using UAV-mounted spectral sensors \cite{schoofs2020UAVFireBlightPearSpectral}, and Xiao et al.\ developed a remote-sensing detection algorithm for apple fire blight from UAV multispectral imagery \cite{Xiao2022UAVFireBlightAppleMultispectral}.
+Veres et al.\ evaluated multi-channel sensors together with density estimation learning for fire blight detection in pear orchards \cite{veres2024DetectionFireBlightPearMultiChannel}, and Mahmud et al.\ used deep transfer learning with image processing to both detect and segment fire blight-infected regions in apple \cite{Mahmud2023MaskRCNNFireBlight}.
+Most directly related to our mapping objective, Linker and Dafny-Yalin used a Faster R-CNN detector on UAV imagery to map the locations of fire blight cankers across pear orchards \cite{Linker2024MappingFireBlightCankersFRCNN}, producing a 2D spatial map of canker incidence analogous in spirit to the 3D semantic map we build in Chapter~\ref{chapNBV}.
+
+These efforts establish that fire blight produces detectable visual and spectral signatures and that those signatures can be mapped at the orchard scale.
+However, nearly all of this prior work targets foliar or floral symptoms visible during the growing season, from a sensing standpoint---aerial or handheld---that trades spatial resolution and viewpoint control for coverage.
+None of the datasets used in this prior work pairs close-range RGB and dense multispectral imagery of dormant woody tissue, and none was collected to support 3D, viewpoint-aware sensing.
+This is the gap our multi-modal dataset (Chapter~\ref{chapDataset}) is designed to fill.
 
 \subsection{Orchard Robots} \label{secCurrentEffortsRobots}
 
-% TODO: Review existing robotic/automated systems for orchard disease
-% inspection and diagnosis.
-% - Sensing approaches (RGB, hyperspectral, LiDAR), autonomy level,
-%   reported performance.
-% - Gaps: lack of 3D semantic mapping, lack of active/NBV-driven
-%   inspection strategies.
+Comparatively little prior work has paired ground-based robotic platforms with disease detection in orchards, as distinct from the harvesting and fruit-sizing tasks that dominate orchard robotics \cite{droukas2023survey, Freeman2024AppleFruitletSizing}.
+Of the disease-mapping efforts reviewed above, the closest in spirit to a ``robotic'' system is Linker and Dafny-Yalin's UAV-based canker mapping \cite{Linker2024MappingFireBlightCankersFRCNN}, but it relies on a fixed overhead flight pattern rather than active, viewpoint-aware sensing, and produces a 2D orthomosaic-style map rather than a 3D representation of canker location within the canopy volume.
+NBV planning has been demonstrated for other orchard and greenhouse tasks---apple fruitlet sizing \cite{Freeman2024AppleFruitletSizing} and targeted plant-part reconstruction in tomato \cite{Burusa2024AttentionDrivenNBVPlantParts, Burusa2024SemanticsAwareNBVPlantParts}---establishing the feasibility of arm-based active sensing in cluttered canopy, but none of this work targets disease symptoms or builds a semantic disease map.
+
+This leaves a clear gap at the intersection of three capabilities that, individually, have precedent in the literature but, to our knowledge, have not been combined: (1) close-range, multi-modal sensing sufficient to detect subtle dormant-season canker and shepherd's crook symptoms; (2) a 3D semantic representation that fuses noisy per-view detections into a single map of disease confidence across the canopy; and (3) an NBV planner that uses that representation to decide where to look next.
+This thesis develops and validates a system that brings all three together.
 
 \section{Summary} \label{secBackgroundSummary}
 
-% TODO: Summarize what gaps in the literature your thesis addresses.
-% Tie each gap to a contribution stated in Chapter~\ref{chapIntroduction}.
+Agricultural robotics has demonstrated that mobile platforms and manipulator-equipped sensing systems can operate effectively in orchard environments (Section~\ref{secAgRobotics}), and active perception and NBV planning provide a principled framework for using a manipulator to actively resolve sensing uncertainty rather than relying on a fixed viewpoint (Section~\ref{secActivePerception}).
+Fire blight is a severe and economically significant disease whose management depends on accurate, spatially resolved knowledge of dormant-season canker and shepherd's crook load---knowledge that is currently gathered only through slow, subjective manual scouting (Section~\ref{secFireBlight}).
+Prior automated detection efforts have shown that fire blight produces detectable signatures across RGB and spectral imagery, but have concentrated on growing-season, aerial, or handheld sensing rather than close-range, viewpoint-aware, ground-robotic sensing of dormant woody tissue (Section~\ref{secCurrentEfforts}).
+This thesis addresses that combined gap through, respectively, the multi-modal dataset and 2D detector of Chapter~\ref{chapDataset}, the confidence-aware semantic occupancy map and semantic NBV planner of Chapter~\ref{chapNBV}, and the field-validated integrated system, Erwin, of Chapter~\ref{chapErwin}.
