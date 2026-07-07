@@ -2,8 +2,6 @@
 
 \chapter{Introduction} \label{chapIntroduction}
 
-\section{Motivation} \label{secMotivation}
-
 The U.S. apple industry is a cornerstone of American agriculture, contributing more than \$23 billion to the national economy and supporting over 150,000 jobs across a supply chain that spans orchards, packing houses, cold storage, and distribution~\cite{gerlach2025usapple}.
 Yet despite record production levels, many growers are operating at a loss: domestic demand has stagnated, export markets have eroded, labor costs continue to climb, and the margin for error is thin~\cite{gerlach2025usapple}.
 In this environment, disease management is not merely an agronomic concern---it is an economic one.
@@ -17,7 +15,7 @@ Robotic monitoring systems offer a promising path forward.
 Advances in vision-based detection, manipulator-based active sensing, and probabilistic three-dimensional mapping have made it possible to deploy robotic systems for sustained, repeatable inspection of individual plants~\cite{droukas2023survey}.
 The orchard canopy, however, remains a challenging environment for autonomous perception: canopy variation, severe occlusion, thin branch geometry, and large swings in natural lighting all degrade the reliability of fixed-camera, fixed-viewpoint sensing.
 The visual cues that distinguish infected tissue from healthy tissue are subtle, and resolving them reliably requires close-range imaging at fine spatial resolution, conditions that a fixed, wide-area viewpoint cannot consistently provide.
-Moreover, the output a grower needs is not a binary classification of disease presence but a spatial map of disease confidence across the tree that can guide targeted pruning.
+Moreover, the output a grower needs is not a binary classification of disease presence but a spatial map of disease confidence across the tree that can guide targeted pruning or treatment applications.
 Despite growing research interest in agricultural robotics, the specific problem of autonomously detecting and spatially localizing fire blight cankers and shepherd's crooks in dormant apple trees has received little attention.
 
 % TODO: Add figs/robot_symptoms_collage_2.png, then uncomment.
@@ -30,39 +28,36 @@ Despite growing research interest in agricultural robotics, the specific problem
 
 These limitations motivate an active perception approach in which a robotic manipulator positions a camera to acquire discriminative, task-relevant views.
 This approach enables the use of specialized sensors, namely flash RGB and near-infrared cameras, that are highly effective for disease detection because they resolve the fine bark texture characteristic of cankers, but that must be operated at close range and in tight focus to do so, and consequently have narrow fields of view.
-Realizing this approach end-to-end requires three components that, to our knowledge, have not previously been brought together for fire blight: a dataset and detector capable of recognizing disease symptoms across sensing modalities, a three-dimensional representation that can accumulate and reconcile noisy per-view detections into a single map of the canopy, and a planner that uses that representation to decide where to look next.
+Realizing this approach end-to-end requires three components that, to our knowledge, have not previously been brought together for fire blight: a dataset and detector capable of recognizing disease symptoms across sensing modalities, a three-dimensional representation that can accumulate and reconcile noisy per-view detections into a single map of the canopy, and a planner that uses that representation to decide where to look next. This thesis addresses that gap directly.
 
-This thesis addresses that gap directly.
-We present Erwin, a robotic active perception system for targeted fire blight detection in dormant apple trees, built around an Amiga mobile base and a UFACTORY xArm6 manipulator.
-The mobile base remains fixed in front of a tree during inspection while the arm autonomously selects and executes inspection viewpoints within a closed perception--action loop, combining flash stereo RGB and 25-band near-infrared multispectral imaging with a confidence-aware semantic occupancy map and next-best-view planning.
-Erwin was developed as part of Carnegie Mellon University's Fire Blighters team entry in the 2026 Farm Robotics Challenge, where the team received the Amiga Innovation Award.
-Data supporting this work was collected from apple orchards in Virginia and the greater Pittsburgh region.
-The work presented here focuses on per-tree detection, mapping, and active viewpoint selection; extending the system to traverse and map an entire orchard autonomously, row by row, is an important direction for future work (Chapter~\ref{chapConclusions}).
 
 \section{Contributions} \label{secContributions}
 
-The primary contributions of this thesis are:
-\begin{itemize}
-  \item \textbf{A multi-modal orchard dataset for fire blight.} We collect a dataset of flash stereo RGB, 25-band NIR multispectral, and ZED2i RGB-D imagery of dormant apple trees exhibiting a range of fire blight symptoms, gathered across multiple collection sessions in orchards in Virginia and the greater Pittsburgh region.
-  Manual expert annotation is accelerated with a SAM-assisted labeling workflow, and a cross-modal label transfer procedure propagates RGB annotations onto the corresponding NIR frames.
-  To our knowledge, this is the first dataset pairing dense NIR spectral bands with RGB imagery for fire blight detection on dormant woody tissue.
-  The dataset and annotation methodology are described in Chapter~\ref{chapDataset}.
+The primary contributions of this thesis are organized around three components: a multi-modal dataset and detector, a semantic mapping and planning framework, and the field-validated robotic system that integrates them.
 
-  \item \textbf{A fire blight instance segmentation pipeline.} We train YOLO-seg--based instance segmentation models on the dataset above and compare detection performance between the RGB and NIR modalities.
-  We additionally benchmark zero-shot foundation model approaches, including SAM, and find that they fail to generalize to the out-of-distribution appearance of dormant canker and shepherd's crook tissue, demonstrating that a domain-specifically trained model is necessary for reliable detection.
-  Results and ablation analysis are presented in Chapter~\ref{chapDataset}.
+\subsection{Multi-Modal Dataset and Fire Blight Detection}
 
-  \item \textbf{A confidence-aware semantic occupancy representation} that jointly maintains occupancy probability, semantic disease labels, and prediction confidence within a unified volumetric map, fusing per-view detections into a single, persistent representation of disease confidence across the canopy.
-  The mapping system is described in Chapter~\ref{chapNBV}.
+We collect a dataset of flash stereo RGB, 25-band NIR multispectral, and ZED2i RGB-D imagery of dormant apple trees exhibiting a range of fire blight symptoms, gathered across multiple collection sessions in orchards in Virginia and the greater Pittsburgh region.
+Manual expert annotation is accelerated with a SAM-assisted labeling workflow, and a cross-modal label transfer procedure propagates RGB annotations onto the corresponding NIR frames; to our knowledge, this is the first dataset pairing dense NIR spectral bands with RGB imagery for fire blight detection on dormant woody tissue.
+Building on this dataset, we train YOLO-seg--based instance segmentation models and compare detection performance between the RGB and NIR modalities.
+% We additionally benchmark zero-shot foundation model approaches, including SAM, and find that they fail to generalize to the out-of-distribution appearance of dormant canker and shepherd's crook tissue, demonstrating that a domain-specifically trained model is necessary for reliable detection.
+The dataset, annotation methodology, and detection results are presented in Chapter~\ref{chapDataset}.
 
-  \item \textbf{An active viewpoint selection framework, centered on a semantic-aware next-best-view (NBV) planner}, that prioritizes low-confidence symptomatic regions for re-observation, evaluated alongside geometric coverage-based and volumetric NBV baselines to enable refined observation of complex canopy structures.
-  The planner and its integration with the semantic occupancy map are described in Chapter~\ref{chapNBV}.
+\subsection{Semantic Mapping and Active Viewpoint Selection}
 
-  \item \textbf{Development and field validation of the complete robotic system, Erwin,} deployed and validated on real apple trees at a university fruit research facility, with mapping performance assessed against splat-based 3D reconstructions.
-  Validation results are presented in Chapter~\ref{chapErwin}.
-\end{itemize}
+We introduce a confidence-aware semantic occupancy representation that jointly maintains occupancy probability, semantic disease labels, and prediction confidence within a unified volumetric map, fusing per-view detections into a single, persistent representation of disease confidence across the canopy.
+Built on this representation, we develop an active viewpoint selection framework centered on a semantic-aware next-best-view (NBV) planner that prioritizes low-confidence symptomatic regions for re-observation, evaluated alongside geometric coverage-based and volumetric NBV baselines to enable refined observation of complex canopy structures.
+The mapping representation, the planner, and their integration are presented in Chapter~\ref{chapNBV}.
 
-Together, these contributions form an end-to-end pipeline: the dataset and 2D detector (Chapter~\ref{chapDataset}) supply the per-view symptom evidence consumed by the confidence-aware semantic occupancy map and NBV planner (Chapter~\ref{chapNBV}), which are in turn integrated onto Erwin and validated under field conditions (Chapter~\ref{chapErwin}).
+\subsection{A Field-Validated Robotic System}
+
+We integrate these components into Erwin, a robotic active perception system for targeted fire blight detection in dormant apple trees, built around an Amiga mobile base and a UFACTORY xArm6 manipulator.
+The mobile base remains fixed in front of a tree during inspection while the arm autonomously selects and executes inspection viewpoints within a closed perception--action loop, combining flash stereo RGB and 25-band near-infrared multispectral imaging with the confidence-aware semantic occupancy map and NBV planner described above.
+Erwin was developed as part of Carnegie Mellon University's Fire Blighters team entry in the 2026 Farm Robotics Challenge, where the team received the Amiga Innovation Award, and is deployed and validated on real apple trees at a university fruit research facility, with mapping performance assessed against splat-based 3D reconstructions.
+Validation results are presented in Chapter~\ref{chapErwin}.
+The work presented here focuses on per-tree detection, mapping, and active viewpoint selection; extending the system to traverse and map an entire orchard autonomously, row by row, is an important direction for future work (Chapter~\ref{chapConclusions}).
+
+Together, these contributions form an end-to-end pipeline: the dataset and 2D detector supply the per-view symptom evidence consumed by the confidence-aware semantic occupancy map and NBV planner, which are in turn integrated onto Erwin and validated under field conditions.
 
 \section{Thesis Organization} \label{secOutline}
 
