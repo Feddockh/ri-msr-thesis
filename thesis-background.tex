@@ -30,6 +30,8 @@ Freeman and Kantor used an arm-mounted camera and a next-best-view planner to si
 Similar arm-based active sensing has been explored in greenhouse settings for locating and reconstructing specific plant parts under heavy occlusion \cite{Burusa2024AttentionDrivenNBVPlantParts, Burusa2024SemanticsAwareNBVPlantParts}.
 Our platform, Erwin, follows this same design philosophy: an Amiga mobile base carries a UFACTORY xArm6 manipulator that positions our multi-modal sensor rig at task-relevant viewpoints, while the base remains stationary during inspection of a given tree (Chapter~\ref{chapErwin}).
 
+% TODO: Insert photo of Erwin platform (Amiga + xArm6) here.
+
 \section{Active Perception} \label{secActivePerception}
 
 \subsection{Active Perception as a Design Principle} \label{secActivePerceptionFoundations}
@@ -37,6 +39,13 @@ Our platform, Erwin, follows this same design philosophy: an Amiga mobile base c
 The idea that a perceiving agent should control its own sensors to improve the information it gathers, rather than passively processing whatever data arrives, was formalized by Bajcsy as \textit{active perception} \cite{Bajcsy1988ActivePerception}.
 Under this framing, perception is not a one-shot mapping from a fixed image to a scene interpretation but a closed loop in which the agent's actions---where to look, how to move a sensor, what to illuminate---are chosen specifically to reduce uncertainty about quantities of interest.
 This principle motivates our approach to fire blight detection: rather than relying on whatever view of a tree is afforded by a fixed scouting trajectory, our system uses a manipulator to actively select viewpoints that are expected to resolve uncertainty about the presence and location of disease symptoms.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={0 150pt 0 150pt}, clip]{figs/active_perception_concept.jpg}
+    \caption{Motivation for active perception in orchard disease detection. A fixed camera cannot see past an occluding branch, leaving the symptomatic target undetected (left). A camera mounted on a two-degree-of-freedom arm can reposition past the obstruction, bringing the previously hidden target into view (right).}
+    \label{figActivePerception}
+\end{figure}
 
 \subsection{View Planning and Next-Best-View Algorithms} \label{secViewPlanning}
 
@@ -80,7 +89,16 @@ From an infected flower, the bacterium moves systemically through the vascular t
 Untreated, infection continues to progress basipetally from the shoot into woody tissue, where it produces a new canker at the base of the infected shoot.
 These cankers are the structures that persist through the dormant season and seed the following spring's epidemic, making the total canker load present in an orchard at the end of one season a strong predictor of disease pressure in the next.
 
-Detection of fire blight is complicated by the fact that the disease's most visually distinctive symptoms---water-soaked floral tissue, orange-brown discoloration of fruit, and the wilted, blackened foliage that contrasts sharply against healthy leaves later in summer---are confined to the growing season, whereas the canker and shepherd's crook symptoms that drive the epidemic cycle persist year-round and are comparatively subtle: a dark, often sunken patch on bark, or a wilted, blackened shoot tip, that can be difficult to distinguish from normal bark and branch variation, especially from a distance or under inconsistent lighting \cite{Peter2023PennStateExtension}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.425\linewidth]{figs/shepherds_crook_example_cropped.jpg}
+    \includegraphics[width=0.425\linewidth]{figs/canker_example_cropped.jpg}
+    \caption{Primary dormant-season fire blight symptoms used for detection: a shepherd's crook (left), the wilted, blackened shoot tip that curls downward following systemic infection, and a fire blight canker (right), the dark, sunken bark lesion that persists through the dormant season and seeds the following spring's epidemic.}
+    \label{figFireBlightSymptoms}
+\end{figure}
+
+
+Detection of fire blight is complicated by the fact that some of the disease's most visually distinctive symptoms---water-soaked floral tissue, orange-brown discoloration of fruit, and the wilted, blackened foliage that contrasts sharply against healthy leaves later in summer---are confined to the growing season, whereas the canker and shepherd's crook symptoms that drive the epidemic cycle persist year-round and are comparatively subtle: a dark, often sunken patch on bark, or a wilted, blackened shoot tip, that can be difficult to distinguish from normal bark and branch variation, especially from a distance or under inconsistent lighting \cite{Peter2023PennStateExtension}.
 This thesis focuses on detecting these persistent canker and shepherd's crook symptoms specifically during the dormant season, since this is when growers must identify and prune them out to limit the inoculum available for the following bloom period.
 There is also evidence that physiological changes associated with infection, including altered water content and tissue structure, can produce spectral reflectance signatures detectable in the near-infrared range before or in the absence of obvious visible symptoms \cite{Bagheri2018DetectionFireBlightPearHyperspectral, Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}, which motivates the inclusion of a multispectral sensing modality in our data collection platform (Section~\ref{secXimeaCamera}).
 
@@ -111,7 +129,7 @@ Most directly related to our mapping objective, Linker and Dafny-Yalin used a Fa
 
 These efforts establish that fire blight produces detectable visual and spectral signatures and that those signatures can be mapped at the orchard scale.
 However, nearly all of this prior work targets foliar or floral symptoms visible during the growing season, from a sensing standpoint---aerial or handheld---that trades spatial resolution and viewpoint control for coverage.
-None of the datasets used in this prior work pairs close-range RGB and dense multispectral imagery of dormant woody tissue, and none was collected to support 3D, viewpoint-aware sensing.
+None of the datasets used in this prior work pairs close-range RGB and dense multispectral imagery of dormant woody tissue, and none was collected to support in-field ground robotic sensing.
 This is the gap our multi-modal dataset (Chapter~\ref{chapDataset}) is designed to fill.
 
 \subsection{Orchard Robots} \label{secCurrentEffortsRobots}
@@ -119,6 +137,8 @@ This is the gap our multi-modal dataset (Chapter~\ref{chapDataset}) is designed 
 Comparatively little prior work has paired ground-based robotic platforms with disease detection in orchards, as distinct from the harvesting and fruit-sizing tasks that dominate orchard robotics \cite{droukas2023survey, Freeman2024AppleFruitletSizing}.
 Of the disease-mapping efforts reviewed above, the closest in spirit to a ``robotic'' system is Linker and Dafny-Yalin's UAV-based canker mapping \cite{Linker2024MappingFireBlightCankersFRCNN}, but it relies on a fixed overhead flight pattern rather than active, viewpoint-aware sensing, and produces a 2D orthomosaic-style map rather than a 3D representation of canker location within the canopy volume.
 NBV planning has been demonstrated for other orchard and greenhouse tasks---apple fruitlet sizing \cite{Freeman2024AppleFruitletSizing} and targeted plant-part reconstruction in tomato \cite{Burusa2024AttentionDrivenNBVPlantParts, Burusa2024SemanticsAwareNBVPlantParts}---establishing the feasibility of arm-based active sensing in cluttered canopy, but none of this work targets disease symptoms or builds a semantic disease map.
+
+% TODO: Insert representative figure from prior aerial/UAV fire blight mapping work (e.g., Linker and Dafny-Yalin 2D canker map) to contrast with the 3D semantic map produced in this thesis.
 
 This leaves a clear gap at the intersection of three capabilities that, individually, have precedent in the literature but, to our knowledge, have not been combined: (1) close-range, multi-modal sensing sufficient to detect subtle dormant-season canker and shepherd's crook symptoms; (2) a 3D semantic representation that fuses noisy per-view detections into a single map of disease confidence across the canopy; and (3) an NBV planner that uses that representation to decide where to look next.
 This thesis develops and validates a system that brings all three together.
@@ -128,4 +148,6 @@ This thesis develops and validates a system that brings all three together.
 Agricultural robotics has demonstrated that mobile platforms and manipulator-equipped sensing systems can operate effectively in orchard environments (Section~\ref{secAgRobotics}), and active perception and NBV planning provide a principled framework for using a manipulator to actively resolve sensing uncertainty rather than relying on a fixed viewpoint (Section~\ref{secActivePerception}).
 Fire blight is a severe and economically significant disease whose management depends on accurate, spatially resolved knowledge of dormant-season canker and shepherd's crook load---knowledge that is currently gathered only through slow, subjective manual scouting (Section~\ref{secFireBlight}).
 Prior automated detection efforts have shown that fire blight produces detectable signatures across RGB and spectral imagery, but have concentrated on growing-season, aerial, or handheld sensing rather than close-range, viewpoint-aware, ground-robotic sensing of dormant woody tissue (Section~\ref{secCurrentEfforts}).
+% TODO: Insert system overview diagram showing the three components (close-range sensing → semantic OctoMap → NBV planner) to visually summarize the thesis contribution.
+
 This thesis addresses that combined gap through, respectively, the multi-modal dataset and 2D detector of Chapter~\ref{chapDataset}, the confidence-aware semantic occupancy map and semantic NBV planner of Chapter~\ref{chapNBV}, and the field-validated integrated system, Erwin, of Chapter~\ref{chapErwin}.
