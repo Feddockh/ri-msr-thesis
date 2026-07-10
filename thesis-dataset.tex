@@ -274,14 +274,14 @@ and NIR frames.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={400pt 0 400pt 0}, clip]{figs/v1_v2_camera_rig.jpg}
+    \includegraphics[width=0.85\linewidth, trim={0 400pt 0 400pt}, clip]{figs/v1_v2_camera_rig.jpg}
     \caption{Evolution of the handheld camera rig across two design
              versions, each shown as a CAD model (left) and the
              assembled hardware (right).
-             \textit{Top:} the initial back-loaded design, in which
+             \textit{Left:} the initial back-loaded design, in which
              the cameras were inserted from behind and the
              touchscreen was bolted on behind them.
-             \textit{Bottom:} the revised front-loaded design, in
+             \textit{Right:} the revised front-loaded design, in
              which sliding mounts lock each camera in place for
              quick swaps in the field and the inter-camera spacing
              is reduced to increase field-of-view overlap.}
@@ -315,20 +315,125 @@ retained for the final dataset.
 
 \section{Data Collection Protocol} \label{secDataCollection}
 
-% TODO: Describe how data was collected.
-% - Orchard location(s), dates, tree varieties.
-% - Disease severity levels present.
-% - Collection strategy: row traversal, distances to canopy, viewpoint angles.
-% - Number of collection sessions / total coverage.
-% - Environmental conditions (lighting, weather).
+Imagery was collected across three orchards, shown in
+Figure~\ref{figFieldComparison}.
+Two of these served as primary collection sites, whose imagery
+constitutes the training and evaluation data for the 2D detector
+developed in this chapter, while the third was a separate,
+previously unseen orchard reserved for end-to-end validation of
+the full inspection system in Chapter~\ref{chapErwin}.
+The two primary sites were selected to span a wide range of
+disease severity, orchard architecture, and lighting conditions,
+so that the detector would be exposed to the variability it is
+likely to encounter in deployment; their principal attributes are
+summarized in Table~\ref{tabCollectionSites}.
 
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/dataset/orchard_map}
-%   \caption{TODO: Map or photo of the orchard collection site
-%            with collection paths overlaid.}
-%   \label{figOrchardMap}
-% \end{figure}
+The first primary site was a commercial orchard in western
+Pennsylvania, just outside Pittsburgh, which we do not identify by
+name.
+Data were collected there on February 12, 2025, from two rows of
+symptomatic apple trees.
+The trees were young, grafted onto a high-density rootstock and
+trained as a dwarf central leader, an architecture common in modern
+high-density plantings.
+Because the block was a working commercial planting rather than a
+research site, its infection arose naturally rather than through
+deliberate inoculation, and disease pressure was severe: cankers
+and shepherd's crooks were both abundant.
+Skies were overcast that day, giving diffuse, even illumination.
+In total, 4{,}913 synchronized five-camera image sets were captured
+at this site, amounting to 78.9\,GB of raw data.
+
+The second primary site was the Alson H. Smith Jr. Agricultural
+Research and Extension Center operated by Virginia Tech in Frederick
+County, Virginia.
+Data were collected there on February 14, 2025, from two rows of a
+single block.
+In contrast to the Pittsburgh site, this was an older, free-standing
+orchard of self-supporting trees grown with minimal training and
+wide spacing between trees.
+The block had been deliberately inoculated, but disease pressure was
+mild: a handful of shepherd's crooks were present and no cankers.
+Skies were clear that day, producing strong, hard-edged shadows
+across the canopy---the opposite lighting regime to the overcast
+Pittsburgh session.
+In total, 1{,}947 five-camera image sets were captured at this site,
+amounting to 31.9\,GB of raw data.
+
+At both primary sites, the two rows of a pair were imaged by walking
+the center aisle and alternating between the left and right canopy
+walls as symptoms were located.
+The rig was held at a target standoff of 0.4--0.6\,m from the
+canopy, consistent with the effective operating depth range of the
+flash stereo camera (Section~\ref{secFlirCamera}), and viewpoints
+were deliberately chosen to approximate those reachable by a
+wrist-mounted camera on the manipulator, so that the detector would
+be trained on imagery representative of what the robot would later
+acquire during autonomous inspection.
+Both sessions were conducted between roughly 10:00 and 16:00 local
+time.
+
+\begin{table}[h]
+    \centering
+    \caption{Principal attributes of the three orchards used in this
+             work. The first two are primary collection sites; the
+             third is the held-out validation orchard, for which
+             per-frame counts are not reported.}
+    \label{tabCollectionSites}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{l|ccc}
+        \hline
+         & Pittsburgh, PA & Frederick County, VA & Adams County, PA \\
+        \hline
+        Site type      & Commercial       & Research (VA Tech)   & Research (Penn State) \\
+        Role           & Training         & Training             & Validation \\
+        Date           & Feb.\ 12, 2025   & Feb.\ 14, 2025       & Mar.\ 18--20, 2026 \\
+        Severity       & Severe           & Mild                 & Moderate \\
+        Tree system    & High-density     & Free-standing        & Wide, dwarfing \\
+        Inoculation    & Natural          & Deliberate           & Deliberate \\
+        Cankers        & Abundant         & None                 & Several \\
+        Shepherd's crooks & Abundant       & Few                  & Few \\
+        Image sets     & 4{,}913          & 1{,}947              & --- \\
+        Raw data       & 78.9\,GB         & 31.9\,GB             & --- \\
+        \hline
+    \end{tabular}%
+    }
+\end{table}
+
+The third orchard, at the Penn State Fruit Research and Extension
+Center in Adams County, Pennsylvania, was held out entirely from
+detector training and used only to validate the complete inspection
+system in Chapter~\ref{chapErwin}, with field tests conducted from
+March 18 to March 20, 2026.
+The trees here were widely spaced but grafted onto a dwarfing
+rootstock, and the block had been deliberately inoculated.
+Disease pressure was moderate, between the severe Pittsburgh site
+and the mild Virginia site: several cankers and a few shepherd's
+crooks were present.
+Each next-best-view planner variant was evaluated on the same set of
+12 trees, 9 infected and 3 healthy.
+Because that evaluation is conducted per tree rather than per frame,
+raw image counts are less meaningful for this site and are deferred
+to Chapter~\ref{chapErwin}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth, trim={0 225pt 0 225pt}, clip]{figs/field_collection.jpg}
+    \includegraphics[width=0.85\textwidth, trim={0 225pt 0 225pt}, clip]{figs/field_trees.jpg}
+    \caption{The three orchards used in this work.
+             \textit{From left to right:} the severe, high-density
+             commercial site near Pittsburgh, Pennsylvania; the mild,
+             free-standing research block at the Alson H. Smith Jr.
+             Agricultural Research and Extension Center in Frederick
+             County, Virginia; and the moderate-severity, held-out
+             validation orchard at the Penn State Fruit Research and
+             Extension Center in Adams County, Pennsylvania.
+             \textit{Top:} aerial maps of each block, with collection
+             points marked in red.
+             \textit{Bottom:} representative sample trees from each
+             site.}
+    \label{figFieldComparison}
+\end{figure}
 
 \section{Dataset Description} \label{secDatasetDescription}
 

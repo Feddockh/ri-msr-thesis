@@ -2,172 +2,196 @@
 
 \chapter{Integrated System and Field Validation} \label{chapErwin}
 
-% TODO: Chapter intro — describe the full integrated system (Amiga +
-% xArm6, ROS 2, all pipeline components) and the field experiments
-% conducted to validate end-to-end performance in a real apple orchard.
+The preceding chapters developed the pieces of an autonomous disease-inspection system in isolation: a multi-modal dataset and 2D detector (Chapter~\ref{chapDataset}), and a confidence-aware semantic map with a family of next-best-view planners evaluated in simulation (Chapter~\ref{chapNBV}).
+This chapter describes how those pieces are integrated into a single physical system---Erwin---and reports its validation on real dormant apple trees in a working orchard.
+Erwin combines an Amiga mobile base, a UFACTORY xArm6 manipulator, and the multi-modal sensor rig into a closed perception--action loop that runs entirely onboard: the arm positions the camera, images are captured and processed into detections, the detections update the semantic OctoMap, and the NBV planner selects the next viewpoint, repeating until the inspection budget is exhausted.
+Erwin was developed as part of Carnegie Mellon University's Fire Blighters entry in the 2026 Farm Robotics Challenge, where the team received the Amiga Innovation Award.
+
+Section~\ref{secRobotPlatform} describes the physical platform and its sensor integration; Section~\ref{secSystemArch} describes the onboard software architecture and the runtime perception and planning loop; Section~\ref{secFieldExperiments} reports the field experiments, in which all three planners of Chapter~\ref{chapNBV} were deployed and evaluated on 12 dormant apple trees; and Section~\ref{secFieldDiscussion} discusses what the field results reveal about the system and about the transfer from simulation to the orchard.
 
 \section{Robot Platform} \label{secRobotPlatform}
 
-% TODO: Describe the full physical system.
+Erwin is a mobile manipulation system designed for autonomous disease inspection in orchard rows.
+A 6-DOF xArm6 manipulator is mounted on horizontal rails atop an Amiga mobile base, which provides locomotion between trees, and a custom camera rig is rigidly fixed to the manipulator end effector.
+During inspection of a given tree the base remains stationary while the arm actively repositions the sensor, breaking the plane of the canopy, navigating around occluding branches, and acquiring the close, oriented views that the narrow-field flash and multispectral cameras require.
+Figure~\ref{figRobotPlatform} shows the assembled platform deployed in a dormant orchard.
+
+\begin{figure}[h]
+    \centering
+    % TODO(fig): add figs/erwin/robot_platform (from robot_anonymized.jpg) once available.
+    % \includegraphics[width=0.75\textwidth, trim={0 400 0 300}, clip]{figs/erwin/robot_platform}
+    \caption{The autonomous disease inspection robot, Erwin, deployed in a dormant apple orchard at a university fruit research facility.
+             A UFACTORY xArm6 manipulator is mounted on horizontal rails atop a Farm-ng Amiga mobile base, with the multi-modal camera rig fixed to the manipulator end effector.}
+    \label{figRobotPlatform}
+\end{figure}
 
 \subsection{Mobile Base: Amiga} \label{secAmiga}
 
-% TODO: Describe the Farm-ng Amiga robot base.
-% - Dimensions, drive configuration (differential/skid steer).
-% - Payload capacity, battery life, field navigation capability.
-% - Why it was chosen (open platform, orchard-compatible form factor).
+The mobile base is a Farm-ng Amiga, an open, electrically driven agricultural platform whose narrow footprint and modular mounting rails suit the constrained geometry of an orchard row (Section~\ref{secAgRoboticsToday}).
+In this work the Amiga carries the manipulator, sensor rig, and onboard compute between trees and provides a stable, level platform from which the arm operates; it remains fixed in front of a tree throughout that tree's inspection, so that all viewpoint variation comes from the arm rather than the base.
+Autonomous row-to-row traversal, which would let the base reposition itself along a full row without an operator, is outside the scope of this thesis and is identified as a priority for future work (Chapter~\ref{chapConclusions}).
+
+% TODO: confirm and add exact Amiga specifications if they are to be reported
+% (footprint dimensions, drive configuration, payload capacity, battery life).
 
 \subsection{Manipulator: xArm6} \label{secXArm6}
 
-% TODO: Describe the UFACTORY xArm6 arm.
-% - DOF, reach, payload.
-% - Mounting configuration on Amiga.
-% - Role: position the sensor rig at desired viewpoints.
-% - Workspace limitations and collision avoidance.
+The manipulator is a UFACTORY xArm6, a 6-DOF arm mounted on horizontal rails on the Amiga.
+Its six degrees of freedom allow the camera rig to be positioned and oriented freely enough to break the plane of the canopy and look around occluding branches, which is the physical capability that active viewpoint selection depends on: without an arm able to reach oblique, in-canopy poses, the planners of Chapter~\ref{chapNBV} would have no meaningful action space.
+The reachable workspace of the arm, sampled offline, defines the feasible viewpoint set $\mathcal{Q}$ used for candidate filtering (Section~\ref{secWorkspaceFilter}), and collision-aware motion planning ensures that executed viewpoints avoid contact with the tree and the platform.
 
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.75\textwidth]{figs/erwin/robot_platform}
-%   \caption{TODO: Photo of the full integrated Amiga + xArm6 robot
-%            platform with sensor rig deployed in an orchard row.}
-%   \label{figRobotPlatform}
-% \end{figure}
+% TODO: confirm and add exact xArm6 specifications if they are to be reported
+% (reach, payload, repeatability) and the rail travel range.
 
 \subsection{Sensor Integration and Calibration} \label{secSensorCalib}
 
-% TODO: Describe extrinsic and intrinsic calibration of all cameras
-% (FLIR Firefly, Ximea, ZED2i) with respect to the arm end-effector
-% and the robot base frame.
-% - Calibration target and procedure.
-% - Resulting calibration accuracy (reprojection error).
-% - TF tree in ROS 2.
+The camera rig fixed to the end effector houses the flash-illuminated stereo RGB camera and the 25-band NIR multispectral camera introduced in Chapter~\ref{chapDataset}; the multispectral camera is carried on the platform but is not used in the closed-loop inspection experiments reported here, which rely on the flash stereo RGB modality.
+Because the planners reason in a single global frame, every sensor observation must be expressed in that frame, which requires both intrinsic calibration of each camera and extrinsic calibration of the rig relative to the end effector.
+Intrinsic parameters (focal length, principal point, and distortion) and the stereo baseline are those reported in Section~\ref{secFlirCamera}, and stereo frames are undistorted and rectified before depth estimation.
+At runtime, the fixed rig-to-end-effector transform is composed with the manipulator's forward kinematics and the base pose to place each semantic point cloud into the common global frame used by the map (Section~\ref{secProjection}).
+
+% TODO: add the eye-in-hand extrinsic calibration procedure and the resulting
+% calibration accuracy (e.g. reprojection error), and, if desired, a figure of
+% the ROS 2 TF tree relating the camera, end-effector, and base frames.
 
 \section{System Architecture} \label{secSystemArch}
 
-% TODO: Describe the full software architecture.
+All perception, mapping, and planning run onboard a desktop-grade computing unit with an RTX 4070 GPU, under ROS 2 middleware, which coordinates sensing, mapping, planning, and control.
+The system operates as the closed perception--action loop already formalized in Chapter~\ref{chapNBV}: stereo images are processed into semantic 3D reconstructions, candidate viewpoints are generated from the current map state and detection uncertainty, and the manipulator is commanded to the selected viewpoint, with all sensor data transformed into a common global frame using robot odometry and manipulator kinematics.
 
 \subsection{ROS 2 Integration} \label{secROS2}
 
-% TODO: Describe the ROS 2 node graph.
-% - Sensor driver nodes (FLIR, Ximea, ZED2i).
-% - Detection inference node (YOLO).
-% - Mapping node (semantic OctoMap update).
-% - NBV planner node.
-% - Arm controller and waypoint execution.
-% - Include a node graph / architecture diagram.
+The software is organized as a ROS 2 node graph in which each stage of the pipeline is a separate node communicating over topics and services.
+The principal nodes are the stereo camera driver, which issues the hardware trigger and publishes synchronized left and right frames; the detection node, which runs the YOLO-based instance segmentation model of Section~\ref{sec2DDetection} on each frame; the depth node, which runs the FoundationStereo matcher (Section~\ref{secFlirCamera}); the mapping node, which fuses the resulting semantic point cloud into the semantic OctoMap (Section~\ref{secSemanticOctoMap}); the planning node, which implements the NBV selection loop of Algorithm~\ref{algNBV}; and the manipulator control node, which plans and executes collision-free motions to the selected viewpoint.
+This modular decomposition is what allows the perception front-end to be swapped---for example, between the simulation-fine-tuned and real-image detector variants of Section~\ref{secDetectionResults}---without altering the mapping or planning stages.
 
+% TODO(fig): add figs/erwin/ros2_architecture node graph once drawn.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\textwidth]{figs/erwin/ros2_architecture}
-%   \caption{TODO: ROS 2 node graph showing data flow from sensors
-%            through detection, mapping, and planning.}
+%   \caption{ROS 2 node graph for Erwin, showing data flow from the stereo camera
+%            driver through detection, depth estimation, semantic mapping, and NBV
+%            planning to manipulator control.}
 %   \label{figROS2Arch}
 % \end{figure}
 
 \subsection{Perception Pipeline} \label{secPerceptionPipeline}
 
-% TODO: Describe end-to-end data flow from image capture to
-% semantic map update at runtime.
-% - Image capture trigger and synchronization.
-% - Inference latency and frame rate.
-% - Map update frequency.
+At runtime, the perception pipeline transforms each captured stereo pair into an incremental update of the semantic OctoMap through the four stages introduced in Chapter~\ref{chapDataset} and formalized in Section~\ref{secProjection}: flash-illuminated stereo acquisition, instance-level detection, depth estimation, and semantic point cloud construction.
+A hardware trigger synchronizes the flash pulse with the stereo exposure so that left and right frames are captured under identical, controlled illumination.
+The captured pair is passed in parallel to the detector, which produces per-instance masks, class labels, and confidences, and to the FoundationStereo matcher, whose small ViT variant is compiled with TensorRT and run on scaled input images to achieve depth inference in approximately $30$\,ms (Section~\ref{secFlirCamera}).
+The detection masks are rasterized into per-pixel class and confidence maps, each valid pixel is back-projected using the stereo depth and assigned its class and confidence, and the resulting semantic point cloud is integrated into the map (Section~\ref{secProjection}).
+
+% TODO(fig): add figs/erwin/perception_pipeline (from System_Diagram_ral.jpg) once available.
+% \begin{figure*}[t]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{figs/erwin/perception_pipeline}
+%   \caption{Runtime perception pipeline, from flash stereo image acquisition
+%            through instance segmentation, depth estimation, and semantic point
+%            cloud construction to integration into the semantic OctoMap.}
+%   \label{figPerceptionPipeline}
+% \end{figure*}
+
+The rig and pipeline together support a maximum sustained capture rate of $20$\,fps.
+% TODO: describe the specific software optimizations that achieved the 20 fps
+% throughput (e.g. TensorRT compilation, input scaling, parallel detection and
+% depth, zero-copy transport), once the details are confirmed.
+We separately tested a continuous $5$\,fps feed and found that it reconstructed the scene substantially faster than single-image capture, since the map received many more observations per unit time.
+For the planner evaluation reported below, however, this continuous mode was deliberately disabled: all three planners were run with a single triggered image captured at each viewpoint, so that differences in performance reflect the planning strategy alone and are not confounded by capture rate.
 
 \subsection{Planning and Control Loop} \label{secPlanningControl}
 
-% TODO: Describe the closed-loop planning-execution cycle:
-% 1. Robot drives to row position.
-% 2. NBV planner queries current map; selects next viewpoint.
-% 3. Arm moves to viewpoint; images captured.
-% 4. Detections update semantic OctoMap.
-% 5. Repeat until row complete or budget exhausted.
-% Include a flowchart or pseudocode block.
+Once the base is positioned in front of a tree, inspection proceeds as a fixed cycle, executing the NBV selection loop of Algorithm~\ref{algNBV} at each step:
+\begin{enumerate}
+  \item the mapping node integrates the most recent image into the semantic OctoMap;
+  \item the planning node generates candidate viewpoints from the current map, filters them against the reachable workspace and collision constraints (Section~\ref{secWorkspaceFilter}), scores the feasible candidates by the utility of Equation~\ref{eqUtility}, and selects the maximum-utility viewpoint;
+  \item the manipulator control node plans and executes a collision-free motion to that viewpoint;
+  \item the stereo camera captures a triggered image at the new pose, closing the loop.
+\end{enumerate}
+The cycle repeats until the viewpoint budget is exhausted.
+Candidates are evaluated in descending order of utility until one yields a feasible motion plan, so that the arm always moves to the best reachable view rather than stalling on an unreachable optimum.
+A complete 30-viewpoint inspection takes on the order of 3--5 minutes to execute (Section~\ref{secFieldResults}).
 
 \section{Field Experiments} \label{secFieldExperiments}
 
-% TODO: Describe the real-world experiments.
+To test whether the simulation findings of Chapter~\ref{chapNBV} hold under real conditions, Erwin was deployed in a working orchard and used to inspect real dormant apple trees with each of the three planners.
+The field experiments serve two purposes: to validate that the full integrated system operates end-to-end and autonomously in the field, and to compare the planners under the domain shift, occlusion, and lighting variability that simulation cannot fully reproduce.
 
 \subsection{Experimental Site} \label{secFieldSite}
 
-% TODO: Describe the orchard used for field validation.
-% - Location (general region, no private address needed).
-% - Tree variety, canopy type, row spacing.
-% - Disease presence: natural infection or inoculated?
-% - Environmental conditions during experiments (dates, weather).
+Field evaluation was conducted at a university fruit research facility, using 12 dormant apple trees, of which 9 exhibited fire blight symptoms and 3 appeared healthy.
+The three healthy trees provide true-negative cases, testing whether the planners and detector avoid hallucinating symptoms on disease-free canopy---a case that pooled detection metrics explicitly penalize (Section~\ref{secSimSetup}).
+This facility is deliberately distinct from the commercial orchard whose imagery was used to train the detector (Section~\ref{secDetectionResults}): no images from the evaluation site were used during training, so the field results measure performance under a genuine train--test domain gap.
+The number of trees was limited to 12 for two practical reasons: each tree had to be inspected by all three planners within a single two-day site visit, and symptomatic trees are inherently scarce, since growers prune out fire blight infections as soon as they are found, leaving few orchards with standing disease available for study.
 
+% TODO(fig): add figs/erwin/field_site photos of the orchard site.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\textwidth]{figs/erwin/field_site}
-%   \caption{TODO: Photos of the experimental orchard site.}
+%   \caption{The experimental orchard site during field evaluation.}
 %   \label{figFieldSite}
 % \end{figure}
 
+% TODO: add site details if to be reported (region, tree variety, canopy type,
+% row spacing, collection dates, and weather conditions during the visit).
+
 \subsection{Experimental Protocol} \label{secFieldProtocol}
 
-% TODO: Describe the field experiment procedure.
-% - Planner variants tested (Grid Scan, Volumetric NBV, Semantic NBV).
-% - Number of trials per planner.
-% - Evaluation procedure: how ground truth was established
-%   (expert walking survey, Gaussian splat, GPS-tagged disease locations).
-% - Metrics collected: detection recall, false positive rate,
-%   map coverage, mission time, path length.
+Each of the 12 trees was inspected by all three planners---baseline grid scan, volumetric NBV, and semantic NBV---so that the planners are compared on identical trees under matched conditions.
+For every tree, the base was positioned $1.0$\,m from the trunk to fix the sensing geometry, matching the standoff used in simulation, and a $1.0 \times 1.0 \times 2.0$\,m bounding box was fitted to the tree to define a consistent ROI (Section~\ref{secSimSetup}).
+Each planner was run for a 30-viewpoint budget, and detection quality and coverage were recorded at every viewpoint using the metrics of Section~\ref{secSimSetup}.
+
+Ground truth for each field tree was obtained by reconstructing a 3D Gaussian splat of the tree from multi-view imagery, manually segmenting its symptomatic regions with expert guidance, and storing the centroid of each segmented region as the reference symptom location (Section~\ref{secGSSplat}).
+As in simulation, all three planners were evaluated with single-image-per-viewpoint capture rather than the continuous $5$\,fps feed described in Section~\ref{secPerceptionPipeline}.
+The continuous feed was tested separately and reconstructed scenes faster, but it was excluded from the planner comparison because it would conflate capture rate with planning strategy; holding capture fixed at one image per viewpoint ensures the comparison isolates the effect of the planner.
 
 \subsection{Field Results} \label{secFieldResults}
 
-% TODO: Report quantitative results from field experiments.
+Field results are reported in the right-hand columns of Table~\ref{tabNBVSimResults}, alongside the simulation results, and the per-viewpoint trajectories appear in the right-hand panel of Figure~\ref{figSimResults}.
+The field results follow the same overall pattern as simulation: the volumetric planner attains the most complete geometric coverage ($71.41\%$ at viewpoint $30$), while the semantic planner attains the best detection quality by the standard operating metric, reaching the highest max-F1 ($0.608$).
+As expected, absolute metric values are lower than in simulation, consistent with the greater difficulty of real orchard conditions---natural lighting, real occlusion, and the train--test domain gap.
 
-% \begin{table}[h]
-%   \centering
-%   \caption{TODO: Field experiment results comparing planners.}
-%   \label{tabFieldResults}
-%   \begin{tabular}{lcccc}
-%     \hline
-%     Planner & Recall & Precision & Coverage & Time (min) \\
-%     \hline
-%     Grid Scan & & & & \\
-%     Volumetric NBV & & & & \\
-%     Semantic NBV (ours) & & & & \\
-%     \hline
-%   \end{tabular}
-% \end{table}
-
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/erwin/field_maps}
-%   \caption{TODO: Semantic disease maps produced by each planner
-%            from the same orchard row.}
-%   \label{figFieldMaps}
-% \end{figure}
+The most striking field result is how early the semantic planner separates from the baseline.
+At viewpoint $15$---roughly half the budget, and thus roughly half of the 3--5 minute inspection time---the semantic planner already more than doubles the baseline's mAP ($0.209$ versus $0.089$) and nearly quadruples its max-F1 ($0.461$ versus $0.124$).
+This early separation is sharper in the field than in simulation, indicating that targeted refinement of low-confidence regions is especially valuable under real-world uncertainty, where a symptom is more likely to be missed or mislabeled from any single view and therefore benefits most from deliberate re-observation.
+By viewpoint $30$ the baseline's mAP catches up to the semantic planner's ($0.331$ versus $0.322$, a difference within evaluation noise), but only after spending the full budget; the semantic planner reaches comparable detection quality in roughly half the viewpoints, and thus roughly half the inspection time, which is the operationally relevant advantage for a system that must scale to many trees.
 
 \subsection{Qualitative Observations} \label{secFieldQualitative}
 
-% TODO: Discuss observations from field deployment.
-% - Robot behavior in unstructured conditions (terrain, wind, sunlight).
-% - Detection performance vs. lab / simulation.
-% - Unexpected failure modes encountered and how they were handled.
+% TODO: expand with concrete field observations once compiled from the deployment logs.
+Beyond the aggregate metrics, several qualitative observations from the deployment are worth recording.
+The flash-illuminated sensing behaved as intended under variable outdoor lighting, suppressing the cast shadows and specular highlights that degrade ambient-light imaging of bark (Section~\ref{secFlirCamera}), which is the most likely reason the detector generalized across the domain gap without site-specific retraining.
+The consistency of detection performance between the training orchard and the evaluation site, despite no overlap in imagery, supports the conclusion that the learned symptom representations and the flash-illuminated pipeline transfer to new orchards rather than overfitting to a single site.
 
+% TODO(fig): add figs/erwin/field_qualitative with example field detections
+% overlaid on RGB frames and the corresponding semantic map updates.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\textwidth]{figs/erwin/field_qualitative}
-%   \caption{TODO: Example field detections overlaid on RGB images,
-%            and corresponding semantic map updates.}
+%   \caption{Example field detections overlaid on flash stereo RGB frames, with the
+%            corresponding updates to the semantic disease map.}
 %   \label{figFieldQualitative}
 % \end{figure}
 
+% TODO: document any failure modes encountered in the field (e.g. depth artifacts
+% on thin branches, motion-plan failures near the canopy, wind-induced canopy
+% motion between views) and how they were handled, once compiled.
+
 \section{Discussion} \label{secFieldDiscussion}
 
-% TODO: Discuss what the field results tell us.
-% - Does semantic NBV outperform baselines in the field as in simulation?
-%   If not, explain why (e.g., localization error, detection noise).
-% - How does detection performance change from lab to orchard conditions?
-% - What are the practical bottlenecks for deployment: compute, sensing,
-%   navigation, or planning?
-% - What would be needed to scale this to a full commercial orchard?
+The field experiments confirm the central simulation finding under real conditions: adaptive, map-driven viewpoint selection substantially outperforms deterministic coverage, and the disease-aware semantic planner reaches high-quality detection maps markedly faster than either the baseline or the volumetric planner.
+The division of labor between the two adaptive planners also transfers: the volumetric planner remains the strongest at geometric coverage, and the semantic planner the strongest at detection, in the field as in simulation.
+The clearest difference between the two settings is the magnitude of the semantic planner's early advantage over the baseline, which is larger in the field.
+We attribute this to the higher per-view uncertainty of real imagery: when any single observation is noisier, the value of deliberately revisiting ambiguous regions---precisely what the semantic information gain of Equation~\ref{eqSemIG} rewards---rises relative to a fixed scan that observes each region only once.
+
+Several practical bottlenecks bound the current system and frame the future work of Chapter~\ref{chapConclusions}.
+The base is stationary during inspection, so the system currently maps one tree at a time and depends on an operator to reposition it along a row; autonomous row traversal is the most direct path to orchard-scale deployment.
+Field evaluation was also limited to 12 trees within a single two-day visit, constrained both by the need to run all three planners on each tree and by the scarcity of standing fire blight; broader evaluation across more orchards and seasons is needed to characterize generalization fully.
+Detection quality, finally, remains the dominant limit on absolute map accuracy: the planners can only refine and localize the symptoms the 2D detector is able to recognize, so improvements to the detector---including exploiting the multispectral modality carried but unused here---would raise the ceiling on the whole pipeline.
 
 \section{Summary} \label{secErwinSummary}
 
-% TODO: Summarize:
-% - The full integrated Amiga + xArm6 + ROS 2 system.
-% - Key field validation results.
-% - How simulation results translate (or do not) to real-world performance.
-% - Bridge to Chapter~\ref{chapConclusions}: what was demonstrated and
-%   what remains to be done.
+This chapter integrated the components of the preceding chapters into Erwin, a field-deployed mobile manipulation system for autonomous fire blight inspection, built on an Amiga base and an xArm6 manipulator carrying the multi-modal sensor rig, with all perception, mapping, and planning running onboard under ROS 2 in a closed perception--action loop (Sections~\ref{secRobotPlatform} and~\ref{secSystemArch}).
+Deployed on 12 dormant apple trees at a university fruit research facility under a genuine train--test domain gap, Erwin reproduced the simulation findings of Chapter~\ref{chapNBV}: both adaptive planners clearly outperformed the deterministic baseline, the volumetric planner delivered the most complete coverage, and the semantic planner delivered the best detection quality, reaching comparable map accuracy to the fully-scanned baseline in roughly half the viewpoints and half the inspection time (Section~\ref{secFieldResults}).
+These results demonstrate that the confidence-aware semantic map and semantic NBV planner are not merely simulation artifacts but deliver fast, fine-grained disease maps under real field conditions.
+Chapter~\ref{chapConclusions} draws together the contributions of the full thesis, discusses the system's limitations, and outlines the path toward orchard-scale autonomous disease mapping.
