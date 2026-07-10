@@ -2,74 +2,316 @@
 
 \chapter{Data Collection and 2D Disease Detection} \label{chapDataset}
 
-Realizing the active perception approach described in Chapter~\ref{chapIntroduction} first requires a perception system that can recognize fire blight symptoms in close-range, dormant-season imagery.
-This chapter develops that system from the ground up: the handheld multi-modal camera rig used to collect orchard imagery, the dataset assembled from multiple collection sessions across several rig revisions, the SAM-assisted and cross-modal annotation pipeline used to label that data efficiently, and the 2D instance segmentation models trained on the resulting dataset.
-The detector trained here is deployed as the perception front-end for the semantic mapping and next-best-view planning system presented in Chapter~\ref{chapNBV}.
+Realizing the active perception approach described in
+Chapter~\ref{chapIntroduction} first requires a perception system
+that can recognize fire blight symptoms in close-range,
+dormant-season imagery.
+This chapter develops that system from the ground up: the handheld
+multi-modal camera rig used to collect orchard imagery, the dataset
+assembled from multiple collection sessions across several rig
+revisions, the SAM-assisted and cross-modal annotation pipeline
+used to label that data efficiently, and the 2D instance
+segmentation models trained on the resulting dataset.
+The detector trained here is deployed as the perception front-end
+for the semantic mapping and next-best-view planning system
+presented in Chapter~\ref{chapNBV}.
 
 \section{Sensing Platform} \label{secSensingPlatform}
 
-Data collection was performed with a handheld, multi-modal camera rig rather than the autonomous manipulator platform used for inspection (Erwin), since rig development and dataset collection began before the manipulator-based system was operational and continued in parallel with it.
-The rig combines a flash-illuminated stereo RGB camera, a 25-band NIR multispectral camera, and, in early versions, a wide-field RGB-D camera, all rigidly mounted to a common frame and faced in the same direction so that a single operator could walk the orchard rows and capture closely registered, multi-modal imagery of trunks and branches at close range.
-The rig went through several physical and electrical revisions over the course of data collection, described in Section~\ref{secDesignIterations}; unless otherwise noted, the descriptions below refer to the final version used for the majority of dataset collection.
+Data collection was performed with a handheld, multi-modal camera
+rig rather than the autonomous manipulator platform used for
+inspection (Erwin), since rig development and dataset collection
+began before the manipulator-based system was operational and
+continued in parallel with it.
+The rig combines a flash-illuminated stereo RGB camera, a 25-band
+NIR multispectral camera, and, in early versions, a wide-angle
+stero RGB camera, all rigidly mounted to a common frame and faced
+in the same direction so that a single operator could walk the
+orchard rows and capture closely registered, multi-modal imagery
+of trunks and branches at close range.
+The rig went through several physical and electrical revisions
+over the course of data collection, described in
+Section~\ref{secDesignIterations}; unless otherwise noted, the
+descriptions below refer to the final version used for the
+majority of dataset collection.
 
-% TODO: Include a photo of the camera rig (full rig, with a blown-up
-% inset/callout showing the individual camera mounts and connectors).
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.85\textwidth]{figs/dataset/sensor_rig}
-%   \caption{TODO: Handheld camera rig showing camera placement and mounting,
-%            with an inset detail view of the camera mounts.}
-%   \label{figSensorRig}
-% \end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={0 100pt 0 100pt},
+        clip]{figs/camera_rig_exploded.jpg}
+    \caption{Exploded view of the multi-modal camera rig showing
+             the placement and mounting of each sensor.}
+    \label{figSensorRig}
+\end{figure}
 
-\subsection{Flash Stereo RGB Camera (FLIR Firefly)} \label{secFlirCamera}
+\subsection{Flash Stereo RGB Camera (FLIR Firefly)}
+\label{secFlirCamera}
 
-The primary RGB sensor is a flash-illuminated stereo camera built around FLIR Firefly cameras, developed by Silwal et al.~\cite{Silwal2021FlashCamera} to provide consistent, shadow-free illumination of woody tissue regardless of ambient lighting conditions.
-This is especially important for dormant-season fire blight inspection: cankers and shepherd's crooks are distinguished from healthy bark largely by subtle texture and color cues (sunken or darkened lesions, cracked bark) that are easily washed out or obscured by the variable, often low and oblique, natural lighting found in orchard rows.
-The camera receives a hardware (serial) trigger command that synchronizes the flash pulse with the stereo image exposure, so that both the left and right frames are captured under identical, controlled illumination.
-% TODO: Resolution, frame rate, lens focal length/FOV, stereo baseline,
-% and effective depth range of the flash stereo pair.
+The primary RGB sensor is a flash-illuminated stereo camera built
+around FLIR Firefly cameras, developed by Silwal
+et al.~\cite{Silwal2021FlashCamera} to provide consistent,
+shadow-free illumination regardless of ambient lighting conditions.
+This is especially important for dormant-season fire blight
+inspection: cankers and shepherd's crooks are distinguished from
+healthy bark largely by subtle texture and color cues (sunken or
+darkened lesions, cracked bark) that are easily washed out or
+obscured by the variable, often low and oblique, natural lighting
+found in orchard rows.
+The camera receives a hardware (serial) trigger command that
+synchronizes the flash pulse with the stereo image exposure, so
+that both the left and right frames are captured under identical,
+controlled illumination.
+The benefit is evident in the leftmost panel of
+Figure~\ref{figCameraComparison}: the flash suppresses the cast
+shadows and specular highlights that clutter the ambient-light
+iPhone image on the right, and the high image quality brings out
+the contrast between the raised, cracked canker tissue and the
+surrounding healthy bark.
 
-\subsection{25-Band NIR Multispectral Camera (Ximea)} \label{secXimeaCamera}
+Each Firefly camera has a resolution of 1440$\times$1080 pixels
+with a calibrated focal length of approximately 1755 pixels,
+corresponding to a field of view of roughly 44.6$^\circ$
+horizontal by 34.2$^\circ$ vertical.
+The stereo baseline, derived from the rectified projection matrix,
+is approximately 60.4\,mm.
+Depth is estimated using Foundation Stereo
+\cite{wen2025foundationstereozeroshotstereomatching}, a learned
+stereo matching method; because depth precision from a stereo pair
+degrades as the square of depth
+($\Delta Z \approx Z^2 / (f \cdot B)$), the 60.4\,mm baseline
+yields a precision of approximately 2.4\,mm at 0.5\,m and
+38\,mm at 2\,m.
+For the semantic mapping and NBV experiments in
+Chapters~\ref{chapNBV} and~\ref{chapErwin}, depth estimates from
+the stereo matcher are clamped to the range 0.1--0.9\,m when
+assembling the OctoMap, which constitutes the effective operating
+depth range for that portion of the system.
+The rig supports a maximum capture rate of 20\,fps, achievable
+through software optimizations described in
+Chapter~\ref{chapErwin}; % TODO: give exact subsection ref once written
+in practice, both handheld data collection and robot-mounted
+inspection captured a single triggered image at each position
+rather than a continuous stream.
 
-A Ximea multispectral camera captures 25 narrowband channels in the near-infrared range, providing spectral information that is not visible in RGB but that has been shown to be discriminative for fire blight infection due to changes in tissue moisture content and pigmentation as cankers develop.
-% TODO: Spectral range and per-band wavelengths; spatial resolution;
-% snapshot mosaic vs. pushbroom acquisition; expected spectral signatures
-% distinguishing healthy from infected tissue.
-In early rig versions the Ximea camera was triggered independently by software, while later versions placed it on the same hardware trigger line as the flash stereo camera (Section~\ref{secDesignIterations}) so that NIR and RGB frames could be captured with tight, deterministic timing rather than being subject to software scheduling jitter.
+\subsection{25-Band NIR Multispectral Camera (Ximea)}
+\label{secXimeaCamera}
 
-\subsection{ZED2i RGB-D Camera} \label{secZED2i}
+A Ximea multispectral camera captures 25 narrowband channels in
+the near-infrared range, using a snapshot mosaic architecture in
+which 25 spectral filters are arranged in a repeating
+5$\times$5 pixel tile across the sensor.
+Since each tile contains all 25 filters, every band is captured
+simultaneously in a single exposure, rather than requiring
+sequential scanning or multiple shots.
+This yields spectral information not visible in RGB, at the cost
+of spatial resolution: each output band is effectively a
+sub-sampled image, one pixel per tile.
+The second panel of Figure~\ref{figCameraComparison} shows a
+single NIR band of the same canker: the image is sharp and, like
+the flash camera, largely free of the cast shadows that affect
+ambient RGB, while the canker reflects the near-infrared band
+markedly differently from the surrounding healthy tissue.
 
-Early rig versions also included a Stereolabs ZED2i stereo RGB-D camera, intended to provide a wider-field RGB overview of the inspection area alongside depth for context and mapping.
-% TODO: Frame rate, depth range, and FOV of the ZED2i as configured.
-The ZED2i was ultimately removed from later rig versions: its imaging resolution was not fine enough to resolve the small-scale features needed to detect dormant fire blight symptoms, particularly bark texture on cankers and thin, small shepherd's crooks, so it contributed little to the dataset beyond redundant coarse RGB context already covered by the flash stereo camera.
+This spectral range was chosen because near-infrared reflectance
+has been shown to be discriminative for disease detection, as
+tissue moisture content and pigmentation shift with disease presence.
+Skoneczny et al.\ found reflectance discrepancies of up to 10\%
+between healthy and fire-blight-infected apple leaves across the
+red-edge and near-infrared region (700--850\,nm), while Kurihara
+and Yamana showed that red-edge band pairs spanning 660--760\,nm
+achieve Valsa canker detection accuracy of 0.94 or greater on
+apple tree bark~\cite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf,
+Kurihara2022DetectionValsaCankerHyperspectralCanker}.
+We expect the red-edge region to carry diagnostic value for our
+task as well, though the precise spectral patterns may differ:
+both prior studies were conducted during the bloom season
+(April--May), whereas our data were collected during late
+dormancy (February--March); Skoneczny et al.\ studied fire blight
+symptoms on leaves, which are absent during dormancy; and
+Kurihara and Yamana targeted Valsa canker, caused by
+\textit{Valsa mali} rather than \textit{Erwinia amylovora}
+as in fire blight cankers.
+
+The sensor used in this work has a resolution of
+2048$\times$1088 pixels with a calibrated focal length of
+approximately 2937 pixels, corresponding to a field of view of
+roughly 38.4$^\circ$ horizontal by 21.0$^\circ$
+vertical---a narrower, more telephoto view than the Firefly
+stereo pair, concentrating spatial resolution on a smaller patch
+of bark at close range.
+After demosaicing, the effective spatial resolution per band is
+409$\times$216 pixels.
+The 25 bands span 675--951\,nm, and Table~\ref{tabXimeaBands}
+lists the center wavelength at each position in the mosaic tile;
+six of the 25 bands---675, 690, 715, 730, 743, and
+757\,nm---fall within the 660--760\,nm red-edge window identified
+above as diagnostically relevant.
+
+\begin{table}[h]
+    \centering
+    \caption{Center wavelengths (nm) of the 25 Ximea spectral
+             bands by mosaic tile position.}
+    \label{tabXimeaBands}
+    \begin{tabular}{c|ccccc}
+        \hline
+        Row $\backslash$ Col & 0 & 1 & 2 & 3 & 4 \\
+        \hline
+        0 & 886 & 896 & 877 & 867 & 951 \\
+        1 & 793 & 806 & 782 & 769 & 675 \\
+        2 & 743 & 757 & 730 & 715 & 690 \\
+        3 & 926 & 933 & 918 & 910 & 946 \\
+        4 & 846 & 857 & 836 & 824 & 941 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+In early rig versions the Ximea camera was triggered
+independently by software, while later versions placed it on the
+same hardware trigger line as the flash stereo camera
+(Section~\ref{secDesignIterations}), so that NIR and RGB frames
+could be captured with tight, deterministic timing rather than
+being subject to software scheduling jitter.
+
+\subsection{Wide-Angle Stereo RGB Camera (ZED2i)} \label{secZED2i}
+
+Early rig versions also included a Stereolabs ZED2i stereo RGB
+camera, intended to provide a wider-field RGB overview of the
+inspection area alongside depth for context and mapping.
+Each eye captures 2208$\times$1242 pixels (2K) with a calibrated
+focal length of approximately 1054 pixels, corresponding to a
+field of view of roughly 92.7$^\circ$ horizontal by
+61.0$^\circ$ vertical---substantially wider, at correspondingly
+coarser angular resolution, than either the Firefly stereo pair or
+the Ximea.
+At this 2K resolution the camera runs at up to 15\,fps; like the
+other sensors it was captured on command rather than streamed
+continuously, but it supported only software triggering and so
+incurred some timing slop relative to the hardware-triggered flash
+stereo camera.
+The effect of this wide, low-resolution geometry is apparent in
+the third panel of Figure~\ref{figCameraComparison}: cropping
+the wide-angle frame to the same canker yields a soft,
+low-detail image in which the fine bark texture is lost.
+For this reason the ZED2i was ultimately removed from later rig
+versions, since it was not able to resolve the small-scale
+features needed to detect dormant fire blight symptoms,
+particularly bark texture on cankers and thin, small
+shepherd's crooks, and contributed little to the dataset beyond
+redundant coarse RGB context already covered by the flash stereo
+camera.
+Its wide field of view nonetheless remains well suited to
+coarse tasks such as obstacle avoidance, for which the fine detail
+required for symptom detection is unnecessary.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={0 100pt 0 100pt}, clip]{figs/all_img_comparison.jpg}
+    \caption{The same fire blight canker viewed by each camera on the
+             rig, at nearly the same position.
+             \textit{From left to right:} the flash stereo RGB camera
+             (FLIR Firefly), the 25-band NIR multispectral camera
+             (Ximea), the wide-angle stereo RGB camera (ZED2i), and,
+             for reference, an iPhone 15 Pro Max.}
+    \label{figCameraComparison}
+\end{figure}
 
 \subsection{Platform and Mounting} \label{secPlatformMounting}
 
-The three cameras are stacked vertically on the rig frame, all facing the same direction: the flash stereo camera at the top, the Ximea multispectral camera centered beneath it, and, in early versions, the ZED2i at the bottom.
-A handle is mounted to the back of the rig for handheld operation in the field, alongside a touchscreen used to interface with the onboard computer.
-In the field, the rig was driven by an NVIDIA Jetson Orin, powered by a drone battery pack for untethered operation away from line power.
-% TODO: confirm exact Orin variant (AGX/NX/Nano) and module spec.
-The Jetson connects to all cameras over USB and records synchronized data as ROS bags; incoming frames from each modality are time-synced on capture so that downstream annotation and label-transfer steps (Section~\ref{secCrossModal}) operate on temporally aligned, registered imagery.
+The three cameras are stacked vertically on the rig frame, all
+facing the same direction: the flash stereo camera at the top,
+the Ximea multispectral camera centered beneath it, and, in early
+versions, the ZED2i at the bottom.
+A handle is mounted to the back of the rig for handheld operation
+in the field, alongside a touchscreen used to interface with the
+onboard computer.
+In the field, the rig was driven by an NVIDIA Jetson AGX Orin
+64\,GB module, which delivers up to 275 TOPS of inference
+throughput within a 60\,W power envelope, powered by a drone
+battery pack for untethered operation away from line power.
+The Jetson and battery were housed together in an enclosure
+carried in a backpack, with a cable bundle running from the
+enclosure to the handheld rig, so that a single operator could
+walk the orchard rows freely and trigger capture at each tree by
+hand (Figure~\ref{figFieldCapture}).
+The Jetson connects to all cameras over USB and records
+synchronized data as ROS bags; incoming frames from each modality
+are time-synced on capture so that downstream annotation and
+label-transfer steps (Section~\ref{secCrossModal}) operate on
+temporally aligned, registered imagery.
 
-\subsection{Design Iterations and Triggering} \label{secDesignIterations}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={0 400pt 0 300pt}, clip]{figs/hayden_in-field_capture.jpeg}
+    \caption{Handheld data collection in the orchard.
+             The operator holds the multi-modal camera rig by its
+             rear handle, framing a young tree on the rig
+             touchscreen and triggering capture by hand, while the
+             Jetson and battery enclosure is carried in a backpack
+             and connected to the rig by a cable bundle.}
+    \label{figFieldCapture}
+\end{figure}
 
-The rig went through several design revisions driven primarily by the practical demands of repeated field deployment and by the need for tighter timing synchronization across modalities.
+\subsection{Design Iterations and Triggering}
+\label{secDesignIterations}
+
+The rig went through several design revisions driven primarily by
+the practical demands of repeated field deployment and by the need
+for tighter timing synchronization across modalities.
 
 \textbf{Camera loading and mounting.}
-In the earliest version of the rig, all cameras were loaded into the base mounting block from the back, with the touchscreen then attached behind them for viewing images and triggering capture.
-Because the rig was frequently disassembled and reassembled in the field, swapping cameras in and out of a back-loaded mount proved cumbersome, so later versions switched to an entirely front-loaded design, with slides added to lock each camera in place once positioned.
-The spacing between cameras was also reduced in later versions to increase the overlap between their fields of view, improving the consistency of cross-modal label transfer between the flash RGB and NIR frames.
+In the earliest version of the rig, all cameras were loaded into
+the base mounting block from the back, with the touchscreen then
+attached behind them for viewing images and triggering capture.
+Because the rig was frequently disassembled and reassembled in the
+field, swapping cameras in and out of a back-loaded mount proved
+cumbersome, so later versions switched to an entirely front-loaded
+design, with slides added to lock each camera in place once
+positioned.
+The spacing between cameras was also reduced in later versions to
+increase the overlap between their fields of view, improving the
+consistency of cross-modal label transfer between the flash RGB
+and NIR frames.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={400pt 0 400pt 0}, clip]{figs/v1_v2_camera_rig.jpg}
+    \caption{Evolution of the handheld camera rig across two design
+             versions, each shown as a CAD model (left) and the
+             assembled hardware (right).
+             \textit{Top:} the initial back-loaded design, in which
+             the cameras were inserted from behind and the
+             touchscreen was bolted on behind them.
+             \textit{Bottom:} the revised front-loaded design, in
+             which sliding mounts lock each camera in place for
+             quick swaps in the field and the inter-camera spacing
+             is reduced to increase field-of-view overlap.}
+    \label{figRigEvolution}
+\end{figure}
 
 \textbf{Triggering and synchronization.}
-The flash stereo camera was always driven by a hardware trigger, since the serial trigger command was needed to synchronize the flash pulse with stereo exposure.
-The Ximea and ZED2i cameras, in contrast, were originally triggered by software, which introduced timing slop between frames of different modalities.
+The flash stereo camera was always driven by a hardware trigger,
+since the serial trigger command was needed to synchronize the
+flash pulse with stereo exposure.
+The Ximea and ZED2i cameras, in contrast, were originally
+triggered by software, which introduced timing slop between
+frames of different modalities.
 % TODO: quantify typical software-trigger timing offset, if known.
-In later rig versions, the Ximea camera was moved onto the same hardware trigger line as the flash stereo camera, eliminating this slop between the two modalities retained in the final design; the ZED2i was dropped from the platform around the same time for the resolution limitations described in Section~\ref{secZED2i}.
+In later rig versions, the Ximea camera was moved onto the same
+hardware trigger line as the flash stereo camera, eliminating this
+slop between the two modalities retained in the final design; the
+ZED2i was dropped from the platform around the same time for the
+resolution limitations described in Section~\ref{secZED2i}.
 
 \textbf{Control interface.}
-The control software was ported from Python to C++ to improve capture and preview throughput, and the user interface was redesigned around large, glove-friendly buttons and sliders suited to outdoor field use.
-The interface exposed direct control over flash stereo exposure, flash emitter time/intensity, and Ximea exposure time and gain, and the live preview was reduced from five camera views down to two (left flash stereo and Ximea NIR), the two modalities retained for the final dataset.
+The control software was ported from Python to C++ to improve
+capture and preview throughput, and the user interface was
+redesigned around large, glove-friendly buttons and sliders suited
+to outdoor field use.
+The interface exposed direct control over flash stereo exposure,
+flash emitter time and intensity, and Ximea exposure time and
+gain, and the live preview was reduced from five camera views down
+to two (left flash stereo and Ximea NIR), the two modalities
+retained for the final dataset.
 
 \section{Data Collection Protocol} \label{secDataCollection}
 
@@ -111,6 +353,44 @@ The interface exposed direct control over flash stereo exposure, flash emitter t
 %     \hline
 %   \end{tabular}
 % \end{table}
+
+\section{Spectral Analysis of Fire Blight Symptoms}
+\label{secSpectralAnalysis}
+
+% NOTE: Placed here, after the dataset is described but before the
+% annotation pipeline, because this analysis uses only a handful of
+% paired NIR/RGB images and does not depend on the SAM-assisted or
+% cross-modal annotations introduced in Section~\ref{secAnnotation}.
+
+Section~\ref{secSensingPlatform} motivated including a
+near-infrared multispectral camera on the basis of prior work
+showing red-edge reflectance to be discriminative for fire blight
+on apple leaves and for Valsa canker on apple bark.
+Here we examine that motivation directly on our own data, using a
+small set of paired NIR and RGB images of confirmed fire blight
+symptoms to identify which of the 25 Ximea bands
+(Table~\ref{tabXimeaBands}) most cleanly separate diseased from
+healthy bark during the dormant season.
+This analysis relies on only a handful of images and does not use
+the annotation pipeline described in Section~\ref{secAnnotation}.
+
+% TODO: Fill in the spectral analysis of dormant fire blight bark.
+% - Extract per-band reflectance from healthy vs. infected bark
+%   regions of interest across the handful of paired NIR/RGB images.
+% - Report which of the 25 bands best separate diseased from healthy
+%   tissue, and note which fall inside the 660--760 nm red-edge window.
+% - Compare the most discriminative bands here against the red-edge
+%   findings of Skoneczny et al. (fire blight on leaves) and Kurihara
+%   and Yamana (Valsa canker on bark); discuss agreement and
+%   differences given our dormant-season, bark-tissue, pre-bloom setting.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/dataset/nir_spectra}
+%   \caption{TODO: Mean spectral reflectance for healthy vs. infected
+%            bark across the 675--951 nm bands, with the red-edge
+%            region highlighted.}
+%   \label{figNIRSpectra}
+% \end{figure}
 
 \section{Annotation Pipeline} \label{secAnnotation}
 
