@@ -305,28 +305,77 @@ resolution limitations described in Section~\ref{secZED2i}.
 \textbf{Control interface.}
 The control software was ported from Python to C++ to improve
 capture and preview throughput, and the user interface was
-redesigned around large, glove-friendly buttons and sliders suited
-to outdoor field use.
-The interface exposed direct control over flash stereo exposure,
-flash emitter time and intensity, and Ximea exposure time and
-gain, and the live preview was reduced from five camera views down
-to two (left flash stereo and Ximea NIR), the two modalities
-retained for the final dataset.
+progressively redesigned around large, glove-friendly controls
+suited to operation on the small rig touchscreen outdoors; its
+evolution across three versions is shown in
+Figure~\ref{figGuiEvolution}.
+The initial version presented four camera views alongside a single
+small button that triggered one capture at a time.
+When the Ximea camera was added, its NIR preview was included and
+the redundant right image of a stereo pair was dropped so that the
+remaining views could be shown larger and their content inspected
+more easily.
+The single-shot trigger was augmented with a sequence-capture mode,
+the status box was shrunk and the buttons enlarged, and ROS bag
+recording controls were added; after each save the status field
+reported the resulting bag size, so the operator could confirm data
+was being written while walking the rows.
+A column of sliders was added in the middle of the interface to
+adjust camera settings directly in the field---in the second
+version these exposed the flash duration, Firefly (flash camera)
+exposure, Ximea gain, and Ximea exposure---along with buttons to run
+flat-field correction (FFC) calibration on the Ximea without leaving
+the orchard.
+In the final version the sliders were widened to dominate the middle
+column, making them easier to drag on the small screen, and a
+frame-rate (Hz) control was added; the single-shot trigger was
+removed entirely, so the start button simply began repeating
+captures at the selected rate.
+By this point the ZED2i had been removed from the rig, leaving only
+the flash RGB and Ximea NIR previews, the two modalities retained
+for the final dataset, stacked on the right side of the interface.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={200pt 0 200pt 0}, clip]{figs/v1_v2_v3_handheld_gui.jpg}
+    \caption{Evolution of the handheld capture interface across three
+             versions.
+             \textit{Top left:} version~1, with four camera views and
+             a single small capture button.
+             \textit{Top right:} version~2, after adding the Ximea
+             NIR preview and dropping the redundant right stereo
+             image, with enlarged buttons, a sequence-capture mode,
+             ROS bag recording that reports the bag size on save, a
+             middle column of sliders for flash duration, Firefly
+             exposure, and Ximea gain and exposure, and flat-field
+             correction (FFC) buttons.
+             \textit{Bottom:} version~3, with the sliders widened to
+             dominate the middle column, a frame-rate (Hz) control
+             replacing the single-shot trigger, and the ZED2i removed
+             so that only the flash RGB and Ximea NIR previews remain,
+             stacked at right.}
+    \label{figGuiEvolution}
+\end{figure}
 
 \section{Data Collection Protocol} \label{secDataCollection}
 
 Imagery was collected across three orchards, shown in
 Figure~\ref{figFieldComparison}.
-Two of these served as primary collection sites, whose imagery
-constitutes the training and evaluation data for the 2D detector
-developed in this chapter, while the third was a separate,
-previously unseen orchard reserved for end-to-end validation of
-the full inspection system in Chapter~\ref{chapErwin}.
-The two primary sites were selected to span a wide range of
-disease severity, orchard architecture, and lighting conditions,
-so that the detector would be exposed to the variability it is
-likely to encounter in deployment; their principal attributes are
-summarized in Table~\ref{tabCollectionSites}.
+The first two are the primary image-collection sites, together
+making up the multi-modal image dataset, while the third, at Penn
+State, was a separate, previously unseen site reserved for
+end-to-end testing of the full inspection system in
+Chapter~\ref{chapErwin}.
+Of the two primary sites, the Pittsburgh orchard supplied the
+annotated imagery used for both training and validation of the 2D
+detector developed in this chapter; the Virginia orchard, though
+collected and included in the dataset, presented only mild disease
+with few symptoms and was ultimately left unannotated, so it does
+not contribute to detector training or evaluation.
+The two primary sites were selected to span a wide range of disease
+severity, orchard architecture, and lighting conditions; their
+principal attributes are summarized in
+Table~\ref{tabCollectionSites}.
 
 The first primary site was a commercial orchard in western
 Pennsylvania, just outside Pittsburgh, which we do not identify by
@@ -359,6 +408,10 @@ across the canopy---the opposite lighting regime to the overcast
 Pittsburgh session.
 In total, 1{,}947 five-camera image sets were captured at this site,
 amounting to 31.9\,GB of raw data.
+Because symptoms here were sparse, this imagery proved less useful
+for annotation and was ultimately left unlabeled; it remains part
+of the collected dataset but does not contribute to detector
+training or evaluation.
 
 At both primary sites, the two rows of a pair were imaged by walking
 the center aisle and alternating between the left and right canopy
@@ -367,8 +420,8 @@ The rig was held at a target standoff of 0.4--0.6\,m from the
 canopy, consistent with the effective operating depth range of the
 flash stereo camera (Section~\ref{secFlirCamera}), and viewpoints
 were deliberately chosen to approximate those reachable by a
-wrist-mounted camera on the manipulator, so that the detector would
-be trained on imagery representative of what the robot would later
+wrist-mounted camera on the manipulator, so that the collected
+imagery would be representative of what the robot would later
 acquire during autonomous inspection.
 Both sessions were conducted between roughly 10:00 and 16:00 local
 time.
@@ -376,9 +429,12 @@ time.
 \begin{table}[h]
     \centering
     \caption{Principal attributes of the three orchards used in this
-             work. The first two are primary collection sites; the
-             third is the held-out validation orchard, for which
-             per-frame counts are not reported.}
+             work. The first two are the primary image-collection
+             sites: the Pittsburgh block supplies the detector's
+             annotated training and validation data, while the
+             Virginia block was collected but left unannotated. The
+             Penn State block is used only to test the full system,
+             for which per-frame counts are not reported.}
     \label{tabCollectionSites}
     \resizebox{\textwidth}{!}{%
     \begin{tabular}{l|ccc}
@@ -386,7 +442,7 @@ time.
          & Pittsburgh, PA & Frederick County, VA & Adams County, PA \\
         \hline
         Site type      & Commercial       & Research (VA Tech)   & Research (Penn State) \\
-        Role           & Training         & Training             & Validation \\
+        Role           & Train + Val      & ---                  & Testing \\
         Date           & Feb.\ 12, 2025   & Feb.\ 14, 2025       & Mar.\ 18--20, 2026 \\
         Severity       & Severe           & Mild                 & Moderate \\
         Tree system    & High-density     & Free-standing        & Wide, dwarfing \\
@@ -401,8 +457,8 @@ time.
 \end{table}
 
 The third orchard, at the Penn State Fruit Research and Extension
-Center in Adams County, Pennsylvania, was held out entirely from
-detector training and used only to validate the complete inspection
+Center in Adams County, Pennsylvania, was held out entirely from the
+detector dataset and used only to test the complete inspection
 system in Chapter~\ref{chapErwin}, with field tests conducted from
 March 18 to March 20, 2026.
 The trees here were widely spaced but grafted onto a dwarfing
@@ -426,7 +482,7 @@ to Chapter~\ref{chapErwin}.
              free-standing research block at the Alson H. Smith Jr.
              Agricultural Research and Extension Center in Frederick
              County, Virginia; and the moderate-severity, held-out
-             validation orchard at the Penn State Fruit Research and
+             test orchard at the Penn State Fruit Research and
              Extension Center in Adams County, Pennsylvania.
              \textit{Top:} aerial maps of each block, with collection
              points marked in red.
@@ -471,31 +527,173 @@ Section~\ref{secSensingPlatform} motivated including a
 near-infrared multispectral camera on the basis of prior work
 showing red-edge reflectance to be discriminative for fire blight
 on apple leaves and for Valsa canker on apple bark.
-Here we examine that motivation directly on our own data, using a
-small set of paired NIR and RGB images of confirmed fire blight
-symptoms to identify which of the 25 Ximea bands
-(Table~\ref{tabXimeaBands}) most cleanly separate diseased from
-healthy bark during the dormant season.
-This analysis relies on only a handful of images and does not use
-the annotation pipeline described in Section~\ref{secAnnotation}.
+Here we examine that motivation directly on our own data by
+comparing the mean spectral signatures of diseased and healthy bark
+across the 25 Ximea bands (Table~\ref{tabXimeaBands}) during the
+dormant season.
+The comparison draws on 14 annotated NIR images; because it
+contrasts average per-class reflectance rather than training a
+data-hungry model, this modest labeled subset is sufficient to
+characterize the class spectra reliably.
+The healthy and diseased regions used here were labeled directly on
+the NIR frames, independently of the annotation pipeline described
+in Section~\ref{secAnnotation}.
 
-% TODO: Fill in the spectral analysis of dormant fire blight bark.
-% - Extract per-band reflectance from healthy vs. infected bark
-%   regions of interest across the handful of paired NIR/RGB images.
-% - Report which of the 25 bands best separate diseased from healthy
-%   tissue, and note which fall inside the 660--760 nm red-edge window.
-% - Compare the most discriminative bands here against the red-edge
-%   findings of Skoneczny et al. (fire blight on leaves) and Kurihara
-%   and Yamana (Valsa canker on bark); discuss agreement and
-%   differences given our dormant-season, bark-tissue, pre-bloom setting.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/dataset/nir_spectra}
-%   \caption{TODO: Mean spectral reflectance for healthy vs. infected
-%            bark across the 675--951 nm bands, with the red-edge
-%            region highlighted.}
-%   \label{figNIRSpectra}
-% \end{figure}
+For each annotated image, a mean reflectance spectrum was computed
+per class by averaging the demosaiced 25-band response over all
+labeled pixels within that class's region;
+Figure~\ref{figClassSpectra} shows these signatures averaged across
+the 14 images for the diseased (positive) and healthy (negative)
+classes.
+The healthy bark reflects more strongly than the diseased bark
+across the full measured range.
+The clearest difference in shape appears across roughly
+675--760\,nm, where the healthy spectrum rises much more steeply
+toward the near-infrared than the comparatively flat diseased
+spectrum.
+This region coincides with the windows that prior work found
+diagnostic---the 700--850\,nm range reported by Skoneczny et al.\
+for fire blight on leaves and the 660--760\,nm band pairs reported
+by Kurihara and Yamana for Valsa
+canker~\cite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf,
+Kurihara2022DetectionValsaCankerHyperspectralCanker}---confirming,
+on dormant apple bark, that this portion of the spectrum carries
+discriminative information and motivating our use of the
+near-infrared multispectral camera.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{figs/class_spectra.png}
+    \caption{Mean spectral reflectance of diseased (positive) and
+             healthy (negative) bark tissue across the Ximea NIR
+             bands, averaged over the annotated regions of the 14
+             analyzed images. Healthy bark reflects more strongly
+             across the full range, with the steepest divergence over
+             the 675--760\,nm red-edge region.}
+    \label{figClassSpectra}
+\end{figure}
+
+% --- NDSI band-pair separation analysis: TEMPORARILY DISABLED ---
+% This subsection is a work in progress and is excluded from the
+% build via \iffalse ... \fi (spanning to the matching \fi below).
+% Remove the surrounding \iffalse/\fi to re-enable it. Referenced
+% figures: figs/ndsi_separation_heatmap.png, figs/ndsi_threshold_heatmap.png.
+\iffalse
+\subsection{NDSI Band-Pair Separation Analysis} \label{secNDSI}
+
+To identify the band pairs that best separate the two classes, we
+follow the Normalized Difference Spectral Index (NDSI) analysis of
+Kurihara and
+Yamana~\cite{Kurihara2022DetectionValsaCankerHyperspectralCanker}.
+For each pair of spectral bands $(\lambda_i, \lambda_j)$ with
+$i < j$, the NDSI is computed from a reflectance spectrum $R$ as
+
+\begin{equation}
+    \mathrm{NDSI}(\lambda_i, \lambda_j) =
+    \frac{R(\lambda_j) - R(\lambda_i)}{R(\lambda_j) + R(\lambda_i)},
+\end{equation}
+
+\noindent where $R(\lambda)$ is the reflectance at band $\lambda$.
+Evaluating this on the per-image mean spectra defined in
+Section~\ref{secClassSpectra} yields, for every band pair, a
+distribution of NDSI values for the positive class and a separate
+distribution for the negative class, each with one sample per
+annotated image.
+Assuming each class's NDSI distribution is approximately Gaussian,
+it is summarized by a mean and standard deviation: $\mu_p, \sigma_p$
+for the positive class and $\mu_n, \sigma_n$ for the negative class.
+Two statistics are then derived for every band pair.
+
+The first is a Mahalanobis-style \emph{separation}, which quantifies
+class separability as
+
+\begin{equation}
+    D_M(\lambda_i, \lambda_j) =
+    \frac{|\mu_p - \mu_n|}{\sigma_p + \sigma_n}.
+\end{equation}
+
+\noindent This measures the gap between the class means in units of
+pooled within-class standard deviation rather than as a raw
+difference, normalizing for the fact that a given mean separation is
+more meaningful when the class variance is low than when it is high.
+Larger $D_M$ indicates a band pair at which the positive and
+negative NDSI distributions are more cleanly separated.
+The second is a \emph{classification threshold}, the NDSI cutoff at
+which a one-dimensional classifier best separates the two classes,
+taken as the point of equal Mahalanobis distance to both class means,
+
+\begin{equation}
+    T(\lambda_i, \lambda_j) =
+    \frac{\sigma_p \mu_n + \sigma_n \mu_p}{\sigma_p + \sigma_n}.
+\end{equation}
+
+\noindent This is a variance-weighted average of the two class
+means, biased toward the class with tighter spread rather than a
+simple midpoint.
+Both statistics were computed across all $\binom{n}{2}$ band-pair
+combinations of the $n$ available bands and visualized as heatmaps
+indexed by $(\lambda_i, \lambda_j)$, following the presentation of
+Kurihara and Yamana.
+The separation heatmap identifies the band pairs carrying the most
+discriminating power and is used to select the pair for
+classification, while the threshold heatmap reports the specific
+NDSI cutoff a classifier built on each pair would use.
+
+\begin{figure}[h]
+    \centering
+    \subfloat[NDSI Mahalanobis separation, $D_M$.]{%
+        \includegraphics[width=0.49\linewidth]{figs/ndsi_separation_heatmap.png}%
+        \label{figNDSISeparation}}
+    \hfil
+    \subfloat[NDSI classification threshold, $T$.]{%
+        \includegraphics[width=0.49\linewidth]{figs/ndsi_threshold_heatmap.png}%
+        \label{figNDSIThreshold}}
+    \caption{NDSI band-pair statistics across all band-pair
+             combinations $(\lambda_i, \lambda_j)$.
+             \protect\subref{figNDSISeparation}~Color indicates
+             $D_M$, the between-class mean separation normalized by
+             pooled standard deviation; brighter regions denote band
+             pairs with stronger discrimination between healthy and
+             diseased tissue.
+             \protect\subref{figNDSIThreshold}~Color indicates $T$,
+             the variance-weighted NDSI cutoff separating the two
+             classes at each band pair.}
+    \label{figNDSIHeatmaps}
+\end{figure}
+
+The results are shown in Figure~\ref{figNDSIHeatmaps}.
+The separation heatmap (Figure~\ref{figNDSISeparation}) peaks in a
+compact cluster near $\lambda_i \approx 800$\,nm and
+$\lambda_j \approx 875$\,nm, identifying that near-infrared band
+pair as the most discriminating; the nearest available Ximea bands
+are 806 and 877\,nm.
+The threshold heatmap (Figure~\ref{figNDSIThreshold}) reports the
+corresponding cutoffs, with a broad high-threshold band along a low
+$\lambda_i$ near 650\,nm paired with $\lambda_j$ between roughly 775
+and 875\,nm.
+Both patterns are consistent with the class spectra of
+Figure~\ref{figClassSpectra}: the most cleanly separating pair lies
+within the near-infrared plateau where the two classes are offset in
+magnitude, while the elevated thresholds for pairs bridging the
+650\,nm red-edge region and the near-infrared reflect the slope
+difference seen there.
+
+Notably, the strongest separation here lies in the near-infrared,
+around 800 and 875\,nm, beyond the 660--760\,nm red-edge window that
+Kurihara and Yamana identified for Valsa canker and that Skoneczny
+et al.\ found discriminative for fire blight on
+leaves~\cite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf,
+Kurihara2022DetectionValsaCankerHyperspectralCanker}.
+We attribute this shift to the differences in setting noted in
+Section~\ref{secXimeaCamera}: those studies imaged bloom-season
+leaves and green bark, whereas our data capture dormant, woody bark,
+where the dominant cue is a near-infrared reflectance-magnitude
+offset between necrotic and healthy tissue rather than a red-edge
+inflection.
+The red-edge slope difference nonetheless still contributes, as
+reflected in the threshold response for band pairs that span it.
+\fi
+% --- end disabled NDSI band-pair separation analysis ---
 
 \section{Annotation Pipeline} \label{secAnnotation}
 
