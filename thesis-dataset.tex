@@ -543,9 +543,9 @@ Ma{\ss} et al.~\cite{Mass2024ErwiamDataset}, to date the most
 substantial annotated fire blight image collection, with 1{,}611
 annotated RGB images captured across several consumer cameras and
 smartphones.
-Its four annotation classes---\texttt{flower}, \texttt{leaf},
-\texttt{shoot}, and \texttt{maybe} (predominantly unhealthy
-leaves)---reflect a growing-season focus: three of the four target
+Its four annotation classes (\texttt{flower}, \texttt{leaf},
+\texttt{shoot}, and \texttt{maybe}, predominantly unhealthy
+leaves) reflect a growing-season focus: three of the four target
 tissue that is absent during dormancy, leaving only the
 \texttt{shoot} class, which does capture shepherd's crooks, as
 relevant to our setting.
@@ -555,11 +555,11 @@ et al.~\cite{Gaci2023VisibleNIRDataset}, but it follows a small number
 of lab-controlled plants (on the order of six) over roughly two weeks
 to study infection progression, rather than providing the in-field
 diversity of symptoms needed to train a field detector.
-Other efforts have collected field imagery closer to our setting---the
-dormant-season canker images of Linker and
+Other efforts have collected field imagery closer to our setting,
+namely the dormant-season canker images of Linker and
 Dafny-Yalin~\cite{Linker2024MappingFireBlightCankersFRCNN} and the
 apple fire blight imagery of Mahmud
-et al.~\cite{Mahmud2023MaskRCNNFireBlight}---but neither is released
+et al.~\cite{Mahmud2023MaskRCNNFireBlight}, but neither is released
 publicly with its annotations, so neither could be reused here.
 Because we target dormant-season inspection and deliberately exploit
 the flash RGB and NIR modalities (Section~\ref{secSensingPlatform}),
@@ -585,12 +585,14 @@ random is unsafe: consecutive frames of the same lesion are near
 duplicates, so a random split would place near-identical images on
 both sides of the train/test boundary and inflate the apparent
 performance of the detector.
-To avoid this, the capture timeline was first partitioned into
-contiguous chunks, cutting the sequence only where both a time gap of
-at least 90\,s and a low visual similarity (grayscale histogram
-correlation below 0.92) indicated a genuine break in the walk, such as
-the operator moving to a new tree.
-Whole chunks---never individual frames---were then assigned to the
+To avoid this, every image was encoded as a 1280-dimensional
+MobileNetV2 embedding~\cite{sandler2018mobilenetv2}, and the resulting
+cosine similarity between consecutive frames was used, together with
+the time gap between them, to partition the capture timeline into
+contiguous chunks: the sequence was cut only where both a time gap of
+at least 90\,s and a cosine similarity below 0.92 indicated a genuine
+break in the walk, such as the operator moving to a new tree.
+These chunks were then assigned to the
 train, validation, and test splits by a randomized search that
 balanced the canker-to-crook ratio across the three partitions, so
 that each split sees a similar class mixture
@@ -608,7 +610,7 @@ encountered during collection.
              (yellow), and test (red) splits along the capture
              timeline. The horizontal axis is time elapsed since the
              first capture; vertical grey lines mark the chunk
-             boundaries used for the split. Whole chunks are assigned
+             boundaries used for the split. These chunks are assigned
              to splits so that each split is interspersed across the
              entire field walk rather than confined to one contiguous
              block of time.}
@@ -616,21 +618,22 @@ encountered during collection.
 \end{figure}
 
 To confirm that this chunk-based split leaves no near-duplicate images
-straddling a split boundary, we independently verified it using a
-similarity measure distinct from the one used to form the chunks.
-Every image was encoded as a 1280-dimensional MobileNetV2
-embedding~\cite{sandler2018mobilenetv2}, and the cosine similarity was
-computed for all $\binom{1275}{2}\!\approx\!812{,}000$ image pairs,
-each pair labeled either \emph{same-split} (both images in the same
-partition) or \emph{cross-split} (images in different partitions).
+straddling a split boundary, we reused the same MobileNetV2 embeddings,
+this time computing the cosine similarity for all image pairs rather
+than just consecutive frames, and labeled each pair either
+\emph{same-split} (both images in the same partition) or
+\emph{cross-split} (images in different partitions).
 Figure~\ref{figLeakage} shows the two resulting distributions.
 As expected, the same-split distribution has a long tail of
-high-similarity pairs---consecutive frames of the same lesion that
-correctly land together---extending past the 0.95 threshold
+high-similarity pairs, due to consecutive frames of the same lesion that
+correctly land together, extending past the 0.95 threshold
 conventionally used to flag duplicates.
 The cross-split distribution, in contrast, falls off well before that
 threshold: the single most similar cross-split pair reached only 0.916
 for RGB and 0.903 for NIR, both comfortably below 0.95.
+We manually inspected the highest-similarity cross-split pairs and
+confirmed that each depicted a different lesion or vantage point rather
+than a near-duplicate frame, corroborating the embedding-based result.
 In plain terms, no two images that ended up in different splits are
 anywhere close to being the same photograph, which is the evidence
 that the split does not leak information from training into
@@ -652,14 +655,7 @@ evaluation.
     \label{figLeakage}
 \end{figure}
 
-The final composition is summarized in Table~\ref{tabClassBalance}.
-The 1{,}275 images divide into 983 training, 155 validation, and 137
-test images, with the two symptom classes held to a roughly
-57\%\,/\,43\% canker-to-crook ratio in every split.
-The registered NIR dataset shares the same image membership, splits,
-and class balance.
-
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \caption{Composition of the annotated dataset by split. Instance
              counts are given per symptom class, with the canker share
@@ -680,6 +676,13 @@ and class balance.
     \end{tabular}
 \end{table}
 
+The final composition is summarized in Table~\ref{tabClassBalance}.
+The 1{,}275 images divide into 983 training, 155 validation, and 137
+test images, with the two symptom classes held to a roughly
+57\%\,/\,43\% canker-to-crook ratio in every split.
+The registered NIR dataset shares the same image membership, splits,
+and class balance.
+
 \section{Spectral Analysis of Fire Blight Symptoms}
 \label{secSpectralAnalysis}
 
@@ -687,6 +690,18 @@ and class balance.
 % annotation pipeline, because this analysis uses only a handful of
 % paired NIR/RGB images and does not depend on the SAM-assisted or
 % cross-modal annotations introduced in Section~\ref{secAnnotation}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{figs/class_spectra.png}
+    \caption{Mean spectral reflectance of diseased (positive) and
+             healthy (negative) bark tissue across the Ximea NIR
+             bands, averaged over the annotated regions of the 14
+             analyzed images. Healthy bark reflects more strongly
+             across the full range, with the steepest divergence over
+             the 675--760\,nm red-edge region.}
+    \label{figClassSpectra}
+\end{figure}
 
 Section~\ref{secSensingPlatform} motivated including a
 near-infrared multispectral camera on the basis of prior work
@@ -725,18 +740,6 @@ Kurihara2022DetectionValsaCankerHyperspectralCanker}---confirming,
 on dormant apple bark, that this portion of the spectrum carries
 discriminative information and motivating our use of the
 near-infrared multispectral camera.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\linewidth]{figs/class_spectra.png}
-    \caption{Mean spectral reflectance of diseased (positive) and
-             healthy (negative) bark tissue across the Ximea NIR
-             bands, averaged over the annotated regions of the 14
-             analyzed images. Healthy bark reflects more strongly
-             across the full range, with the steepest divergence over
-             the 675--760\,nm red-edge region.}
-    \label{figClassSpectra}
-\end{figure}
 
 % --- NDSI band-pair separation analysis: TEMPORARILY DISABLED ---
 % This subsection is a work in progress and is excluded from the
@@ -905,8 +908,7 @@ the top row of Figure~\ref{figAnnotationDefs}.
              four canker subtypes were later merged into a single
              \emph{canker} class for training and evaluation.}
     \label{tabSymptomTypes}
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{l|l}
+    \begin{tabular}{|p{0.2\linewidth}|p{0.72\linewidth}|}
         \hline
         Type & Definition \\
         \hline
@@ -918,21 +920,23 @@ the top row of Figure~\ref{figAnnotationDefs}.
         Elliptical canker & Localized, roughly oval lesion on a
                             perennial branch or leader, with a glossy,
                             blackened, or scratched change in texture. \\
+        \hline
         Girdling canker   & Lesion that fully encircles a branch or
                             leader, disrupting vascular flow;
                             especially blackened, often cracked or with
                             a strangled inward curvature. \\
+        \hline
         Stem-end canker   & Downward- or laterally-propagated
                             infection encircling the distal portion of
                             a branch, marking the end of disease
                             progression; resembles a canker margin. \\
+        \hline
         Stem-end canker 2 & Canker at the junction between branches or
                             between a branch and the central leader,
                             blackened or protruding, annotated
                             independently of surrounding tissue health. \\
         \hline
-    \end{tabular}%
-    }
+    \end{tabular}
 \end{table}
 
 Annotating all five types separately proved counterproductive.
@@ -942,9 +946,9 @@ with each other and with the background, and the fine-grained
 distinctions carried little value for the downstream inspection task,
 which only needs to know that diseased tissue is present.
 We therefore collapsed the four canker subtypes into a single, broader
-\emph{canker} class defined by the shared visual signature---a
+\emph{canker} class defined by a shared visual signature: a
 localized patch of glossy, blackened, or scratched bark texture,
-annotated up to the nearest branching point---while keeping
+annotated up to the nearest branching point, while keeping
 \emph{shepherd's crook} as the second class.
 Figure~\ref{figAnnotationDefs} illustrates this consolidation: the top
 row shows the individually defined subtypes, and the bracket beneath
@@ -953,7 +957,7 @@ detection experiments.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.95\linewidth]{figs/annotations_defs.jpg}
+    \includegraphics[width=0.95\linewidth, trim={0 200pt 0 200pt}, clip]{figs/annotations_defs.jpg}
     \caption{Symptom annotation taxonomy. \textit{Top row:} the one
              crook type and four canker subtypes originally defined in
              the labeling protocol, each shown with an example
@@ -1185,30 +1189,17 @@ detections on test images from both modalities.
 
 \begin{figure}[h]
     \centering
-    \subfloat[RGB detector.]{%
-        \IfFileExists{figs/pr_curve_rgb.png}{%
-            \includegraphics[width=0.49\linewidth]{figs/pr_curve_rgb.png}}{%
-            \fbox{\parbox[c][0.3\linewidth][c]{0.46\linewidth}{%
-                \centering\ttfamily\small figs/pr\_curve\_rgb.png\\[2pt](to be added)}}}%
-        \label{figPRCurveRGB}}
-    \hfil
-    \subfloat[NIR detector.]{%
-        \IfFileExists{figs/pr_curve_nir.png}{%
-            \includegraphics[width=0.49\linewidth]{figs/pr_curve_nir.png}}{%
-            \fbox{\parbox[c][0.3\linewidth][c]{0.46\linewidth}{%
-                \centering\ttfamily\small figs/pr\_curve\_nir.png\\[2pt](to be added)}}}%
-        \label{figPRCurveNIR}}
-    \caption{Precision--recall curves for the
-             \protect\subref{figPRCurveRGB}~RGB and
-             \protect\subref{figPRCurveNIR}~NIR detectors on the test
-             split.}
+    \includegraphics[width=\linewidth]{figs/pr_curve_comparison.png}
+    \caption{Precision--recall curves for the RGB (left) and NIR
+             (right) detectors on the test split, shown per class
+             (shepherd's crook, canker) and averaged across classes.}
     \label{figPRCurves}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \IfFileExists{figs/detection_examples.jpg}{%
-        \includegraphics[width=\linewidth]{figs/detection_examples.jpg}}{%
+        \includegraphics[width=0.85\linewidth]{figs/detection_examples.jpg}}{%
         \fbox{\parbox[c][0.28\linewidth][c]{0.95\linewidth}{%
             \centering\ttfamily\small figs/detection\_examples.jpg\\[2pt](to be added)}}}
     \caption{Qualitative detections on test images, with the flash RGB
@@ -1237,38 +1228,44 @@ as a miss whenever its intersection-over-union with the ground-truth
 box falls below 0.5, even though it correctly identifies the diseased
 tissue.
 
-Figure~\ref{figFalseNegatives} shows three representative cases.
-In each, the detector's prediction (red) lands squarely on a diseased
-branch and would be judged correct by a human, yet because its box
-does not overlap the ground-truth box (yellow) closely enough, the
-ground truth is counted as a false negative and the prediction as a
-false positive.
-Relaxing the IoU threshold to 0.3 recovers most of these matches,
-confirming that the predictions are spatially close rather than wrong,
-but a 0.3 threshold is difficult to defend as a general standard, so
-we retain the conventional 0.5 threshold and accept that it
-understates the detector's practical usefulness.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth, trim={400pt 0 200pt 0}, clip]{figs/map_05_03_fns.jpg}
+    \caption{False negatives arising from ambiguous symptom
+             boundaries. Top row: under the standard IoU~$\geq 0.5$
+             matching rule, the detector's predictions (red, with
+             confidence) correctly land on diseased branches, but
+             their bounding boxes do not overlap the ground-truth
+             boxes (yellow) closely enough, so the ground truth is
+             scored as a false negative (``FN'') and the prediction as
+             a false positive. Bottom row: the same predictions
+             (green) and ground-truth boxes (magenta) at a relaxed
+             IoU~$\geq 0.3$, shown purely to illustrate that the
+             predictions are spatially close to the lesion rather than
+             incorrect, not as an alternative operating threshold.}
+    \label{figFalseNegatives}
+\end{figure}
+
+Figure~\ref{figFalseNegatives} shows two representative cases.
+In each, the detector's prediction lands squarely on a diseased branch
+and would be judged correct by a human, yet because its box does not
+overlap the ground-truth box closely enough, the ground truth is
+counted as a false negative and the prediction as a false positive.
+The bottom row of the figure confirms that these are near-misses
+rather than genuine detection failures: the same boxes match once the
+overlap requirement is loosened.
+We show this only to characterize the failure mode, not to propose a
+looser threshold as a substitute metric; a 0.3 IoU criterion is
+difficult to defend as a general standard, so we report all detection
+results in this thesis at the conventional 0.5 threshold and accept
+that it understates the detector's practical usefulness on this kind
+of ambiguous-boundary symptom.
 The broader lesson is that frame-level detection metrics can only say
 so much about performance in the field on symptoms with ambiguous
 boundaries; aggregating evidence across many views of the same tree,
 as the semantic mapping and NBV planning of Chapter~\ref{chapNBV} do,
 is a more robust way to convert imperfect per-frame detections into
 reliable tree-level diagnoses.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.95\linewidth]{figs/fns_from_dataset.jpg}
-    \caption{False negatives arising from ambiguous symptom
-             boundaries. In each panel, the detector's predictions
-             (red, with confidence) correctly land on diseased
-             branches, but because their bounding boxes do not overlap
-             the ground-truth boxes (yellow) at IoU~$\geq 0.5$, the
-             ground truth is scored as a false negative (``FN'') and
-             the prediction as a false positive. Relaxing the
-             threshold to 0.3 matches these detections, illustrating
-             that they are spatially close rather than incorrect.}
-    \label{figFalseNegatives}
-\end{figure}
 
 \section{Summary} \label{secDatasetSummary}
 
