@@ -16,7 +16,7 @@ Advances in vision-based detection, manipulator-based active sensing, and probab
 The orchard canopy, however, remains a challenging environment for autonomous perception: canopy variation, severe occlusion, thin branch geometry, and large swings in natural lighting all degrade the reliability of fixed-camera, fixed-viewpoint sensing.
 The visual cues that distinguish infected tissue from healthy tissue are subtle, and resolving them reliably requires close-range imaging at fine spatial resolution, conditions that a fixed, wide-area viewpoint cannot consistently provide.
 Moreover, the output a grower needs is not a binary classification of disease presence but a spatial map of disease confidence across the tree that can guide targeted pruning or treatment applications.
-Despite growing research interest in agricultural robotics, the specific problem of autonomously detecting and spatially localizing fire blight cankers and shepherd's crooks in dormant apple trees has received little attention.
+Despite growing research interest in agricultural robotics, and although close-range vision has recently been shown to detect dormant cankers on pear~\cite{Linker2024MappingFireBlightCankersFRCNN}, the specific problem of autonomously detecting and spatially localizing fire blight cankers and shepherd's crooks throughout the canopy of dormant apple trees has received little attention.
 
 % TODO: Add figs/robot_symptoms_collage_2.png, then uncomment.
 % \begin{figure}[t]
@@ -53,7 +53,7 @@ The mapping representation, the planner, and their integration are presented in 
 
 We integrate these components into Erwin, a robotic active perception system for targeted fire blight detection in dormant apple trees, built around an Amiga mobile base and a UFACTORY xArm6 manipulator.
 The mobile base remains fixed in front of a tree during inspection while the arm autonomously selects and executes inspection viewpoints within a closed perception--action loop, combining flash stereo RGB and 25-band near-infrared multispectral imaging with the confidence-aware semantic occupancy map and NBV planner described above.
-Erwin was developed as part of Carnegie Mellon University's Fire Blighters team entry in the 2026 Farm Robotics Challenge, where the team received the Amiga Innovation Award, and is deployed and validated on real apple trees at a university fruit research facility, with mapping performance assessed against splat-based 3D reconstructions.
+Erwin was developed as part of Carnegie Mellon University's Fire Blighters team entry in the 2026 Farm Robotics Challenge, where the team received the Amiga Innovation Award, and is deployed and validated on real apple trees at the Penn State Fruit Research and Extension Center in Adams County, Pennsylvania, with mapping performance assessed against splat-based 3D reconstructions.
 Validation results are presented in Chapter~\ref{chapErwin}.
 The work presented here focuses on per-tree detection, mapping, and active viewpoint selection; extending the system to traverse and map an entire orchard autonomously, row by row, is an important direction for future work (Chapter~\ref{chapConclusions}).
 

@@ -2,58 +2,163 @@
 
 \chapter{Semantic Mapping and Next-Best-View Planning} \label{chapNBV}
 
-Chapter~\ref{chapDataset} developed a 2D detector that recognizes fire blight cankers and shepherd's crooks in individual close-range images.
-A single detection, however, is a per-view, per-pixel observation: it says that a symptom is present somewhere in one image, but not where that symptom sits in the three-dimensional canopy, nor how confident we should be once the same region has been seen from several viewpoints.
-The output a grower needs is the opposite of a single detection---a persistent, spatially resolved map of disease confidence across the whole tree that can guide targeted pruning.
-This chapter bridges that gap in two steps.
-First, Section~\ref{secSemanticOctoMap} introduces a confidence-aware semantic occupancy representation that fuses noisy per-view detections into a single volumetric map in which each voxel carries an occupancy probability, a semantic disease label, and a fused confidence.
-Second, Section~\ref{secNBVPlanning} uses that representation as the state for an active viewpoint-selection framework, in which a next-best-view (NBV) planner decides where the manipulator should look next in order to complete the map efficiently.
+Chapter~\ref{chapDataset} developed a 2D detector that recognizes fire
+blight cankers and shepherd's crooks in individual close-range images.
+A single detection, however, is a per-view, per-pixel observation: it says
+that a symptom is present somewhere in one image, but not where that
+symptom sits in the three-dimensional canopy, nor how confident we should
+be once the same region has been seen from several viewpoints.
+The output a grower needs is the opposite of a single detection: a
+persistent, spatially resolved map of disease confidence across the whole
+tree, with a count of symptom instances per tree, that can be aggregated
+into an orchard-wide severity map to guide targeted pruning and scouting
+priorities.
+This chapter bridges that gap in three steps.
+First, Section~\ref{secSemanticOctoMap} introduces a confidence-aware
+semantic occupancy representation that fuses noisy per-view detections into
+a single volumetric map in which each voxel carries an occupancy
+probability, a semantic disease label, and a fused confidence.
+Second, because developing and evaluating a viewpoint planner on real
+trees is slow and difficult to control (symptomatic trees are scarce,
+ground truth is expensive to obtain, and no two field trees are
+identical), Section~\ref{secSimulation} builds a simulation environment in
+which symptomatic trees of known geometry can be generated and inspected
+repeatably, and against which planners can be compared under identical
+conditions.
+Third, Section~\ref{secNBVPlanning} uses the semantic occupancy map as the
+state for an active viewpoint-selection framework, formalizing the
+next-best-view (NBV) problem and describing the three planners we
+compare: a deterministic grid-scan baseline, a purely volumetric NBV
+planner, and the semantic NBV planner that is the central contribution of
+this chapter.
+Section~\ref{secSimExperiments} then defines the evaluation methodology
+and reports the simulation comparison of these planners.
+The same representation, planners, and metrics are carried forward
+unchanged to the field experiments of Chapter~\ref{chapErwin}.
 
-Developing and evaluating a viewpoint planner on real trees is slow and difficult to control: symptomatic trees are scarce, ground truth is expensive to obtain, and no two field trees are identical.
-We therefore build a simulation environment (Section~\ref{secSimulation}) in which symptomatic trees of known geometry can be generated and inspected repeatably, and against which the three planners can be compared under identical conditions.
-Section~\ref{secNBVPlanning} formalizes the NBV problem and describes the three planners we compare: a deterministic grid-scan baseline, a purely volumetric NBV planner, and the semantic NBV planner that is the central contribution of this chapter.
-Section~\ref{secSimExperiments} defines the evaluation methodology and reports the simulation comparison.
-The same representation, planners, and metrics are carried forward unchanged to the field experiments of Chapter~\ref{chapErwin}.
+% TODO(fig): add figs/nbv/chapter_overview once rendered. A single
+% chapter-level pipeline diagram showing the three-step flow described
+% above: per-view 2D detections feeding into the confidence-aware
+% semantic OctoMap, the OctoMap serving as state for the three NBV
+% planners evaluated in the Blender/Gazebo simulation, and the
+% resulting disease map/coverage curves as output. Helps orient the
+% reader before the detailed sections below.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/nbv/chapter_overview}
+%   \caption{Overview of the semantic mapping and next-best-view
+%            planning pipeline developed in this chapter.}
+%   \label{figChapterOverview}
+% \end{figure}
 
 \section{Semantic OctoMap Representation} \label{secSemanticOctoMap}
 
-Geometric and semantic observations are fused into a single derived OctoMap octree at resolution $r$, in which each voxel maintains a probabilistic estimate of occupancy in log-odds form~\cite{hornung13octomap}, extended with semantic attributes.
-This unified representation is designed to support two distinct forms of reasoning simultaneously: collision-aware reasoning about free and occupied space, which the manipulator needs to plan safe motions through the canopy, and task-aware reasoning about where disease is present and how certain that evidence is, which the planner needs to decide where to look next.
-Keeping both in one octree---rather than maintaining separate occupancy and semantic maps---means that every candidate viewpoint can be scored against geometry and semantics with a single traversal of the same structure.
+Geometric and semantic observations are fused into a single derived OctoMap
+octree at resolution $r$, in which each voxel maintains a probabilistic
+estimate of occupancy in log-odds form~\cite{hornung13octomap}, extended
+with semantic attributes.
+This unified representation is designed to support two distinct forms of
+reasoning simultaneously: collision-aware reasoning about free and occupied
+space, which the manipulator needs to plan safe motions through the canopy,
+and task-aware reasoning about where disease is present and how certain
+that evidence is, which the planner needs to decide where to look next.
+Keeping both in one octree means that every candidate viewpoint can be 
+scored against geometry and semantics with a single traversal of the 
+same structure.
 
 \subsection{Volumetric Occupancy with OctoMap} \label{secOctoMapBase}
 
-We represent the geometry of the scene using an OctoMap, an octree-based occupancy grid in which space is recursively subdivided into voxels down to a minimum edge length $r$~\cite{hornung13octomap}.
-Each voxel stores its occupancy as a log-odds value rather than a raw probability, which makes repeated Bayesian updates from many observations reduce to simple additions and makes the representation numerically stable as evidence accumulates.
-The octree structure is memory-efficient because large regions of uniformly free or uniformly unknown space collapse to a single node, while detail is preserved only where the scene is geometrically complex, as it is throughout a branchy canopy.
+We represent the geometry of the scene using an OctoMap, an octree-based
+occupancy grid in which space is recursively subdivided into voxels down to
+a minimum edge length $r$~\cite{hornung13octomap}.
+Each voxel stores its occupancy as a log-odds value rather than a raw
+probability, which makes repeated Bayesian updates from many observations
+reduce to simple additions and makes the representation numerically stable
+as evidence accumulates.
+The octree structure is memory-efficient because large regions of uniformly
+free or uniformly unknown space collapse to a single node, while detail is
+preserved only where the scene is geometrically complex.
 
-Given a sensor origin and a point cloud derived from the stereo depth estimator of Section~\ref{secFlirCamera}, occupancy measurements are integrated by ray casting.
-For each measured point, a ray is traced from the camera origin to the endpoint: voxels traversed along the ray are updated toward free space, while the voxel at the endpoint is updated toward occupied space.
-This yields a compact volumetric reconstruction that preserves structure in sparse regions while adaptively refining resolution in cluttered ones, and that maintains three distinct occupancy states per voxel---free, occupied, and unknown---the last being essential to the volumetric planner of Section~\ref{secVolNBVPlanner}, which explicitly seeks out unknown space.
+Given a sensor origin and a point cloud derived from the stereo depth
+estimator of Section~\ref{secFlirCamera}, occupancy measurements are
+integrated by ray casting.
+For each measured point, a ray is traced from the camera origin to the
+endpoint: voxels traversed along the ray are updated toward free space,
+while the voxel at the endpoint is updated toward occupied space.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth, trim={0 232pt 0 232pt},
+        clip]{figs/octomap_concept.jpg}
+    \caption{Ray-casting occupancy update for a single sensor ray.
+             A ray traced from the camera through the ROI to a
+             measured surface point is converted by OctoMap into
+             voxels updated toward free space along its path, a
+             voxel updated toward occupied space at the surface it
+             strikes, and voxels outside the ray's path left
+             unknown (not visible).}
+    \label{figRayCasting}
+\end{figure}
+
+This yields a compact volumetric reconstruction that preserves structure in
+sparse regions while adaptively refining resolution in cluttered ones, and
+that maintains three distinct occupancy states per voxel: free, occupied,
+and unknown, the last being essential to the volumetric planner of
+Section~\ref{secVolNBVPlanner}, which explicitly seeks out unknown space.
 
 The map is updated incrementally as new sensor data arrives.
-To bound both memory use and traversal depth, the OctoMap domain is restricted to a $1.0\,\text{m} \times 1.0\,\text{m} \times 2.0\,\text{m}$ region loosely fitted to the target tree, and ray casting is terminated early when a ray exits this region.
-Constraining the spatial extent in this way keeps voxel read and write operations fast enough to sustain the closed-loop inspection cycle, and defines a consistent region of interest (ROI) against which coverage is later measured (Section~\ref{secSimExperiments}).
+To bound both memory use and traversal depth, the OctoMap domain is
+restricted to a $1.0\,\text{m} \times 1.0\,\text{m} \times 2.0\,\text{m}$
+region loosely fitted to the target tree, and ray casting is terminated
+early when a ray exits this region.
+Constraining the spatial extent in this way keeps voxel read and write
+operations fast enough to sustain the closed-loop inspection cycle, and
+defines a consistent region of interest (ROI) against which coverage is
+later measured (Section~\ref{secSimExperiments}).
 
-\subsection{Semantic Extension: Disease Class Labels} \label{secSemanticExtension}
+\subsection{Semantic Extension: Disease Class Labels}
+\label{secSemanticExtension}
 
-In addition to occupancy, each node in the semantic octree stores two semantic attributes: a class identifier $c \in \mathbb{Z}$ (background, canker, or shepherd's crook) and a scalar confidence $s \in [0,1]$.
-Semantic attributes are integrated from the semantic point cloud described in Section~\ref{secProjection}, in which every 3D point carries a predicted class and confidence.
-Crucially, semantic updates are applied only to voxels that have already been marked occupied through geometric integration, so that disease labels are only ever attached to physical surfaces and never to free or unknown space.
+In addition to occupancy, each node in the semantic octree stores two
+semantic attributes: a class identifier $c \in \mathbb{Z}$ (background,
+canker, or shepherd's crook) and a scalar confidence $s \in [0,1]$.
+Semantic attributes are integrated from the semantic point cloud described
+in Section~\ref{secProjection}, in which every 3D point carries a predicted
+class and confidence.
+Crucially, semantic updates are applied only to voxels that have already
+been marked occupied through geometric integration, so that disease labels
+are only ever attached to physical surfaces and never to free or unknown
+space.
 
-The challenge in accumulating labels across views is that the 2D detector is imperfect: the same patch of bark may be labeled canker from one viewpoint and background from another, at differing confidences, and a naive scheme that simply overwrites or averages these observations would either discard useful evidence or wash out true detections.
-We adopt the confidence-aware fusion rule of Burusa et al.~\cite{Burusa2024SemanticsAwareNBVPlantParts}, extended here with a per-match confidence boost $\gamma$ in addition to their mismatch penalty $\lambda$.
-Let $(c_t, s_t)$ denote the incoming class label and confidence for a voxel at time $t$, and let $(\hat{c}, \hat{s})$ denote the voxel's current stored estimate.
-If no prior semantic information exists for the voxel, the incoming observation is stored directly, $(\hat{c}, \hat{s}) \leftarrow (c_t, s_t)$.
+The challenge in accumulating labels across views is that the 2D detector
+is imperfect: the same patch of bark may be labeled canker from one
+viewpoint and background from another, at differing confidences, and a
+naive scheme that simply overwrites or averages these observations would
+either discard useful evidence or wash out true detections.
+We adopt the confidence-aware fusion rule of Burusa et
+al.~\cite{Burusa2024SemanticsAwareNBVPlantParts}, extended here with a
+per-match confidence boost $\gamma$ in addition to their mismatch penalty
+$\lambda$.
+Let $(c_t, s_t)$ denote the incoming class label and confidence for a voxel
+at time $t$, and let $(\hat{c}, \hat{s})$ denote the voxel's current stored
+estimate.
+If no prior semantic information exists for the voxel, the incoming
+observation is stored directly, $(\hat{c}, \hat{s}) \leftarrow (c_t, s_t)$.
 
-If the incoming label agrees with the stored label ($c_t = \hat{c}$), the two confidences are averaged and then boosted, rewarding repeated agreement between independent views:
+If the incoming label agrees with the stored label ($c_t = \hat{c}$), the
+two confidences are averaged and then boosted, rewarding repeated agreement
+between independent views:
 \begin{equation}
 \hat{s} \leftarrow \mathrm{clip}\!\left(\frac{\hat{s}+s_t}{2}\,(1 + \gamma),\; 0,\; 1\right).
 \label{eqSemMatch}
 \end{equation}
-The boost factor $(1+\gamma)$ causes a symptom that is consistently observed across several viewpoints to accumulate high confidence, which is exactly the behavior the semantic planner later exploits to recognize a region as sufficiently explained.
+The boost factor $(1+\gamma)$ causes a symptom that is consistently
+observed across several viewpoints to accumulate high confidence, which is
+exactly the behavior the semantic planner later exploits to recognize a
+region as sufficiently explained.
 
-If the incoming label disagrees with the stored label ($c_t \neq \hat{c}$), the label carrying the higher confidence is retained:
+If the incoming label disagrees with the stored label ($c_t \neq \hat{c}$),
+the label carrying the higher confidence is retained:
 \begin{equation}
 (\hat{c}, \hat{s}) \leftarrow
 \begin{cases}
@@ -62,162 +167,333 @@ If the incoming label disagrees with the stored label ($c_t \neq \hat{c}$), the 
 \end{cases}
 \label{eqSemMismatch}
 \end{equation}
-and the retained confidence is then penalized to reduce overconfidence under disagreement:
+and the retained confidence is then penalized to reduce overconfidence
+under disagreement:
 \begin{equation}
 \hat{s} \leftarrow \mathrm{clip}\!\left(\hat{s}\,(1-\lambda),\; 0,\; 1\right).
 \label{eqSemPenalty}
 \end{equation}
-The penalty $(1-\lambda)$ ensures that a voxel whose label is contested by conflicting observations retains a low confidence, marking it as a region that warrants further inspection rather than one the system can trust.
-Together, the boost and penalty give the map a self-correcting character: persistent, mutually consistent observations are reinforced toward high confidence, while conflicting observations are driven toward low confidence, allowing later high-confidence views to override earlier detection errors.
-Values for $\gamma$ and $\lambda$ are given in Table~\ref{tabPlanningParams}.
+The penalty $(1-\lambda)$ ensures that a voxel whose label is contested by
+conflicting observations retains a low confidence, marking it as a region
+that warrants further inspection rather than one the system can trust.
+Together, the boost and penalty give the map a self-correcting character:
+persistent, mutually consistent observations are reinforced toward high
+confidence, while conflicting observations are driven toward low
+confidence, allowing later high-confidence views to override earlier
+detection errors.
+Values for $\gamma$ and $\lambda$ are given in
+Table~\ref{tabPlanningParams}.
+
+% TODO(fig): add figs/nbv/confidence_fusion_dynamics once rendered. A
+% plot of stored confidence $\hat{s}$ over a sequence of simulated
+% incoming observations, with one trace showing repeated agreement
+% (illustrating the boost of Equation~\ref{eqSemMatch} driving
+% confidence up) and a second trace showing repeated disagreement
+% (illustrating the penalty of Equation~\ref{eqSemPenalty} driving
+% confidence down). Would make the self-correcting behavior described
+% in the surrounding paragraph concrete rather than purely algebraic.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.7\linewidth]{figs/nbv/confidence_fusion_dynamics}
+%   \caption{Evolution of fused voxel confidence $\hat{s}$ under
+%            repeated agreeing observations (boost) versus repeated
+%            disagreeing observations (penalty).}
+%   \label{figConfidenceFusion}
+% \end{figure}
 
 % TODO(fig): add figs/nbv/semantic_octomap once rendered.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\textwidth]{figs/nbv/semantic_octomap}
-%   \caption{Illustration of the confidence-aware semantic OctoMap. Occupied
-%            voxels are colored by disease class (canker, shepherd's crook,
-%            background), with color intensity encoding the fused per-voxel
-%            confidence $s$.}
+%   \caption{Illustration of the confidence-aware semantic OctoMap.
+%            Occupied voxels are colored by disease class (canker,
+%            shepherd's crook, background), with color intensity
+%            encoding the fused per-voxel confidence $s$.}
 %   \label{figSemanticOctoMap}
 % \end{figure}
 
-\subsection{Projection from 2D Detections to 3D Voxels} \label{secProjection}
+\subsection{Projection from 2D Detections to 3D Voxels}
+\label{secProjection}
 
-The link between the 2D detector of Chapter~\ref{chapDataset} and the semantic octree is a per-view \emph{semantic point cloud}: a depth-projected point cloud in which each point additionally carries a class label and confidence.
+The link between the 2D detector of Chapter~\ref{chapDataset} and the
+semantic octree is a per-view \emph{semantic point cloud}: a
+depth-projected point cloud in which each point additionally carries a
+class label and confidence.
 Constructing it proceeds in two stages, rasterization and projection.
 
-First, the instance segmentation masks produced by the detector are rasterized into dense per-pixel class and confidence maps at the resolution of the RGB image.
-Every pixel is initialized to a background class with a fixed background confidence.
-Detected instances are then written into the maps in ascending order of confidence, so that where instance masks overlap, the higher-confidence detection takes precedence in the final per-pixel assignment.
-This produces, for each captured frame, a class map and a confidence map registered pixel-for-pixel with the RGB image.
+First, the instance segmentation masks produced by the detector are
+rasterized into dense per-pixel class and confidence maps at the resolution
+of the RGB image.
+Every pixel is initialized to a background class with a fixed background
+confidence.
+Detected instances are then written into the maps in ascending order of
+confidence, so that where instance masks overlap, the higher-confidence
+detection takes precedence in the final per-pixel assignment.
+This produces, for each captured frame, a class map and a confidence map
+registered pixel-for-pixel with the RGB image.
 
-Second, each pixel with valid stereo depth is back-projected into 3D using the camera intrinsics and the known camera pose, and the resulting point is assigned the class and confidence stored at its pixel.
-Depth is taken from the stereo matcher of Section~\ref{secFlirCamera} and clamped to the effective operating range of $0.1$--$0.9$\,m; points outside this range are discarded as unreliable.
-Pixels with invalid disparity or with depth beyond the maximum sensing range may optionally be retained as background points placed at the maximum range value, which allows the downstream occupancy update to carve out free space and explicitly represent regions observed to be empty rather than merely unobserved.
-The resulting semantic point cloud is transformed into the common global frame using the manipulator's forward kinematics and integrated into the semantic OctoMap as described in Sections~\ref{secOctoMapBase} and~\ref{secSemanticExtension}: geometry first, via occupancy ray casting, then semantics, applied only to the voxels thereby marked occupied.
-The full perception pipeline, from image capture through this projection step, is described in its runtime, on-robot form in Section~\ref{secPerceptionPipeline}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figs/perception_pipeline.jpg}
+    \caption{End-to-end perception pipeline from a single captured
+             frame to the fused semantic map.
+             \textit{Left:} the 2D detector output on the RGB frame,
+             with the predicted class and confidence overlaid on the
+             instance mask.
+             \textit{Center:} the resulting semantic point cloud,
+             back-projected from the detection using stereo depth
+             and the camera pose, shown relative to the manipulator.
+             \textit{Right:} the semantic OctoMap after this and
+             prior views have been fused, with occupied voxels
+             colored by disease class (Section~\ref{secSemanticOctoMap}).}
+    \label{figProjectionPipeline}
+\end{figure}
+
+Second, each pixel with valid stereo depth is back-projected into 3D using
+the camera intrinsics and the known camera pose, and the resulting point is
+assigned the class and confidence stored at its pixel.
+Depth is taken from the stereo matcher of Section~\ref{secFlirCamera} and
+clamped to the effective operating range of $0.1$--$0.9$\,m; points outside
+this range are discarded as unreliable.
+Pixels with invalid disparity or with depth beyond the maximum sensing
+range may optionally be retained as background points placed at the maximum
+range value, which allows the downstream occupancy update to carve out free
+space and explicitly represent regions observed to be empty rather than
+merely unobserved.
+The resulting semantic point cloud is transformed into the common global
+frame using the manipulator's forward kinematics and integrated into the
+semantic OctoMap as described in Sections~\ref{secOctoMapBase}
+and~\ref{secSemanticExtension}: geometry first, via occupancy ray casting,
+then semantics, applied only to the voxels thereby marked occupied.
+The full perception pipeline, from image capture through this projection
+step, is described in its runtime, on-robot form in
+Section~\ref{secPerceptionPipeline}.
 
 \section{Simulation Environment} \label{secSimulation}
 
-Real symptomatic trees are scarce, immovable, and impossible to reset to a known state between planner runs, which makes them a poor setting in which to develop and fairly compare viewpoint planners.
-We therefore built a simulation environment in which trees of known, fully specified geometry can be inspected repeatably and under identical conditions across all three planners, before committing to field deployment.
+Real symptomatic trees are scarce, immovable, and impossible to reset to a
+known state between planner runs, which makes them a poor setting in which
+to develop and fairly compare viewpoint planners.
+We therefore built a simulation environment in which trees of known, fully
+specified geometry can be inspected repeatably and under identical
+conditions across all three planners, before committing to field
+deployment.
 
 \subsection{Orchard Simulation Setup} \label{secOrchardSim}
 
-Simulated trees were modeled in Blender and inspected in a Gazebo simulation of the robot, its manipulator, and its stereo camera.
-Five symptomatic apple trees were generated, each carrying between five and eight cankers and between five and eight shepherd's crooks distributed across varying canopy geometries.
-Symptoms were placed to reflect realistic outbreak patterns, deliberately including instances that are occluded or awkward to view from a frontal vantage point, so that the simulation would reward planners capable of repositioning the sensor rather than only those that tile a frontal plane.
-The Gazebo model reproduces the camera's field of view and the manipulator's reachable workspace, so that the same viewpoint-feasibility constraints that apply in the field also apply in simulation.
+Simulated trees were modeled in Blender and inspected in a Gazebo
+simulation of the robot, its manipulator, and its stereo camera.
+Five symptomatic apple trees were generated, each carrying between five and
+eight cankers and between five and eight shepherd's crooks distributed
+across varying canopy geometries.
+Symptoms were placed to reflect realistic outbreak patterns, deliberately
+including instances that are occluded or awkward to view from a frontal
+vantage point, so that the simulation would reward planners capable of
+repositioning the sensor rather than only those that tile a frontal plane.
+The Gazebo model reproduces the camera's field of view and the
+manipulator's reachable workspace, so that the same viewpoint-feasibility
+constraints that apply in the field also apply in simulation.
 
-To increase canopy diversity without the cost of modeling additional trees, each tree was augmented by rotating it about the vertical axis in $60^\circ$ increments, yielding up to six distinct orientations per tree and up to $30$ unique evaluation configurations across the five trees.
-Because each rotation presents a different pattern of self-occlusion and a different distribution of symptoms relative to the frontal viewing plane, these augmentations exercise the planners on a substantially wider range of viewing challenges than five static trees would.
+To increase canopy diversity without the cost of modeling additional trees,
+each tree was augmented by rotating it about the vertical axis in
+$60^\circ$ increments, yielding up to six distinct orientations per tree
+and up to $30$ unique evaluation configurations across the five trees.
+Because each rotation presents a different pattern of self-occlusion and a
+different distribution of symptoms relative to the frontal viewing plane,
+these augmentations exercise the planners on a substantially wider range of
+viewing challenges than five static trees would.
 
 % TODO(fig): add figs/nbv/simulation screenshot once rendered.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=0.85\textwidth]{figs/nbv/simulation}
-%   \caption{The Gazebo orchard simulation, showing the simulated robot and
-%            manipulator inspecting a Blender-rendered symptomatic apple tree.}
+%   \caption{The Gazebo orchard simulation, showing the simulated robot
+%            and manipulator inspecting a Blender-rendered symptomatic
+%            apple tree.}
 %   \label{figSimulation}
 % \end{figure}
 
 \begin{figure}[h]
     \centering
-    % TODO(fig): add figs/nbv/blender_tree_collage_with_zoom.png once rendered.
-    % \includegraphics[width=0.95\textwidth]{figs/nbv/blender_tree_collage_with_zoom}
-    \caption{Blender-rendered symptomatic apple trees used in the simulated Gazebo evaluations.
-             Each tree contains randomly distributed shepherd's crooks and cankers to reproduce realistic outbreak variability and geometric complexity.}
+    \includegraphics[width=0.95\textwidth]{figs/blender_tree_collage_with_zoom.png}
+    \caption{Blender-rendered symptomatic apple trees used in the
+             simulated Gazebo evaluations, with an inset detail
+             view of a modeled shepherd's crook.
+             Each tree contains randomly distributed shepherd's crooks
+             and cankers to reproduce realistic outbreak variability
+             and geometric complexity.}
     \label{figBlenderTrees}
 \end{figure}
 
-\subsection{Ground Truth Generation with Gaussian Splatting} \label{secGSSplat}
+\subsection{Simulation Ground Truth} \label{secSimGT}
 
-Quantitative evaluation of both mapping and planning requires a reference set of true symptom locations against which the map's detections can be scored.
-We obtain this ground truth differently in simulation and in the field, but reduce both to the same form---a set of 3D centroids, one per symptom---so that a single evaluation procedure (Section~\ref{secSimExperiments}) applies to both.
-
-For simulated trees, ground truth is exact: symptomatic instances are segmented directly on the Blender mesh geometry, and the centroid of each segmented instance is stored as the reference symptom location.
-For real trees, no such mesh exists, so we reconstruct one photogrammetrically.
-Prior to each field inspection, a dense set of multi-view images of the tree is captured and used to reconstruct a 3D Gaussian splat of the canopy.
-Symptomatic regions are then manually segmented within the splat by an annotator, with guidance from domain experts, and the centroid of each segmented region is stored as the ground truth symptom location.
-Using a Gaussian splat rather than raw imagery gives the annotator a coherent, navigable 3D model in which a symptom can be inspected from many angles and localized in the same metric frame as the robot's map, which is what makes centroid-level 3D ground truth possible for real trees at all.
-Figure~\ref{figSplatAnnotation} shows an annotated field splat, with canker instances in green and shepherd's crook instances in orange.
-
-\begin{figure}[t]
-    \centering
-    % TODO(fig): add figs/nbv/splat_annotations.png once rendered.
-    % \includegraphics[width=0.7\linewidth, trim={0 200 0 200}, clip]{figs/nbv/splat_annotations}
-    \caption{Gaussian splat of a field tree with manually annotated symptom regions.
-             Canker instances are depicted in green and shepherd's crook instances in orange.
-             The centroid of each annotated region serves as the ground truth symptom location for evaluation.}
-    \label{figSplatAnnotation}
-\end{figure}
+Quantitative evaluation of both mapping and planning requires a reference
+set of true symptom locations against which the map's detections can be
+scored, expressed as a set of 3D centroids, one per symptom, so that the
+same evaluation procedure (Section~\ref{secSimExperiments}) applies
+regardless of how the underlying ground truth was obtained.
+For simulated trees, ground truth is exact: symptomatic instances are
+segmented directly on the Blender mesh geometry, and the centroid of each
+segmented instance is stored as the reference symptom location.
+Real trees admit no such mesh, so field ground truth is instead
+reconstructed photogrammetrically via Gaussian splatting, as described in
+Section~\ref{secGSSplat} of Chapter~\ref{chapErwin}.
 
 \section{Next-Best-View Planning} \label{secNBVPlanning}
 
-With a representation that accumulates disease evidence in 3D, the remaining question is where to acquire the next view.
-We implement and compare three viewpoint-planning strategies for unstructured orchard canopies: (i) a deterministic geometric baseline that provides structured planar coverage without reasoning about the map, (ii) a volumetric NBV planner that maximizes reduction of occupancy uncertainty, and (iii) a semantic NBV planner that prioritizes regions of low semantic confidence.
-All three operate within the same closed perception--action loop and share a common feasibility-filtering stage that guarantees every executed viewpoint is kinematically reachable and collision-free.
-The volumetric and semantic planners further share a single NBV selection loop (Algorithm~\ref{algNBV}) and differ only in two components: their candidate generator $\mathcal{G}(\cdot)$, which proposes where to consider looking, and their information-gain function $\mathrm{IG}(\cdot)$, which scores how valuable each candidate is expected to be.
+With a representation that accumulates disease evidence in 3D, the
+remaining question is where to acquire the next view.
+We implement and compare three viewpoint-planning strategies for
+unstructured orchard canopies: (i) a deterministic geometric baseline that
+provides structured planar coverage without reasoning about the map, (ii) a
+volumetric NBV planner that maximizes reduction of occupancy uncertainty,
+and (iii) a semantic NBV planner that prioritizes regions of low semantic
+confidence.
+All three operate within the same closed perception--action loop and share
+a common feasibility-filtering stage that guarantees every executed
+viewpoint is kinematically reachable and collision-free.
+The volumetric and semantic planners further share a single NBV selection
+loop (Algorithm~\ref{algNBV}) and differ only in two components: their
+candidate generator $\mathcal{G}(\cdot)$, which proposes where to consider
+looking, and their information-gain function $\mathrm{IG}(\cdot)$, which
+scores how valuable each candidate is expected to be.
 
 \subsection{Problem Formulation} \label{secNBVFormulation}
 
 We cast inspection as a sequential viewpoint-selection problem.
-The state at each step is the current semantic OctoMap $\mathcal{M}$ together with the manipulator's current camera pose $x_t$.
-The action space is a set of candidate viewpoints, each a full camera pose (position and orientation), generated on demand from the current map by the candidate generator $\mathcal{G}(\mathcal{M}, x_t)$.
-Not every pose is executable, so candidates are intersected with the feasible set $\mathcal{Q}$ of poses that are both within the manipulator's reachable workspace and free of collisions (Section~\ref{secWorkspaceFilter}).
-Each feasible candidate $v$ is scored by a utility that trades its expected information gain against the effort of moving there,
+The state at each step is the current semantic OctoMap $\mathcal{M}$
+together with the manipulator's current camera pose $x_t$.
+The action space is a set of candidate viewpoints, each a full camera pose
+(position and orientation), generated on demand from the current map by the
+candidate generator $\mathcal{G}(\mathcal{M}, x_t)$.
+Not every pose is executable, so candidates are intersected with the
+feasible set $\mathcal{Q}$ of poses that are both within the manipulator's
+reachable workspace and free of collisions
+(Section~\ref{secWorkspaceFilter}).
+Each feasible candidate $v$ is scored by a utility that trades its expected
+information gain against the effort of moving there,
 \begin{equation}
 U(v) = \mathrm{IG}(v, \mathcal{M}) - \alpha\, C(x_t, v),
 \qquad C(x_t, v) = \lVert x_t - v \rVert,
 \label{eqUtility}
 \end{equation}
-where the motion cost $C(x_t, v)$ is the Euclidean distance from the current camera pose to the candidate and $\alpha$ is a tunable weight balancing exploration benefit against travel.
-The planner selects the maximum-utility feasible candidate, commands the manipulator to it, captures an image, and updates the map, repeating until a fixed viewpoint budget is exhausted.
-The three planners differ only in how $\mathcal{G}$ and $\mathrm{IG}$ are defined; the baseline additionally forgoes the map-dependent scoring entirely, as described below.
+where the motion cost $C(x_t, v)$ is the Euclidean distance from the
+current camera pose to the candidate and $\alpha$ is a tunable weight
+balancing exploration benefit against travel.
+The planner selects the maximum-utility feasible candidate, commands the
+manipulator to it, captures an image, and updates the map, repeating until
+a fixed viewpoint budget is exhausted.
+The three planners differ only in how $\mathcal{G}$ and $\mathrm{IG}$ are
+defined; the baseline additionally forgoes the map-dependent scoring
+entirely, as described below.
 
 \subsubsection{Workspace Filtering} \label{secWorkspaceFilter}
 
-Evaluating the kinematic feasibility of a candidate viewpoint through inverse kinematics is far more expensive than scoring its information gain, so testing every generated candidate this way would dominate planning time.
-To avoid this, all candidates are first filtered against a precomputed model of the manipulator's reachable workspace, following the approach of Freeman and Kantor~\cite{Freeman2024AppleFruitletSizing}.
-Offline, we densely sample on the order of $10^6$ end-effector configurations and discretize the resulting reachable positions into a fine-resolution voxel grid, in which each voxel stores a binary reachability indicator.
-At runtime, any candidate viewpoint whose position falls outside this reachable volume is rejected immediately, before any motion planning is attempted, and only the surviving candidates are passed to full feasibility checking.
+Evaluating the kinematic feasibility of a candidate viewpoint through
+inverse kinematics is far more expensive than scoring its information gain,
+so testing every generated candidate this way would dominate planning time.
+To avoid this, all candidates are first filtered against a precomputed
+model of the manipulator's reachable workspace, following the approach of
+Freeman and Kantor~\cite{Freeman2024AppleFruitletSizing}.
+Offline, we densely sample on the order of $10^6$ end-effector
+configurations and discretize the resulting reachable positions into a
+fine-resolution voxel grid, in which each voxel stores a binary
+reachability indicator.
+At runtime, any candidate viewpoint whose position falls outside this
+reachable volume is rejected immediately, before any motion planning is
+attempted, and only the surviving candidates are passed to full feasibility
+checking.
+
+% TODO(fig): add figs/nbv/workspace_reachability once rendered. A
+% rendering of the precomputed reachable-workspace voxel grid (e.g. as
+% a point cloud or translucent volume) shown relative to the
+% manipulator base and a representative tree/ROI, illustrating which
+% region of candidate viewpoint space survives this cheap pre-filter
+% before any candidate reaches full IK-based feasibility checking.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.7\linewidth]{figs/nbv/workspace_reachability}
+%   \caption{Precomputed reachable-workspace voxel grid used to
+%            pre-filter candidate viewpoints, shown relative to the
+%            manipulator base and a representative canopy ROI.}
+%   \label{figWorkspaceReachability}
+% \end{figure}
 
 \subsection{Baseline: Grid Scan Planner} \label{secGridScan}
 
-The baseline planner provides structured canopy coverage without reasoning about map uncertainty at all, and stands in for the fixed-trajectory scanning that a non-adaptive system, or a careful manual scout, would perform.
-A midplane is computed through the ROI, oriented orthogonal to the primary viewing direction and positioned at the nominal inspection distance set by the ROI bounding box.
-A uniform grid of camera viewpoints is tiled across this midplane, with the grid spacing chosen from the cross-section of the camera frustum at that distance so that adjacent views overlap by a specified fraction $\rho$.
-Concretely, for a camera with horizontal and vertical fields of view $(\theta_h, \theta_v)$ inspecting at distance $d$, the planar footprint of a single view is
+The baseline planner provides structured canopy coverage without reasoning
+about map uncertainty at all, and stands in for the fixed-trajectory
+scanning that a non-adaptive system, or a careful manual scout, would
+perform.
+A midplane is computed through the ROI, oriented orthogonal to the primary
+viewing direction and positioned at the nominal inspection distance set by
+the ROI bounding box.
+A uniform grid of camera viewpoints is tiled across this midplane, with the
+grid spacing chosen from the cross-section of the camera frustum at that
+distance so that adjacent views overlap by a specified fraction $\rho$.
+Concretely, for a camera with horizontal and vertical fields of view
+$(\theta_h, \theta_v)$ inspecting at distance $d$, the planar footprint of
+a single view is
 \begin{equation}
 w = 2 d \tan(\theta_h / 2), \qquad h = 2 d \tan(\theta_v / 2),
 \label{eqFootprint}
 \end{equation}
-and the grid spacings are set to $\Delta_u = w\,(1 - \rho)$ and $\Delta_v = h\,(1 - \rho)$ to enforce the desired overlap.
-The viewpoints are then executed in a boustrophedon (row-alternating) order to minimize manipulator travel between them.
-This guarantees deterministic, repeatable planar coverage, but because the grid is fixed in advance it cannot adapt to the specific architecture of a tree or to what the map already contains: it will dwell on empty space and skip past occluded symptoms indifferently.
+and the grid spacings are set to $\Delta_u = w\,(1 - \rho)$ and $\Delta_v =
+h\,(1 - \rho)$ to enforce the desired overlap.
+The viewpoints are then executed in a boustrophedon (row-alternating) order
+to minimize manipulator travel between them.
+This guarantees deterministic, repeatable planar coverage, but because the
+grid is fixed in advance it cannot adapt to the specific architecture of a
+tree or to what the map already contains: it will dwell on empty space and
+skip past occluded symptoms indifferently.
+
+% TODO(fig): add figs/nbv/grid_scan_pattern once rendered. A top-down
+% or oblique diagram of the fixed midplane grid tiled across the ROI,
+% with the boustrophedon (row-alternating) execution order marked by
+% numbered/arrowed viewpoints, and the overlap fraction $\rho$ between
+% adjacent camera frusta indicated. Would make the fixed, non-adaptive
+% coverage pattern easy to contrast visually against the adaptive
+% frontier- and confidence-driven candidates of the other two
+% planners (Figure~\ref{figViewpointCandidates}).
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.7\linewidth]{figs/nbv/grid_scan_pattern}
+%   \caption{Fixed midplane viewpoint grid used by the baseline
+%            planner, executed in boustrophedon order with adjacent
+%            camera frusta overlapping by a fraction $\rho$.}
+%   \label{figGridScanPattern}
+% \end{figure}
 
 \subsection{Volumetric NBV Planner} \label{secVolNBVPlanner}
 
-The volumetric planner selects camera poses that maximize the reduction of occupancy uncertainty within the ROI, following standard information-gain NBV formulations~\cite{Isler2016IGFormulation, Delmerico2018VolumeticIGFormulation}.
-It instantiates the shared selection loop of Algorithm~\ref{algNBV} with a volumetric candidate generator and a volumetric information-gain metric.
+The volumetric planner selects camera poses that maximize the reduction of
+occupancy uncertainty within the ROI, following standard information-gain
+NBV formulations~\cite{Isler2016IGFormulation,
+Delmerico2018VolumeticIGFormulation}.
+It instantiates the shared selection loop of Algorithm~\ref{algNBV} with a
+volumetric candidate generator and a volumetric information-gain metric.
 
 \begin{algorithm}
 \small
 \caption[Next-Best-View selection]{Next-Best-View (NBV) Selection}
 \label{algNBV}
 \begin{algorithmic}[1]
-\Require Map $\mathcal{M}$, current pose $x_t$, feasible set $\mathcal{Q}$, candidate generator $\mathcal{G}$, information gain $\mathrm{IG}(\cdot)$, cost $C(\cdot)$
+\Require Map $\mathcal{M}$, current pose $x_t$, feasible set $\mathcal{Q}$,
+candidate generator $\mathcal{G}$, information gain $\mathrm{IG}(\cdot)$,
+cost $C(\cdot)$
 \Ensure Selected next-best view $v_{\text{next}}$
 \State Update $\mathcal{M}$ with latest sensor data
-\State $V_c \gets \mathcal{G}(\mathcal{M}, x_t)$ \Comment{Generate candidate viewpoints}
+\State $V_c \gets \mathcal{G}(\mathcal{M}, x_t)$ \Comment{Generate
+candidate viewpoints}
 \State $V_c \gets V_c \cap \mathcal{Q}$ \Comment{Filter infeasible poses}
 \ForAll{$v_i \in V_c$}
-    \State $\mathrm{IG}_i \gets \mathrm{IG}(v_i, \mathcal{M})$ \Comment{Information gain from view}
+\State $\mathrm{IG}_i \gets \mathrm{IG}(v_i, \mathcal{M})$
+\Comment{Information gain from view}
     \State $C_i \gets C(x_t, v_i)$ \Comment{Motion cost}
     \State $U_i \gets \mathrm{IG}_i - \alpha C_i$ \Comment{Compute utility}
 \EndFor
-\State $v_{\text{next}} \gets \argmax_{v_i \in V_c} U_i$ \Comment{Select best viewpoint}
+\State $v_{\text{next}} \gets \argmax_{v_i \in V_c} U_i$ \Comment{Select
+best viewpoint}
 \State Command robot to move to $v_{\text{next}}$
 \State \Return $v_{\text{next}}$
 \end{algorithmic}
@@ -226,39 +502,101 @@ It instantiates the shared selection loop of Algorithm~\ref{algNBV} with a volum
 \subsubsection{Volumetric Viewpoint Generation} \label{secVolViewpointGen}
 
 Candidates are drawn from two complementary sources.
-The first is a midplane grid identical to the baseline's (Section~\ref{secGridScan}), augmented with small spherical-cap orientation perturbations so that each grid cell contributes several slightly rotated viewpoints rather than a single fronto-parallel one; this preserves broad, systematic coverage of the canopy.
-The second is frontier-based: frontiers are defined as free or occupied voxels adjacent to unknown space, and viewpoints are generated to look at them directly.
-To keep the candidate set tractable, frontier voxels are clustered using $k$-means, with an upper limit of $100$ voxels per cluster, and for each cluster centroid a set of viewpoints is sampled from a hemisphere facing the centroid, at radial distances within a bounded range around the ideal camera standoff.
-The frontier source is what lets the volumetric planner actively seek out and peer into unexplored pockets of the canopy, rather than only sweeping the frontal plane.
+The first is a midplane grid identical to the baseline's
+(Section~\ref{secGridScan}), augmented with small spherical-cap orientation
+perturbations so that each grid cell contributes several slightly rotated
+viewpoints rather than a single fronto-parallel one; this preserves broad,
+systematic coverage of the canopy.
+The second is frontier-based: frontiers are defined as free or occupied
+voxels adjacent to unknown space, and viewpoints are generated to look at
+them directly.
+To keep the candidate set tractable, frontier voxels are clustered using
+$k$-means, with an upper limit of $100$ voxels per cluster, and for each
+cluster centroid a set of viewpoints is sampled from a hemisphere facing
+the centroid, at radial distances within a bounded range around the ideal
+camera standoff.
+The frontier source is what lets the volumetric planner actively seek out
+and peer into unexplored pockets of the canopy, rather than only sweeping
+the frontal plane.
 
 \subsubsection{Volumetric Information Gain} \label{secVolIG}
 
-For a candidate viewpoint $v$, volumetric information gain is estimated by ray marching through the camera frustum and counting the unknown voxels each ray would encounter, averaged over a set of rays $R$:
+For a candidate viewpoint $v$, volumetric information gain is estimated by
+ray marching through the camera frustum and counting the unknown voxels
+each ray would encounter, averaged over a set of rays $R$:
 \begin{equation}
 \mathrm{IG}(v) = \frac{1}{|R|} \sum_{r \in R} U_r,
 \qquad
 U_r = \sum_{i=0}^{N_r} \mathbf{1}\!\left\{ \mathcal{O}(p_{r,i}) = \text{unknown} \right\},
 \label{eqVolIG}
 \end{equation}
-where $p_{r,i}$ is the $i$-th sampled point along ray $r$, $N_r$ is the number of samples along that ray, and $\mathcal{O}(\cdot) \in \{\text{free}, \text{occupied}, \text{unknown}\}$ is the queried voxel's occupancy state.
-Each ray terminates at the first occupied voxel it reaches, when the maximum sensor range is exceeded, or when the ray leaves the ROI, so that a candidate is credited only with the unknown volume it could actually reveal and not with space hidden behind a surface.
-The resulting gain enters the shared utility of Equation~\ref{eqUtility}, and feasible candidates are evaluated in descending order of utility until a valid motion plan is found and executed.
+where $p_{r,i}$ is the $i$-th sampled point along ray $r$, $N_r$ is the
+number of samples along that ray, and $\mathcal{O}(\cdot) \in
+\{\text{free}, \text{occupied}, \text{unknown}\}$ is the queried voxel's
+occupancy state.
+Each ray terminates at the first occupied voxel it reaches, when the
+maximum sensor range is exceeded, or when the ray leaves the ROI, so that a
+candidate is credited only with the unknown volume it could actually reveal
+and not with space hidden behind a surface.
+
+% TODO(fig): add figs/nbv/volumetric_ig_raymarch once rendered. A
+% diagram of a candidate camera frustum with several rays $r \in R$
+% marched through it, each ray colored by the occupancy states
+% ($\mathcal{O}(p_{r,i})$) it passes through and terminating at the
+% first occupied voxel, an ROI boundary, or max range; the resulting
+% per-ray unknown-voxel count $U_r$ should be annotated for one or
+% two example rays to connect the diagram to Equation~\ref{eqVolIG}.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.7\linewidth]{figs/nbv/volumetric_ig_raymarch}
+%   \caption{Ray marching through a candidate camera frustum to
+%            estimate volumetric information gain. Each ray
+%            terminates at the first occupied voxel, the ROI
+%            boundary, or the sensor's maximum range.}
+%   \label{figVolIGRaymarch}
+% \end{figure}
+
+The resulting gain enters the shared utility of Equation~\ref{eqUtility},
+and feasible candidates are evaluated in descending order of utility until
+a valid motion plan is found and executed.
 
 \subsection{Semantic NBV Planner} \label{secSemanticNBVPlanner}
 
-The semantic NBV planner is the central methodological contribution of this thesis.
-Where the volumetric planner treats all uncertainty as equal---a voxel of unknown space near a bare branch is as valuable to resolve as one near a suspected canker---the semantic planner explicitly targets uncertainty about disease.
-It prioritizes viewpoints that would refine low-confidence disease predictions over viewpoints that would merely reveal more empty space, on the premise that, for a disease-mapping task, resolving whether an ambiguous region is symptomatic is worth more than completing the geometric reconstruction of an unambiguous one.
-The NBV selection loop, feasibility filtering, and utility function (Equation~\ref{eqUtility}) all remain unchanged from the volumetric planner; only the candidate generator and the information-gain metric differ.
+The semantic NBV planner is the central methodological contribution of this
+thesis.
+Where the volumetric planner treats all uncertainty as equal (a voxel of
+unknown space near a bare branch is as valuable to resolve as one near a
+suspected canker), the semantic planner explicitly targets uncertainty
+about disease.
+It prioritizes viewpoints that would refine low-confidence disease
+predictions over viewpoints that would merely reveal more empty space, on
+the premise that, for a disease-mapping task, resolving whether an
+ambiguous region is symptomatic is worth more than completing the geometric
+reconstruction of an unambiguous one.
+The NBV selection loop, feasibility filtering, and utility function
+(Equation~\ref{eqUtility}) all remain unchanged from the volumetric
+planner; only the candidate generator and the information-gain metric
+differ.
 
 \paragraph{Semantic Viewpoint Generation.}
-Candidate generation mirrors the volumetric planner's two sources, with one substitution.
-The midplane grid with spherical-cap orientation perturbations is retained unchanged, preserving broad canopy coverage.
-The frontier-based source, however, is replaced: instead of clustering geometric frontier voxels, we identify occupied voxels whose stored semantic confidence is low---voxels the map currently regards as possibly symptomatic but is not sure about---and cluster those with $k$-means, sampling hemisphere-facing viewpoints around each cluster centroid exactly as before.
-The effect is that the planner's exploratory attention is drawn toward contested, low-confidence disease evidence rather than toward geometric unknowns.
+Candidate generation mirrors the volumetric planner's two sources, with one
+substitution.
+The midplane grid with spherical-cap orientation perturbations is retained
+unchanged, preserving broad canopy coverage.
+The frontier-based source, however, is replaced: instead of clustering
+geometric frontier voxels, we identify occupied voxels whose stored
+semantic confidence is low (voxels the map currently regards as possibly
+symptomatic but is not sure about) and cluster those with $k$-means,
+sampling hemisphere-facing viewpoints around each cluster centroid exactly
+as before.
+The effect is that the planner's exploratory attention is drawn toward
+contested, low-confidence disease evidence rather than toward geometric
+unknowns.
 
 \paragraph{Semantic Information Gain.}
-The semantic information gain augments the volumetric unknown-voxel term with a semantic-uncertainty term, weighting the two by a mixing parameter $\beta \in [0,1]$:
+The semantic information gain augments the volumetric unknown-voxel term
+with a semantic-uncertainty term, weighting the two by a mixing parameter
+$\beta \in [0,1]$:
 \begin{equation}
 \mathrm{IG}_{\text{sem}}(v) = \frac{1}{|R|} \sum_{r \in R} \left( (1-\beta)\, U_r + \beta\, S_r \right),
 \label{eqSemIG}
@@ -267,75 +605,192 @@ The semantic information gain augments the volumetric unknown-voxel term with a 
 S_r = N \sum_{i=0}^{N_r} \left( 1 - c(p_{r,i}) \right) \mathbf{1}\!\left\{ \mathcal{O}(p_{r,i}) = \text{occupied} \right\},
 \label{eqSemGainRay}
 \end{equation}
-where $U_r$ is the unknown-voxel count from Equation~\ref{eqVolIG}, $c(p_{r,i}) \in [0,1]$ is the stored semantic confidence of the occupied voxel at $p_{r,i}$, and $N$ scales the semantic term $S_r$ onto the same numerical range as the volumetric count $U_r$ so that $\beta$ controls their relative influence directly.
-Each occupied voxel thus contributes in proportion to its \emph{lack} of confidence $(1 - c)$: a confidently labeled surface contributes little, while an ambiguous one contributes a great deal, which is what steers the planner toward re-observing exactly those symptomatic regions the map is least sure about.
+where $U_r$ is the unknown-voxel count from Equation~\ref{eqVolIG},
+$c(p_{r,i}) \in [0,1]$ is the stored semantic confidence of the occupied
+voxel at $p_{r,i}$, and $N$ scales the semantic term $S_r$ onto the same
+numerical range as the volumetric count $U_r$ so that $\beta$ controls
+their relative influence directly.
+Each occupied voxel thus contributes in proportion to its \emph{lack} of
+confidence $(1 - c)$: a confidently labeled surface contributes little,
+while an ambiguous one contributes a great deal, which is what steers the
+planner toward re-observing exactly those symptomatic regions the map is
+least sure about.
 As in the volumetric case, each ray terminates at the first occupied voxel.
-Setting $\beta = 0$ recovers the purely volumetric planner, so $\beta$ can be read as the degree to which view selection is disease-aware rather than purely geometric.
-Parameter values, including $\beta$, are reported in Table~\ref{tabPlanningParams}.
+Setting $\beta = 0$ recovers the purely volumetric planner, so $\beta$ can
+be read as the degree to which view selection is disease-aware rather than
+purely geometric.
+Parameter values, including $\beta$, are reported in
+Table~\ref{tabPlanningParams}.
 
-Figure~\ref{figViewpointCandidates} contrasts the two NBV candidate generators: both cluster voxels of interest---geometric frontier voxels for the volumetric planner, semantically uncertain voxels for the semantic planner---and sample candidate poses on a hemisphere facing each cluster centroid.
+% TODO(fig): add figs/nbv/ig_comparison_heatmap once rendered. For a
+% single fixed map state, a side-by-side comparison showing the same
+% set of candidate viewpoints colored by volumetric IG
+% (Equation~\ref{eqVolIG}) on one side and by semantic IG
+% (Equation~\ref{eqSemIG}) on the other, so the reader can see
+% concretely that the two scoring functions rank candidates
+% differently and that the semantic planner is drawn toward
+% low-confidence symptomatic regions rather than merely unexplored
+% ones.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/nbv/ig_comparison_heatmap}
+%   \caption{Candidate viewpoints for the same map state, scored by
+%            volumetric information gain (left) versus semantic
+%            information gain (right), illustrating how the semantic
+%            term redirects the planner toward low-confidence
+%            symptomatic regions.}
+%   \label{figIGComparison}
+% \end{figure}
+
+Figure~\ref{figViewpointCandidates} contrasts the two NBV candidate
+generators: both cluster voxels of interest (geometric frontier voxels for
+the volumetric planner, semantically uncertain voxels for the semantic
+planner) and sample candidate poses on a hemisphere facing each cluster
+centroid.
 
 \begin{figure}[t]
     \centering
-    % TODO(fig): add figs/nbv/viewpoint_candidates (cropped from System_Diagram) once rendered.
+    % TODO(fig): add figs/nbv/viewpoint_candidates (cropped from
+    % System_Diagram) once rendered.
     % \includegraphics[width=0.98\linewidth]{figs/nbv/viewpoint_candidates}
-    \caption{Viewpoint candidate generation for the volumetric (left) and semantic (right) planners.
-             Both cluster voxels of interest---frontier voxels and semantically uncertain voxels, respectively---and sample candidate poses on a hemisphere facing each cluster centroid.}
+    \caption{Viewpoint candidate generation for the volumetric (left)
+             and semantic (right) planners.
+             Both cluster voxels of interest (frontier voxels and
+             semantically uncertain voxels, respectively) and sample
+             candidate poses on a hemisphere facing each cluster
+             centroid.}
     \label{figViewpointCandidates}
 \end{figure}
 
 \section{Simulation Experiments} \label{secSimExperiments}
 
-We evaluate the three planners in the simulation environment of Section~\ref{secSimulation}, comparing how quickly and how accurately each builds a disease map as viewpoints accumulate.
-This section first defines the evaluation methodology---how predicted and ground-truth symptoms are matched, and how detection quality and geometric coverage are scored---and then reports the results.
-The methodology defined here is used unchanged for the field evaluation of Chapter~\ref{chapErwin}.
+We evaluate the three planners in the simulation environment of
+Section~\ref{secSimulation}, comparing how quickly and how accurately each
+builds a disease map as viewpoints accumulate.
+This section first defines the evaluation methodology (how predicted and
+ground-truth symptoms are matched, and how detection quality and geometric
+coverage are scored) and then reports the results.
+The methodology defined here is used unchanged for the field evaluation of
+Chapter~\ref{chapErwin}.
 
 \subsection{Experimental Setup} \label{secSimSetup}
 
 \paragraph{Predicted symptoms and matching.}
-A predicted disease instance is represented as a cluster of connected occupied voxels sharing the same semantic class, and its predicted location is the mean 3D position (centroid) of the voxels in the cluster.
-Ground truth symptoms are the 3D centroids obtained as described in Section~\ref{secGSSplat}.
-A natural way to extend standard 2D detection evaluation---which matches predictions to ground truth by bounding-box intersection-over-union (IoU)---to 3D would be to fit axis-aligned bounding boxes to each symptom; however, fire blight symptoms stretch irregularly along branches with no clear start or end, which makes axis-aligned boxes ill-defined and their IoU unstable.
-We therefore adopt a centroid-to-centroid formulation, matching a predicted cluster to a ground-truth symptom when the Euclidean distance between their centroids falls within a threshold $t$.
-For orchard-scale scouting, branch-level localization at this granularity is the operationally relevant target: a grower needs to know which branch bears a symptom, not its exact surface extent.
+A predicted disease instance is represented as a cluster of connected
+occupied voxels sharing the same semantic class, and its predicted location
+is the mean 3D position (centroid) of the voxels in the cluster.
+Ground truth symptoms are the 3D centroids obtained as described in
+Section~\ref{secSimGT} for simulation and in Section~\ref{secGSSplat} of
+Chapter~\ref{chapErwin} for the field.
+A natural way to extend standard 2D detection evaluation, which matches
+predictions to ground truth by bounding-box intersection-over-union
+(IoU), to 3D would be to fit axis-aligned bounding boxes to each symptom;
+however, fire blight symptoms stretch irregularly along branches with no
+clear start or end, which makes axis-aligned boxes ill-defined and their
+IoU unstable.
+We therefore adopt a centroid-to-centroid formulation, matching a predicted
+cluster to a ground-truth symptom when the Euclidean distance between their
+centroids falls within a threshold $t$.
+For orchard-scale scouting, branch-level localization at this granularity
+is the operationally relevant target: a grower needs to know which branch
+bears a symptom, not its exact surface extent.
 
-Because voxel-cluster boundaries do not always align one-to-one with individual symptoms, two corrections are applied to predicted clusters before matching.
-First, a cluster that spans multiple ground-truth points within the matching threshold is split into sub-clusters, correcting for closely spaced symptoms that voxel adjacency has merged into one blob.
-Second, multiple nearby clusters that all fall within the threshold of the same ground-truth point are merged, correcting for a single extended symptom that has fragmented into several adjacent detections.
-Together these corrections keep the evaluation from mistaking voxelization artifacts at symptom boundaries for genuine missed or spurious detections.
+Because voxel-cluster boundaries do not always align one-to-one with
+individual symptoms, two corrections are applied to predicted clusters
+before matching.
+First, a cluster that spans multiple ground-truth points within the
+matching threshold is split into sub-clusters, correcting for closely
+spaced symptoms that voxel adjacency has merged into one blob.
+Second, multiple nearby clusters that all fall within the threshold of the
+same ground-truth point are merged, correcting for a single extended
+symptom that has fragmented into several adjacent detections.
+Together these corrections keep the evaluation from mistaking voxelization
+artifacts at symptom boundaries for genuine missed or spurious detections.
+
+% TODO(fig): add figs/nbv/cluster_split_merge once rendered. A small
+% two-panel schematic: left panel showing a single predicted voxel
+% cluster spanning two nearby ground-truth points before splitting
+% into sub-clusters; right panel showing several fragmented nearby
+% clusters around one ground-truth point before being merged into
+% one. Would make the two correction rules concrete without requiring
+% the reader to visualize them from the prose alone.
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.7\linewidth]{figs/nbv/cluster_split_merge}
+%   \caption{The two voxel-cluster corrections applied before
+%            matching.
+%            \textit{Left:} a cluster spanning multiple ground-truth
+%            points is split into sub-clusters.
+%            \textit{Right:} multiple nearby clusters around a single
+%            ground-truth point are merged.}
+%   \label{figClusterSplitMerge}
+% \end{figure}
 
 \paragraph{Detection metrics.}
-Detection quality is measured with two complementary metrics, both computed on predictions and ground truth pooled across all trees at each viewpoint index, rather than averaged per tree.
-Pooling ensures that symptom-dense trees contribute in proportion to their symptom count and avoids the undefined per-tree scores that arise on healthy trees with no symptoms.
+Detection quality is measured with two complementary metrics, both computed
+on predictions and ground truth pooled across all trees at each viewpoint
+index, rather than averaged per tree.
+Pooling ensures that symptom-dense trees contribute in proportion to their
+symptom count and avoids the undefined per-tree scores that arise on
+healthy trees with no symptoms.
 
 The first metric is the maximum F1 score.
-Predictions are sorted by descending confidence and admitted incrementally; at each implicit confidence threshold, the admitted predictions are matched greedily to ground-truth points of the same class in ascending order of distance, subject to the threshold $t$ and with the splitting and merging above applied.
-A matched prediction is a true positive, an unmatched prediction a false positive, and an unmatched ground-truth point a false negative; F1 is the harmonic mean of the resulting precision and recall, and we report the maximum F1 attained over the confidence sweep.
-The matching threshold is set to $t = 0.10$\,m, chosen empirically to tolerate small centroid-localization noise while remaining tight enough to separate neighboring symptoms.
+Predictions are sorted by descending confidence and admitted incrementally;
+at each implicit confidence threshold, the admitted predictions are matched
+greedily to ground-truth points of the same class in ascending order of
+distance, subject to the threshold $t$ and with the splitting and merging
+above applied.
+A matched prediction is a true positive, an unmatched prediction a false
+positive, and an unmatched ground-truth point a false negative; F1 is the
+harmonic mean of the resulting precision and recall, and we report the
+maximum F1 attained over the confidence sweep.
+The matching threshold is set to $t = 0.10$\,m, chosen empirically to
+tolerate small centroid-localization noise while remaining tight enough to
+separate neighboring symptoms.
 
-The second metric is mean average precision (mAP), computed following the COCO detection protocol with 3D Euclidean centroid distance replacing IoU as the match criterion.
-Predictions and ground truth are accumulated across all trees and matched with the same procedure, applied independently at each of ten distance thresholds from $0.02$\,m to $0.20$\,m in steps of $0.02$\,m.
-The area under each per-class precision--recall curve gives that class's average precision, mAP averages over all classes present in either the predicted or ground-truth set, and over the ten thresholds.
-Classes with predictions but no ground truth are included in the average rather than excluded, so that false detections on symptom-free trees are penalized rather than ignored.
-Both metrics are recomputed at every viewpoint so that we can track how detection quality evolves as views accumulate.
+The second metric is mean average precision (mAP), computed following the
+COCO detection protocol with 3D Euclidean centroid distance replacing IoU
+as the match criterion.
+Predictions and ground truth are accumulated across all trees and matched
+with the same procedure, applied independently at each of ten distance
+thresholds from $0.02$\,m to $0.20$\,m in steps of $0.02$\,m.
+The area under each per-class precision--recall curve gives that class's
+average precision, mAP averages over all classes present in either the
+predicted or ground-truth set, and over the ten thresholds.
+Classes with predictions but no ground truth are included in the average
+rather than excluded, so that false detections on symptom-free trees are
+penalized rather than ignored.
+Both metrics are recomputed at every viewpoint so that we can track how
+detection quality evolves as views accumulate.
 
 \paragraph{Coverage metric.}
-To assess how thoroughly each planner explores the canopy geometrically, we additionally report the coverage of the ROI, defined as the fraction of voxels within the bounding box that have been assigned a known (occupied or free) occupancy state:
+To assess how thoroughly each planner explores the canopy geometrically, we
+additionally report the coverage of the ROI, defined as the fraction of
+voxels within the bounding box that have been assigned a known (occupied or
+free) occupancy state:
 \begin{equation}
 \text{Coverage} = \frac{N_{\text{known}}}{N_{\text{total}}},
 \label{eqCoverage}
 \end{equation}
-where $N_{\text{known}}$ is the number of voxels in a known state and $N_{\text{total}}$ is the total number of voxels in the ROI.
-Unlike mAP and max-F1, which are computed on the pooled cross-tree set, coverage is averaged across trees at each viewpoint index, since each tree has its own independent OctoMap bounding box.
+where $N_{\text{known}}$ is the number of voxels in a known state and
+$N_{\text{total}}$ is the total number of voxels in the ROI.
+Unlike mAP and max-F1, which are computed on the pooled cross-tree set,
+coverage is averaged across trees at each viewpoint index, since each tree
+has its own independent OctoMap bounding box.
 
 \paragraph{Configurations and parameters.}
-Simulation results are reported across the five Blender trees and their $60^\circ$ rotational augmentations, for up to $30$ unique canopy configurations in total (Section~\ref{secOrchardSim}).
-Each tree is placed $1.0$\,m from the robot base to fix the sensing geometry, and a $1.0 \times 1.0 \times 2.0$\,m bounding box is fitted to each tree to define a consistent ROI across all planners.
-The detector deployed in simulation is the model fine-tuned on simulation imagery (Section~\ref{secDetectionResults}).
+Simulation results are reported across the five Blender trees and their
+$60^\circ$ rotational augmentations, for up to $30$ unique canopy
+configurations in total (Section~\ref{secOrchardSim}).
+Each tree is placed $1.0$\,m from the robot base to fix the sensing
+geometry, and a $1.0 \times 1.0 \times 2.0$\,m bounding box is fitted to
+each tree to define a consistent ROI across all planners.
+The detector deployed in simulation is the model fine-tuned on simulation
+imagery (Section~\ref{secDetectionResults}).
 All planning parameters are listed in Table~\ref{tabPlanningParams}.
 
 \begin{table}[h]
-\caption{Planning parameters used in all simulation and field experiments.}
+\caption{Planning parameters used in all experiments.}
 \label{tabPlanningParams}
 \centering
 \small
@@ -355,73 +810,126 @@ $\gamma$ (confidence boost) & 0.2 & Detection confidence $\tau$ & 0.1 \\
 
 \subsection{Results} \label{secSimResults}
 
-Table~\ref{tabNBVSimResults} reports planner performance at viewpoints $15$ and $30$, and Figure~\ref{figSimResults} shows the full per-viewpoint trajectories of all three metrics.
+Table~\ref{tabSimResults} reports planner performance at viewpoints $15$
+and $30$, and Figure~\ref{figSimResults} shows the full per-viewpoint
+trajectories of all three metrics.
+The corresponding field results are reported separately in
+Section~\ref{secFieldResults} of Chapter~\ref{chapErwin}, using the same
+metrics and viewpoint checkpoints.
 Two clear patterns emerge.
-The volumetric planner achieves the most complete geometric exploration, reaching the highest ROI coverage ($82.03\%$ at viewpoint $30$) by aggressively driving down occupancy uncertainty.
-The semantic planner, by contrast, achieves the strongest detection performance, reaching the highest mAP ($0.479$) and the highest max-F1 ($0.588$) by spending its later viewpoints refining low-confidence predictions rather than exploring already-explained space.
-The two adaptive planners track each other closely through most of the sequence, with the semantic planner pulling ahead only in the later viewpoints, once the volumetric planner's detection performance has plateaued and there is little geometric unknown left for it to pursue.
-The baseline planner trails on every metric at both checkpoints, confirming that adaptive, map-driven viewpoint selection yields a meaningful improvement over deterministic planar coverage in unstructured canopies, and that this advantage holds whether the objective is geometric coverage or disease detection.
+The volumetric planner achieves the most complete geometric exploration,
+reaching the highest ROI coverage ($82.03\%$ at viewpoint $30$) by
+aggressively driving down occupancy uncertainty.
+The semantic planner, by contrast, achieves the strongest detection
+performance, reaching the highest mAP ($0.479$) and the highest max-F1
+($0.588$) by spending its later viewpoints refining low-confidence
+predictions rather than exploring already-explained space.
+The two adaptive planners track each other closely through most of the
+sequence, with the semantic planner pulling ahead only in the later
+viewpoints, once the volumetric planner's detection performance has
+plateaued and there is little geometric unknown left for it to pursue.
+The baseline planner trails on every metric at both checkpoints, confirming
+that adaptive, map-driven viewpoint selection yields a meaningful
+improvement over deterministic planar coverage in unstructured canopies,
+and that this advantage holds whether the objective is geometric coverage
+or disease detection.
 
 \begin{table}[h]
 \centering
-\caption{Planner performance in simulation and in the field, at viewpoints 15 and 30.
-         Full 30-viewpoint inspections took on the order of 3--5 minutes to complete.
-         Bold marks the top value(s) in each column, with ties (values within $0.01$ of the top) bolded together.}
-\label{tabNBVSimResults}
+\caption{Planner performance in simulation, at viewpoints 15 and 30.
+         Full 30-viewpoint inspections took on the order of 3--5
+         minutes to complete.
+         Bold marks the top value(s) in each column, with ties
+         (values within $0.01$ of the top) bolded together.}
+\label{tabSimResults}
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{l ccc ccc}
+\begin{tabular}{l ccc}
 \toprule
- & \multicolumn{3}{c}{Simulation} & \multicolumn{3}{c}{Field} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
-Planner & mAP & F1 & Cov. (\%) & mAP & F1 & Cov. (\%) \\
+Planner & mAP & F1 & Cov. (\%) \\
 \midrule
-\multicolumn{7}{l}{\textit{Viewpoint 15}} \\
-Baseline   & 0.167 & 0.273 & 37.88 & 0.089 & 0.124 & 33.77 \\
-Volumetric & 0.368 & \textbf{0.504} & \textbf{68.25} & 0.166 & 0.346 & \textbf{56.39} \\
-Semantic   & \textbf{0.383} & 0.493 & 59.00 & \textbf{0.209} & \textbf{0.461} & 48.13 \\
+\multicolumn{4}{l}{\textit{Viewpoint 15}} \\
+Baseline   & 0.167 & 0.273 & 37.88 \\
+Volumetric & 0.368 & \textbf{0.504} & \textbf{68.25} \\
+Semantic   & \textbf{0.383} & 0.493 & 59.00 \\
 \midrule
-\multicolumn{7}{l}{\textit{Viewpoint 30}} \\
-Baseline   & 0.366 & 0.465 & 53.75 & \textbf{0.331} & 0.560 & 52.67 \\
-Volumetric & 0.429 & 0.537 & \textbf{82.03} & 0.234 & 0.411 & \textbf{71.41} \\
-Semantic   & \textbf{0.479} & \textbf{0.588} & 70.21 & \textbf{0.322} & \textbf{0.608} & 60.36 \\
+\multicolumn{4}{l}{\textit{Viewpoint 30}} \\
+Baseline   & 0.366 & 0.465 & 53.75 \\
+Volumetric & 0.429 & 0.537 & \textbf{82.03} \\
+Semantic   & \textbf{0.479} & \textbf{0.588} & 70.21 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[t]
     \centering
-    % TODO(fig): add figs/nbv/all_metrics.png once rendered.
-    % \includegraphics[width=0.98\linewidth]{figs/nbv/all_metrics}
-    \caption{Planner performance averaged across the five simulated symptomatic apple trees and their $60^\circ$ rotational augmentations (left) and across the 12 dormant apple trees inspected in the field (right).
-             Curves show mean mAP, max-F1, and ROI coverage over 30 viewpoints.
-             The field curves are discussed in Chapter~\ref{chapErwin}.}
+    % TODO(fig): add figs/nbv/sim_metrics.png once rendered.
+    % \includegraphics[width=0.7\linewidth]{figs/nbv/sim_metrics}
+    \caption{Planner performance averaged across the five simulated
+             symptomatic apple trees and their $60^\circ$ rotational
+             augmentations.
+             Curves show mean mAP, max-F1, and ROI coverage over 30
+             viewpoints.
+             The corresponding field curves are reported in
+             Section~\ref{secFieldResults} of Chapter~\ref{chapErwin}.}
     \label{figSimResults}
 \end{figure}
 
 \subsection{Qualitative Analysis} \label{secSimQualitative}
 
-The quantitative gap between the volumetric and semantic planners has an intuitive geometric explanation, visible when their maps are compared at matched viewpoint budgets.
-The volumetric planner spreads its attention evenly over all unexplored space, so its map fills in uniformly and its coverage rises fastest, but it has no reason to linger on a branch whose disease label is uncertain once that branch has been observed even once.
-The semantic planner instead returns to exactly those ambiguous regions, accumulating the repeated, mutually consistent observations that the confidence-aware fusion rule of Section~\ref{secSemanticExtension} rewards, and so resolves contested detections that the volumetric planner leaves half-explained.
-The result is that, at the same viewpoint budget, the semantic planner's map contains fewer low-confidence symptomatic voxels and more confidently resolved symptoms, at the cost of some geometric coverage in disease-free parts of the canopy that it deliberately declines to explore.
+The quantitative gap between the volumetric and semantic planners has an
+intuitive geometric explanation, visible when their maps are compared at
+matched viewpoint budgets.
+The volumetric planner spreads its attention evenly over all unexplored
+space, so its map fills in uniformly and its coverage rises fastest, but it
+has no reason to linger on a branch whose disease label is uncertain once
+that branch has been observed even once.
+The semantic planner instead returns to exactly those ambiguous regions,
+accumulating the repeated, mutually consistent observations that the
+confidence-aware fusion rule of Section~\ref{secSemanticExtension} rewards,
+and so resolves contested detections that the volumetric planner leaves
+half-explained.
+The result is that, at the same viewpoint budget, the semantic planner's
+map contains fewer low-confidence symptomatic voxels and more confidently
+resolved symptoms, at the cost of some geometric coverage in disease-free
+parts of the canopy that it deliberately declines to explore.
 
-% TODO(fig): add a side-by-side qualitative comparison of semantic maps produced
-% by each planner at a matched viewpoint budget (e.g. figs/nbv/qualitative_maps),
-% highlighting a region resolved by the semantic planner but not the volumetric one.
+% TODO(fig): add a side-by-side qualitative comparison of semantic
+% maps produced by each planner at a matched viewpoint budget (e.g.
+% figs/nbv/qualitative_maps), highlighting a region resolved by the
+% semantic planner but not the volumetric one.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\textwidth]{figs/nbv/qualitative_maps}
-%   \caption{Example semantic maps produced by each planner at a matched viewpoint
-%            budget, illustrating regions the semantic planner resolves earlier than
-%            the volumetric planner.}
+%   \caption{Example semantic maps produced by each planner at a
+%            matched viewpoint budget, illustrating regions the
+%            semantic planner resolves earlier than the volumetric
+%            planner.}
 %   \label{figSimQualitative}
 % \end{figure}
 
 \section{Summary} \label{secNBVSummary}
 
-This chapter developed the semantic mapping and planning core of the thesis.
-We introduced a confidence-aware semantic OctoMap that fuses per-view detections from the Chapter~\ref{chapDataset} detector into a single volumetric map, storing occupancy, a disease class label, and a fused confidence per voxel, and updating semantics with a boost-and-penalty fusion rule that reinforces consistent observations while flagging contested ones for re-inspection (Section~\ref{secSemanticOctoMap}).
-On top of this representation, we formulated inspection as a next-best-view problem and described three planners---a deterministic grid-scan baseline, a volumetric NBV planner, and the proposed semantic NBV planner, which scores candidate views by the disease-label uncertainty they would resolve rather than by geometric unknown alone (Section~\ref{secNBVPlanning}).
-Using a Blender-and-Gazebo simulation with exact mesh ground truth (Section~\ref{secSimulation}) and a centroid-based 3D evaluation protocol (Section~\ref{secSimExperiments}), we showed that both adaptive planners substantially outperform the baseline, that the volumetric planner attains the most complete geometric coverage, and that the semantic planner attains the best detection accuracy, reaching the highest mAP and max-F1 by refining low-confidence regions in its later viewpoints.
-Chapter~\ref{chapErwin} deploys this representation, these planners, and this evaluation protocol unchanged on the physical robot, and tests whether the simulation findings hold under real field conditions.
+This chapter developed the semantic mapping and planning core of the
+thesis.
+We introduced a confidence-aware semantic OctoMap that fuses per-view
+detections from the Chapter~\ref{chapDataset} detector into a single
+volumetric map, storing occupancy, a disease class label, and a fused
+confidence per voxel, and updating semantics with a boost-and-penalty
+fusion rule that reinforces consistent observations while flagging
+contested ones for re-inspection (Section~\ref{secSemanticOctoMap}).
+On top of this representation, we formulated inspection as a next-best-view
+problem and described three planners---a deterministic grid-scan baseline,
+a volumetric NBV planner, and the proposed semantic NBV planner, which
+scores candidate views by the disease-label uncertainty they would resolve
+rather than by geometric unknown alone (Section~\ref{secNBVPlanning}).
+Using a Blender-and-Gazebo simulation with exact mesh ground truth
+(Section~\ref{secSimulation}) and a centroid-based 3D evaluation protocol
+(Section~\ref{secSimExperiments}), we showed that both adaptive planners
+substantially outperform the baseline, that the volumetric planner attains
+the most complete geometric coverage, and that the semantic planner attains
+the best detection accuracy, reaching the highest mAP and max-F1 by
+refining low-confidence regions in its later viewpoints.
+Chapter~\ref{chapErwin} deploys this representation, these planners, and
+this evaluation protocol unchanged on the physical robot, and tests whether
+the simulation findings hold under real field conditions.

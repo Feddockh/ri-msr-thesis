@@ -18,9 +18,9 @@ Figure~\ref{figRobotPlatform} shows the assembled platform deployed in a dormant
 
 \begin{figure}[h]
     \centering
-    % TODO(fig): add figs/erwin/robot_platform (from robot_anonymized.jpg) once available.
+    % TODO(fig): add figs/erwin/robot_platform once available.
     % \includegraphics[width=0.75\textwidth, trim={0 400 0 300}, clip]{figs/erwin/robot_platform}
-    \caption{The autonomous disease inspection robot, Erwin, deployed in a dormant apple orchard at a university fruit research facility.
+    \caption{The autonomous disease inspection robot, Erwin, deployed in a dormant apple orchard at the Penn State Fruit Research and Extension Center in Adams County, Pennsylvania.
              A UFACTORY xArm6 manipulator is mounted on horizontal rails atop a Farm-ng Amiga mobile base, with the multi-modal camera rig fixed to the manipulator end effector.}
     \label{figRobotPlatform}
 \end{figure}
@@ -50,9 +50,20 @@ Because the planners reason in a single global frame, every sensor observation m
 Intrinsic parameters (focal length, principal point, and distortion) and the stereo baseline are those reported in Section~\ref{secFlirCamera}, and stereo frames are undistorted and rectified before depth estimation.
 At runtime, the fixed rig-to-end-effector transform is composed with the manipulator's forward kinematics and the base pose to place each semantic point cloud into the common global frame used by the map (Section~\ref{secProjection}).
 
+Each camera's intrinsics were calibrated using the ROS 2 camera calibration tool with a ChArUco board, which combines the corner-localization precision of a chessboard pattern with the per-square ArUco markers needed to identify board pose even when the board is partially occluded or only partially in view, as in Figure~\ref{figCameraCalib}.
+Calibration was repeated several times for each camera, and a calibration was accepted only once the resulting reprojection error fell below $1.0$ pixel, so that the intrinsic parameters used throughout this work are consistently sub-pixel accurate.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figs/camera_calib.jpg}
+    \caption{Intrinsic calibration of the flash stereo camera using the ROS 2 camera calibration tool with a ChArUco board.
+             The inset shows the detected board pose, with identified ArUco marker IDs and the estimated board corners overlaid on the live camera feed.}
+    \label{figCameraCalib}
+\end{figure}
+
 % TODO: add the eye-in-hand extrinsic calibration procedure and the resulting
-% calibration accuracy (e.g. reprojection error), and, if desired, a figure of
-% the ROS 2 TF tree relating the camera, end-effector, and base frames.
+% calibration accuracy, and, if desired, a figure of the ROS 2 TF tree
+% relating the camera, end-effector, and base frames.
 
 \section{System Architecture} \label{secSystemArch}
 
@@ -119,21 +130,21 @@ The field experiments serve two purposes: to validate that the full integrated s
 
 \subsection{Experimental Site} \label{secFieldSite}
 
-Field evaluation was conducted at a university fruit research facility, using 12 dormant apple trees, of which 9 exhibited fire blight symptoms and 3 appeared healthy.
+Field evaluation was conducted at the Penn State Fruit Research and Extension Center in Adams County, Pennsylvania, from March 18 to March 20, 2026, using 12 dormant apple trees, of which 9 exhibited fire blight symptoms and 3 appeared healthy.
 The three healthy trees provide true-negative cases, testing whether the planners and detector avoid hallucinating symptoms on disease-free canopy---a case that pooled detection metrics explicitly penalize (Section~\ref{secSimSetup}).
-This facility is deliberately distinct from the commercial orchard whose imagery was used to train the detector (Section~\ref{secDetectionResults}): no images from the evaluation site were used during training, so the field results measure performance under a genuine train--test domain gap.
-The number of trees was limited to 12 for two practical reasons: each tree had to be inspected by all three planners within a single two-day site visit, and symptomatic trees are inherently scarce, since growers prune out fire blight infections as soon as they are found, leaving few orchards with standing disease available for study.
+This site is deliberately distinct from the commercial orchard whose imagery was used to train the detector (Section~\ref{secDetectionResults}): no images from the evaluation site were used during training, so the field results measure performance under a genuine train--test domain gap.
+The number of trees was limited to 12 for two practical reasons: each tree had to be inspected by all three planners within a single multi-day site visit, and symptomatic trees are inherently scarce, since growers prune out fire blight infections as soon as they are found, leaving few orchards with standing disease available for study.
 
 % TODO(fig): add figs/erwin/field_site photos of the orchard site.
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\textwidth]{figs/erwin/field_site}
-%   \caption{The experimental orchard site during field evaluation.}
+%   \caption{The experimental orchard site at the Penn State Fruit Research and Extension Center during field evaluation.}
 %   \label{figFieldSite}
 % \end{figure}
 
-% TODO: add site details if to be reported (region, tree variety, canopy type,
-% row spacing, collection dates, and weather conditions during the visit).
+% TODO: add remaining site details if to be reported (tree variety, canopy
+% type, row spacing, and weather conditions during the visit).
 
 \subsection{Experimental Protocol} \label{secFieldProtocol}
 
@@ -141,15 +152,69 @@ Each of the 12 trees was inspected by all three planners---baseline grid scan, v
 For every tree, the base was positioned $1.0$\,m from the trunk to fix the sensing geometry, matching the standoff used in simulation, and a $1.0 \times 1.0 \times 2.0$\,m bounding box was fitted to the tree to define a consistent ROI (Section~\ref{secSimSetup}).
 Each planner was run for a 30-viewpoint budget, and detection quality and coverage were recorded at every viewpoint using the metrics of Section~\ref{secSimSetup}.
 
-Ground truth for each field tree was obtained by reconstructing a 3D Gaussian splat of the tree from multi-view imagery, manually segmenting its symptomatic regions with expert guidance, and storing the centroid of each segmented region as the reference symptom location (Section~\ref{secGSSplat}).
+Ground truth for each field tree was obtained by reconstructing a 3D Gaussian splat of the tree and manually annotating its symptomatic regions, described in Section~\ref{secGSSplat} below.
 As in simulation, all three planners were evaluated with single-image-per-viewpoint capture rather than the continuous $5$\,fps feed described in Section~\ref{secPerceptionPipeline}.
 The continuous feed was tested separately and reconstructed scenes faster, but it was excluded from the planner comparison because it would conflate capture rate with planning strategy; holding capture fixed at one image per viewpoint ensures the comparison isolates the effect of the planner.
 
+\subsection{Ground Truth Generation with Gaussian Splatting} \label{secGSSplat}
+
+Quantitative evaluation of the field deployment requires a reference set of true symptom locations against which the map's detections can be scored, expressed as 3D centroids so that the same evaluation procedure (Section~\ref{secSimSetup}) used in simulation (Section~\ref{secSimGT}) applies unchanged to real trees.
+Because no exact mesh exists for a real tree, ground truth is instead reconstructed photogrammetrically.
+Prior to each field inspection, a dense set of multi-view images of the tree is captured and used to reconstruct a 3D Gaussian splat of the canopy, registered into the same metric frame used by the robot's map (Section~\ref{secSensorCalib}).
+Symptomatic regions are then manually segmented within the splat by an annotator, with guidance from domain experts, and the centroid of each segmented region is stored as the ground truth symptom location.
+Using a Gaussian splat rather than raw imagery gives the annotator a coherent, navigable 3D model in which a symptom can be inspected from many angles and localized precisely in the same metric frame as the robot's map, which is what makes centroid-level 3D ground truth possible for real trees at all.
+Figure~\ref{figSplatAnnotation} shows an annotated field splat, with canker instances in green and shepherd's crook instances in orange.
+
+\begin{figure}[t]
+    \centering
+    % TODO(fig): add figs/erwin/splat_annotations.png once rendered.
+    % \includegraphics[width=0.7\linewidth, trim={0 200 0 200}, clip]{figs/erwin/splat_annotations}
+    \caption{Gaussian splat of a field tree with manually annotated symptom regions.
+             Canker instances are depicted in green and shepherd's crook instances in orange.
+             The centroid of each annotated region serves as the ground truth symptom location for evaluation.}
+    \label{figSplatAnnotation}
+\end{figure}
+
 \subsection{Field Results} \label{secFieldResults}
 
-Field results are reported in the right-hand columns of Table~\ref{tabNBVSimResults}, alongside the simulation results, and the per-viewpoint trajectories appear in the right-hand panel of Figure~\ref{figSimResults}.
+Table~\ref{tabFieldResults} reports planner performance at viewpoints 15 and 30, using the same metrics, thresholds, and viewpoint checkpoints as the simulation results of Section~\ref{secSimResults}, and Figure~\ref{figFieldResults} shows the full per-viewpoint trajectories of all three metrics.
 The field results follow the same overall pattern as simulation: the volumetric planner attains the most complete geometric coverage ($71.41\%$ at viewpoint $30$), while the semantic planner attains the best detection quality by the standard operating metric, reaching the highest max-F1 ($0.608$).
 As expected, absolute metric values are lower than in simulation, consistent with the greater difficulty of real orchard conditions---natural lighting, real occlusion, and the train--test domain gap.
+
+\begin{table}[h]
+\centering
+\caption{Planner performance in the field, at viewpoints 15 and 30.
+         Full 30-viewpoint inspections took on the order of 3--5 minutes to complete.
+         Bold marks the top value(s) in each column, with ties (values within $0.01$ of the top) bolded together.}
+\label{tabFieldResults}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l ccc}
+\toprule
+Planner & mAP & F1 & Cov. (\%) \\
+\midrule
+\multicolumn{4}{l}{\textit{Viewpoint 15}} \\
+Baseline   & 0.089 & 0.124 & 33.77 \\
+Volumetric & 0.166 & 0.346 & \textbf{56.39} \\
+Semantic   & \textbf{0.209} & \textbf{0.461} & 48.13 \\
+\midrule
+\multicolumn{4}{l}{\textit{Viewpoint 30}} \\
+Baseline   & \textbf{0.331} & 0.560 & 52.67 \\
+Volumetric & 0.234 & 0.411 & \textbf{71.41} \\
+Semantic   & \textbf{0.322} & \textbf{0.608} & 60.36 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    % TODO(fig): add figs/erwin/field_metrics.png once rendered.
+    % \includegraphics[width=0.7\linewidth]{figs/erwin/field_metrics}
+    \caption{Planner performance averaged across the 12 dormant apple trees inspected in the field.
+             Curves show mean mAP, max-F1, and ROI coverage over 30 viewpoints.
+             The corresponding simulation curves are reported in Figure~\ref{figSimResults} of Chapter~\ref{chapNBV}.}
+    \label{figFieldResults}
+\end{figure}
 
 The most striking field result is how early the semantic planner separates from the baseline.
 At viewpoint $15$---roughly half the budget, and thus roughly half of the 3--5 minute inspection time---the semantic planner already more than doubles the baseline's mAP ($0.209$ versus $0.089$) and nearly quadruples its max-F1 ($0.461$ versus $0.124$).
@@ -192,6 +257,6 @@ Detection quality, finally, remains the dominant limit on absolute map accuracy:
 \section{Summary} \label{secErwinSummary}
 
 This chapter integrated the components of the preceding chapters into Erwin, a field-deployed mobile manipulation system for autonomous fire blight inspection, built on an Amiga base and an xArm6 manipulator carrying the multi-modal sensor rig, with all perception, mapping, and planning running onboard under ROS 2 in a closed perception--action loop (Sections~\ref{secRobotPlatform} and~\ref{secSystemArch}).
-Deployed on 12 dormant apple trees at a university fruit research facility under a genuine train--test domain gap, Erwin reproduced the simulation findings of Chapter~\ref{chapNBV}: both adaptive planners clearly outperformed the deterministic baseline, the volumetric planner delivered the most complete coverage, and the semantic planner delivered the best detection quality, reaching comparable map accuracy to the fully-scanned baseline in roughly half the viewpoints and half the inspection time (Section~\ref{secFieldResults}).
+Deployed on 12 dormant apple trees at the Penn State Fruit Research and Extension Center under a genuine train--test domain gap, Erwin reproduced the simulation findings of Chapter~\ref{chapNBV}: both adaptive planners clearly outperformed the deterministic baseline, the volumetric planner delivered the most complete coverage, and the semantic planner delivered the best detection quality, reaching comparable map accuracy to the fully-scanned baseline in roughly half the viewpoints and half the inspection time (Section~\ref{secFieldResults}).
 These results demonstrate that the confidence-aware semantic map and semantic NBV planner are not merely simulation artifacts but deliver fast, fine-grained disease maps under real field conditions.
 Chapter~\ref{chapConclusions} draws together the contributions of the full thesis, discusses the system's limitations, and outlines the path toward orchard-scale autonomous disease mapping.

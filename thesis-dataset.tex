@@ -274,17 +274,14 @@ and NIR frames.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={0 400pt 0 400pt}, clip]{figs/v1_v2_camera_rig.jpg}
-    \caption{Evolution of the handheld camera rig across two design
-             versions, each shown as a CAD model (left) and the
-             assembled hardware (right).
-             \textit{Left:} the initial back-loaded design, in which
-             the cameras were inserted from behind and the
-             touchscreen was bolted on behind them.
-             \textit{Right:} the revised front-loaded design, in
-             which sliding mounts lock each camera in place for
-             quick swaps in the field and the inter-camera spacing
-             is reduced to increase field-of-view overlap.}
+    \includegraphics[width=0.85\linewidth, trim={0 98pt 0 98pt},
+        clip]{figs/v2_camera_rig.jpg}
+    \caption{The revised, front-loaded camera rig design, shown as a
+             CAD model (left) and the assembled hardware (right).
+             Sliding mounts lock each camera in place for quick
+             swaps in the field, and the inter-camera spacing is
+             reduced relative to the initial design to increase
+             field-of-view overlap.}
     \label{figRigEvolution}
 \end{figure}
 
@@ -305,12 +302,23 @@ resolution limitations described in Section~\ref{secZED2i}.
 \textbf{Control interface.}
 The control software was ported from Python to C++ to improve
 capture and preview throughput, and the user interface was
-progressively redesigned around large, glove-friendly controls
-suited to operation on the small rig touchscreen outdoors; its
-evolution across three versions is shown in
-Figure~\ref{figGuiEvolution}.
-The initial version presented four camera views alongside a single
-small button that triggered one capture at a time.
+redesigned around large, glove-friendly controls suited to
+operation on the small rig touchscreen outdoors; the final version
+is shown in Figure~\ref{figGuiEvolution}.
+The initial version presented four small camera views alongside a
+single small capture button and a plain text log, which made
+captured images hard to inspect in the field and gave the operator
+little confirmation that a triggered capture or recording had
+actually succeeded.
+% --- GUI v2 details: TEMPORARILY DISABLED. This intermediate
+% version (Ximea NIR preview added, right stereo view dropped,
+% enlarged buttons, sequence-capture mode, ROS bag recording with
+% reported bag size, a slider column for flash duration, Firefly
+% exposure, and Ximea gain/exposure, and FFC calibration buttons) is
+% skipped in the current text to avoid dwelling on intermediate
+% iterations; expand later if warranted. Remove the surrounding
+% \iffalse/\fi to reinstate this discussion.
+\iffalse
 When the Ximea camera was added, its NIR preview was included and
 the redundant right image of a stereo pair was dropped so that the
 remaining views could be shown larger and their content inspected
@@ -326,34 +334,36 @@ version these exposed the flash duration, Firefly (flash camera)
 exposure, Ximea gain, and Ximea exposure---along with buttons to run
 flat-field correction (FFC) calibration on the Ximea without leaving
 the orchard.
-In the final version the sliders were widened to dominate the middle
-column, making them easier to drag on the small screen, and a
-frame-rate (Hz) control was added; the single-shot trigger was
-removed entirely, so the start button simply began repeating
+\fi
+% --- end disabled GUI v2 details ---
+The final version addresses these issues directly.
+Large START and RECORD buttons replace the single small capture
+button, and a large, scrollable status log reports subscribed
+topics, trigger configuration, and warnings in real time so the
+operator can confirm the rig is behaving correctly.
+A column of sliders exposes flash duration, frame rate, Firefly
+exposure, Ximea gain, and Ximea exposure directly on the
+touchscreen, alongside dark-calibration and flat-field correction
+(FFC) buttons for calibrating the Ximea without leaving the
+orchard.
+The single-shot trigger was removed entirely in favor of the
+frame-rate control, so the start button simply begins repeating
 captures at the selected rate.
-By this point the ZED2i had been removed from the rig, leaving only
-the flash RGB and Ximea NIR previews, the two modalities retained
-for the final dataset, stacked on the right side of the interface.
+By this version the ZED2i had been removed from the rig, leaving
+only the flash RGB and Ximea NIR previews, the two modalities
+retained for the final dataset, shown enlarged side by side so
+their content can be checked at a glance.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={200pt 0 200pt 0}, clip]{figs/v1_v2_v3_handheld_gui.jpg}
-    \caption{Evolution of the handheld capture interface across three
-             versions.
-             \textit{Top left:} version~1, with four camera views and
-             a single small capture button.
-             \textit{Top right:} version~2, after adding the Ximea
-             NIR preview and dropping the redundant right stereo
-             image, with enlarged buttons, a sequence-capture mode,
-             ROS bag recording that reports the bag size on save, a
-             middle column of sliders for flash duration, Firefly
-             exposure, and Ximea gain and exposure, and flat-field
-             correction (FFC) buttons.
-             \textit{Bottom:} version~3, with the sliders widened to
-             dominate the middle column, a frame-rate (Hz) control
-             replacing the single-shot trigger, and the ZED2i removed
-             so that only the flash RGB and Ximea NIR previews remain,
-             stacked at right.}
+    \includegraphics[width=0.85\linewidth, trim={111pt 0 111pt 0},
+        clip]{figs/v3_gui.jpg}
+    \caption{The final handheld capture interface, with large START
+             and RECORD buttons, a readable status log, a slider
+             column for flash duration, frame rate, Firefly
+             exposure, and Ximea gain and exposure, dark-calibration
+             and flat-field correction (FFC) buttons, and enlarged
+             flash RGB and Ximea NIR previews.}
     \label{figGuiEvolution}
 \end{figure}
 
@@ -380,7 +390,7 @@ Table~\ref{tabCollectionSites}.
 The first primary site was a commercial orchard in western
 Pennsylvania, just outside Pittsburgh, which we do not identify by
 name.
-Data were collected there on February 12, 2025, from two rows of
+Data was collected there on February 12, 2025, from two rows of
 symptomatic apple trees.
 The trees were young, grafted onto a high-density rootstock and
 trained as a dwarf central leader, an architecture common in modern
@@ -396,7 +406,7 @@ at this site, amounting to 78.9\,GB of raw data.
 The second primary site was the Alson H. Smith Jr. Agricultural
 Research and Extension Center operated by Virginia Tech in Frederick
 County, Virginia.
-Data were collected there on February 14, 2025, from two rows of a
+Data was collected there on February 14, 2025, from two rows of a
 single block.
 In contrast to the Pittsburgh site, this was an older, free-standing
 orchard of self-supporting trees grown with minimal training and
@@ -423,7 +433,7 @@ were deliberately chosen to approximate those reachable by a
 wrist-mounted camera on the manipulator, so that the collected
 imagery would be representative of what the robot would later
 acquire during autonomous inspection.
-Both sessions were conducted between roughly 10:00 and 16:00 local
+Both sessions were conducted between roughly 10:00 and 14:00 local
 time.
 
 \begin{table}[h]
@@ -493,27 +503,182 @@ to Chapter~\ref{chapErwin}.
 
 \section{Dataset Description} \label{secDatasetDescription}
 
-% TODO: Summarize the dataset statistics.
-% - Total number of image frames per modality.
-% - Number of annotated images.
-% - Class distribution (healthy vs. infected; parts: shoot, leaf, fruit, etc.).
-% - Train / validation / test split.
-% - Comparison to existing public datasets (if any).
+Of the 4{,}913 synchronized image sets captured at the Pittsburgh
+site (Section~\ref{secDataCollection}), only 1{,}275 flash stereo RGB
+frames were carried through to a labeled dataset.
+This large reduction is a direct consequence of how difficult these
+symptoms are to annotate: unlike the crisp, high-contrast objects of
+general-purpose detection benchmarks, dormant fire blight symptoms are
+subtle, irregular, and embedded in visually cluttered branch
+structure, and each image demanded careful annotation which slowed down 
+the labeling process.
+The remainder of this section explains why an existing dataset could
+not simply be adopted for this task, and the following section
+details the annotation protocol and pipeline built to label our own
+imagery.
 
-% \begin{table}[h]
-%   \centering
-%   \caption{TODO: Dataset statistics table.}
-%   \label{tabDatasetStats}
-%   \begin{tabular}{lcccc}
-%     \hline
-%     Modality & Total frames & Annotated & Infected & Healthy \\
-%     \hline
-%     Flash stereo RGB & & & & \\
-%     25-band NIR & & & & \\
-%     ZED2i RGB & & & & \\
-%     \hline
-%   \end{tabular}
-% \end{table}
+\subsection{Comparison to Existing Datasets} \label{secDatasetComparison}
+
+No public dataset matches the conditions targeted in this work:
+close-range, dormant-season imagery of cankers and shepherd's crooks
+under flash and near-infrared illumination.
+The large majority of fire blight imaging datasets are collected from
+overhead unmanned aerial vehicles (UAVs) or aircraft, capturing whole
+canopies from above to map disease incidence at the orchard scale
+rather than to resolve individual symptoms on a
+branch~\cite{Bagheri2020AerialDetectionFireBlightPear,
+kang2020DroneDetectionFireBlightPear,
+schoofs2020UAVFireBlightPearSpectral,
+Xiao2022UAVFireBlightAppleMultispectral}.
+This aerial vantage point is fundamentally mismatched to a
+manipulator-mounted camera operating at arm's length from the canopy;
+indeed, several of these studies note that dense foliage during bloom
+and summer occludes symptoms beneath the tree crown, limiting what an
+overhead view can
+resolve~\cite{Bagheri2020AerialDetectionFireBlightPear,
+Mahmud2023MaskRCNNFireBlight}.
+
+The closest ground-level dataset is the ERWIAM dataset of
+Ma{\ss} et al.~\cite{Mass2024ErwiamDataset}, to date the most
+substantial annotated fire blight image collection, with 1{,}611
+annotated RGB images captured across several consumer cameras and
+smartphones.
+Its four annotation classes---\texttt{flower}, \texttt{leaf},
+\texttt{shoot}, and \texttt{maybe} (predominantly unhealthy
+leaves)---reflect a growing-season focus: three of the four target
+tissue that is absent during dormancy, leaving only the
+\texttt{shoot} class, which does capture shepherd's crooks, as
+relevant to our setting.
+A second relevant collection is the visible--near-infrared
+hyperspectral dataset of Gaci
+et al.~\cite{Gaci2023VisibleNIRDataset}, but it follows a small number
+of lab-controlled plants (on the order of six) over roughly two weeks
+to study infection progression, rather than providing the in-field
+diversity of symptoms needed to train a field detector.
+Other efforts have collected field imagery closer to our setting---the
+dormant-season canker images of Linker and
+Dafny-Yalin~\cite{Linker2024MappingFireBlightCankersFRCNN} and the
+apple fire blight imagery of Mahmud
+et al.~\cite{Mahmud2023MaskRCNNFireBlight}---but neither is released
+publicly with its annotations, so neither could be reused here.
+Because we target dormant-season inspection and deliberately exploit
+the flash RGB and NIR modalities (Section~\ref{secSensingPlatform}),
+neither the imaging conditions nor the label taxonomy of these
+datasets transfers to our task, and building a purpose-collected,
+purpose-annotated dataset was unavoidable.
+
+\subsection{Dataset Composition and Splits} \label{secDatasetSplits}
+
+The annotated dataset comprises 1{,}275 flash stereo RGB images
+(1440$\times$1080), all drawn from the Pittsburgh site, labeled for
+the two dormant-season symptom classes developed in
+Section~\ref{secManualAnnotation}: \emph{shepherd's crook} and
+\emph{canker}.
+Every RGB image was paired with a cross-modal NIR annotation
+(Section~\ref{secCrossModal}), yielding a second, spatially registered
+Ximea dataset with the same image membership, class definitions, and
+train/validation/test partition; the ZED2i RGB stream was not
+annotated and is excluded from the detection dataset entirely.
+
+Splitting burst-captured field imagery naively by frame index or at
+random is unsafe: consecutive frames of the same lesion are near
+duplicates, so a random split would place near-identical images on
+both sides of the train/test boundary and inflate the apparent
+performance of the detector.
+To avoid this, the capture timeline was first partitioned into
+contiguous chunks, cutting the sequence only where both a time gap of
+at least 90\,s and a low visual similarity (grayscale histogram
+correlation below 0.92) indicated a genuine break in the walk, such as
+the operator moving to a new tree.
+Whole chunks---never individual frames---were then assigned to the
+train, validation, and test splits by a randomized search that
+balanced the canker-to-crook ratio across the three partitions, so
+that each split sees a similar class mixture
+(Table~\ref{tabClassBalance}).
+Figure~\ref{figTemporalSplit} shows the resulting assignment along the
+capture timeline: rather than carving off one contiguous block of time
+per split, the chunks are interspersed across the entire field walk,
+so every split spans the full range of trees, viewpoints, and lighting
+encountered during collection.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figs/temporal_split.png}
+    \caption{Assignment of images to the train (blue), validation
+             (yellow), and test (red) splits along the capture
+             timeline. The horizontal axis is time elapsed since the
+             first capture; vertical grey lines mark the chunk
+             boundaries used for the split. Whole chunks are assigned
+             to splits so that each split is interspersed across the
+             entire field walk rather than confined to one contiguous
+             block of time.}
+    \label{figTemporalSplit}
+\end{figure}
+
+To confirm that this chunk-based split leaves no near-duplicate images
+straddling a split boundary, we independently verified it using a
+similarity measure distinct from the one used to form the chunks.
+Every image was encoded as a 1280-dimensional MobileNetV2
+embedding~\cite{sandler2018mobilenetv2}, and the cosine similarity was
+computed for all $\binom{1275}{2}\!\approx\!812{,}000$ image pairs,
+each pair labeled either \emph{same-split} (both images in the same
+partition) or \emph{cross-split} (images in different partitions).
+Figure~\ref{figLeakage} shows the two resulting distributions.
+As expected, the same-split distribution has a long tail of
+high-similarity pairs---consecutive frames of the same lesion that
+correctly land together---extending past the 0.95 threshold
+conventionally used to flag duplicates.
+The cross-split distribution, in contrast, falls off well before that
+threshold: the single most similar cross-split pair reached only 0.916
+for RGB and 0.903 for NIR, both comfortably below 0.95.
+In plain terms, no two images that ended up in different splits are
+anywhere close to being the same photograph, which is the evidence
+that the split does not leak information from training into
+evaluation.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figs/leakage_evidence.png}
+    \caption{Distribution of MobileNetV2 embedding cosine similarity
+             over all image pairs, split into same-split pairs (top,
+             blue) and cross-split pairs (bottom, red); counts are on
+             a log scale and only pairs with similarity $\geq 0.7$ are
+             shown. The same-split distribution crosses the 0.95
+             duplicate threshold (dashed line), as expected for
+             consecutive frames of the same lesion, whereas the
+             cross-split distribution stops well short of it,
+             indicating no near-duplicate leakage across split
+             boundaries.}
+    \label{figLeakage}
+\end{figure}
+
+The final composition is summarized in Table~\ref{tabClassBalance}.
+The 1{,}275 images divide into 983 training, 155 validation, and 137
+test images, with the two symptom classes held to a roughly
+57\%\,/\,43\% canker-to-crook ratio in every split.
+The registered NIR dataset shares the same image membership, splits,
+and class balance.
+
+\begin{table}[h]
+    \centering
+    \caption{Composition of the annotated dataset by split. Instance
+             counts are given per symptom class, with the canker share
+             of instances in parentheses. The registered NIR dataset
+             shares the same image membership, splits, and class
+             balance.}
+    \label{tabClassBalance}
+    \begin{tabular}{l|c|cc}
+        \hline
+        Split & Images & Shepherd's crook & Canker \\
+        \hline
+        Train      & 983  & 756 & 993 (57\%) \\
+        Validation & 155  & 140 & 173 (55\%) \\
+        Test       & 137  & 104 & 136 (57\%) \\
+        \hline
+        Total      & 1{,}275 & 1{,}000 & 1{,}302 \\
+        \hline
+    \end{tabular}
+\end{table}
 
 \section{Spectral Analysis of Fire Blight Symptoms}
 \label{secSpectralAnalysis}
@@ -697,117 +862,437 @@ reflected in the threshold response for band pairs that span it.
 
 \section{Annotation Pipeline} \label{secAnnotation}
 
-% TODO: Describe how ground-truth labels were generated.
+Because no existing dataset fit the task, every label used in this
+work was produced in-house.
+We first attempted to bootstrap annotation with open-vocabulary,
+text-to-annotation tools such as Grounding
+DINO~\cite{liu2023groundingdino}, prompting them with descriptions of
+cankers and shepherd's crooks, but these models failed to localize
+dormant fire blight symptoms with any reliability---unsurprisingly,
+since the subtle, textureless lesions on bare winter bark bear little
+resemblance to anything in their training distribution.
+All symptom instances were therefore annotated by hand in
+CVAT~\cite{cvat}, and the pipeline below was built to make that
+manual effort as efficient as possible: a standardized labeling
+protocol developed with a plant pathologist
+(Section~\ref{secManualAnnotation}), SAM-assisted conversion of
+boxes to masks (Section~\ref{secSAMAnnotation}), and geometric
+transfer of labels from the RGB frames to the registered NIR frames
+(Section~\ref{secCrossModal}).
 
-\subsection{Expert Manual Annotation} \label{secManualAnnotation}
+\subsection{Expert Manual Annotation and the Symptom Taxonomy}
+\label{secManualAnnotation}
 
-% TODO: Describe how images were reviewed and labeled by domain experts
-% (or the authors + expert verification). Tools used (LabelImg, CVAT, etc.).
-% Inter-annotator agreement if applicable.
+The central difficulty in labeling this data is that there is no
+established convention for annotating fire blight cankers and
+shepherd's crooks with bounding boxes.
+Shepherd's crooks are relatively uniform---all share the
+characteristic hooked tip of a wilted, infected shoot---but cankers
+vary widely in shape, location, and appearance, and their extent on
+the bark is often ambiguous.
+To make annotation repeatable across images and annotators, we
+developed a written labeling protocol in consultation with plant
+pathologist Srdjan A\'{c}imovi\'{c}, iterating on definitions and box
+placement rules until each symptom type could be labeled
+consistently.
+The protocol first distinguishes one crook type and four canker
+subtypes, summarized in Table~\ref{tabSymptomTypes} and illustrated in
+the top row of Figure~\ref{figAnnotationDefs}.
+
+\begin{table}[h]
+    \centering
+    \caption{Symptom types defined in the annotation protocol. The
+             four canker subtypes were later merged into a single
+             \emph{canker} class for training and evaluation.}
+    \label{tabSymptomTypes}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{l|l}
+        \hline
+        Type & Definition \\
+        \hline
+        Shepherd's crook & Hooked, dead curvature at the tip of a
+                           new shoot infected by the bacteria, often
+                           with a visible infection margin between
+                           healthy and necrotic tissue. \\
+        \hline
+        Elliptical canker & Localized, roughly oval lesion on a
+                            perennial branch or leader, with a glossy,
+                            blackened, or scratched change in texture. \\
+        Girdling canker   & Lesion that fully encircles a branch or
+                            leader, disrupting vascular flow;
+                            especially blackened, often cracked or with
+                            a strangled inward curvature. \\
+        Stem-end canker   & Downward- or laterally-propagated
+                            infection encircling the distal portion of
+                            a branch, marking the end of disease
+                            progression; resembles a canker margin. \\
+        Stem-end canker 2 & Canker at the junction between branches or
+                            between a branch and the central leader,
+                            blackened or protruding, annotated
+                            independently of surrounding tissue health. \\
+        \hline
+    \end{tabular}%
+    }
+\end{table}
+
+Annotating all five types separately proved counterproductive.
+The four canker subtypes are visually similar to one another and,
+worse, similar to healthy bark, so the detector confused the subtypes
+with each other and with the background, and the fine-grained
+distinctions carried little value for the downstream inspection task,
+which only needs to know that diseased tissue is present.
+We therefore collapsed the four canker subtypes into a single, broader
+\emph{canker} class defined by the shared visual signature---a
+localized patch of glossy, blackened, or scratched bark texture,
+annotated up to the nearest branching point---while keeping
+\emph{shepherd's crook} as the second class.
+Figure~\ref{figAnnotationDefs} illustrates this consolidation: the top
+row shows the individually defined subtypes, and the bracket beneath
+indicates their merger into the single canker label used for all
+detection experiments.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figs/annotations_defs.jpg}
+    \caption{Symptom annotation taxonomy. \textit{Top row:} the one
+             crook type and four canker subtypes originally defined in
+             the labeling protocol, each shown with an example
+             bounding box. \textit{Bottom:} the four canker subtypes
+             are merged into a single \emph{canker} class for training
+             and evaluation, leaving the two-class taxonomy
+             (shepherd's crook, canker) used throughout this work.}
+    \label{figAnnotationDefs}
+\end{figure}
 
 \subsection{SAM-Assisted Annotation} \label{secSAMAnnotation}
 
-% TODO: Describe use of the Segment Anything Model (SAM) to accelerate
-% annotation. Workflow: expert provides seed points → SAM generates masks →
-% expert reviews/corrects. Quantify time savings.
-
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/dataset/annotation_pipeline}
-%   \caption{TODO: Annotation pipeline diagram showing SAM-assisted workflow.}
-%   \label{figAnnotationPipeline}
-% \end{figure}
+The manual labels are bounding boxes, but the cross-modal transfer
+step (Section~\ref{secCrossModal}) and the eventual move to instance
+segmentation both benefit from pixel-level masks.
+Rather than have annotators trace masks by hand, we convert each
+labeled box to a mask automatically with Segment Anything 2
+(SAM2)~\cite{ravi2024sam2}, prompting the model with the annotated box
+and taking its highest-confidence mask as the symptom segmentation.
+This box-to-mask tool is used both to enrich the RGB labels and as an
+intermediate representation in the label-transfer pipeline below; its
+implementation is detailed in Appendix~\ref{apxSAM2}.
 
 \subsection{Cross-Modal Label Transfer} \label{secCrossModal}
 
-% TODO: Describe how RGB annotations are transferred to NIR frames.
-% - Camera calibration / extrinsics between FLIR and Ximea.
-% - Projection-based label mapping.
-% - Handling of occlusion, misalignment, and spectral differences.
-% Include a figure showing paired RGB + NIR frames with transferred labels.
+Annotating the NIR frames independently would have doubled an already
+costly labeling effort, so instead we transfer the RGB labels onto the
+registered Ximea frames geometrically, exploiting the fact that the
+two cameras are rigidly mounted and calibrated
+(Section~\ref{secPlatformMounting}).
+Both cameras were intrinsically and extrinsically calibrated with a
+ChArUco target, using the procedure detailed in
+Chapter~\ref{chapErwin} (Figure~\ref{figCameraCalib}), recovering the
+rigid transform between the flash stereo camera and the Ximea.
+The Ximea additionally requires radiometric calibration: using the
+in-field dark-calibration and flat-field correction (FFC) controls on
+the rig (Section~\ref{secDesignIterations}), a flat frame is captured
+against a uniform diffuse-white reflectance panel and a dark frame is
+captured with the lens capped, and each raw pixel $R$ is corrected to
+\begin{equation}
+    P_{\mathrm{corrected}} =
+    (R - D)\,\frac{\overline{F} - \overline{D}}{F - D},
+    \label{eqFFC}
+\end{equation}
+where $D$ and $F$ are the per-pixel dark and flat responses and
+$\overline{D}$, $\overline{F}$ their means, removing fixed-pattern
+sensor and illumination nonuniformity before demosaicing.
 
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/dataset/cross_modal_transfer}
-%   \caption{TODO: Example of cross-modal label transfer from RGB to NIR.}
-%   \label{figCrossModal}
-% \end{figure}
+Given the calibrated cameras, labels are transferred in the four steps
+shown in Figure~\ref{figCrossModal}.
+Starting from a labeled bounding box on the flash RGB frame, SAM2
+produces a mask of the symptom (Section~\ref{secSAMAnnotation}); the
+per-pixel depth of that mask is read from the stereo disparity map,
+computed with Foundation
+Stereo~\cite{wen2025foundationstereozeroshotstereomatching} for its
+high-quality reconstructions; the masked pixels are back-projected
+into 3D using the RGB intrinsics and depth, then reprojected into the
+Ximea frame using the calibrated extrinsics and NIR intrinsics.
+The reprojected mask, and the box enclosing it, become the NIR
+annotation.
+To reduce residual error from calibration and depth noise, the
+transferred label is optionally refined by running SAM2 once more on
+the NIR frame, prompted with the reprojected box, so the final mask
+snaps tightly to the symptom in the NIR image.
+This pipeline gave usable NIR pre-annotations from the RGB labels at a
+fraction of the effort of labeling the NIR frames from scratch; the
+resulting NIR dataset mirrors the RGB dataset in image membership,
+splits, and class balance (Section~\ref{secDatasetSplits}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figs/rgb-nir_annotation_pipeline.jpg}
+    \caption{Cross-modal label transfer from the flash RGB frame to
+             the registered Ximea NIR frame. (1) A symptom is labeled
+             with a bounding box on the RGB frame; (2) SAM2 converts
+             the box to a mask; (3) per-pixel depth is read from the
+             Foundation Stereo disparity map and the masked pixels are
+             back-projected into 3D; (4) the 3D points are reprojected
+             into the NIR frame using the calibrated inter-camera
+             transform, yielding the transferred mask and box. A final
+             SAM2 refinement on the NIR frame (not shown) optionally
+             tightens the transferred mask.}
+    \label{figCrossModal}
+\end{figure}
 
 \section{2D Disease Detection Models} \label{sec2DDetection}
 
-% TODO: Describe the detection models trained on this dataset.
+With the dataset assembled and labeled, we train the 2D detector that
+serves as the perception front-end for the semantic mapping and NBV
+system of Chapter~\ref{chapNBV}.
+Separate detectors are trained for the flash RGB and NIR modalities on
+their respective registered datasets, following the identical splits
+and class definitions established in Section~\ref{secDatasetSplits}.
 
 \subsection{Model Architecture} \label{secModelArch}
 
-% TODO: Describe the YOLO variant(s) used (e.g., YOLOv8, YOLOv11).
-% - Input resolution, number of classes.
-% - Pre-training (COCO weights) and fine-tuning procedure.
-% - Separate models for RGB vs. NIR; or fused model.
-% - Loss function, optimizer, augmentation strategy.
+Detection uses YOLO26-L, the large variant of the YOLO26
+family~\cite{yolo26_ultralytics}, initialized from COCO-pretrained
+weights and fine-tuned end-to-end (no frozen layers) for the two-class
+problem of Section~\ref{secManualAnnotation}: shepherd's crook and
+canker.
+Earlier experiments used YOLOv8, a well-established baseline, but we
+moved to YOLO26 for its faster training, improved accuracy, and a
+segmentation head that provides a clean path from the bounding-box
+detector used here to the instance-segmentation masks used downstream.
+The same architecture is trained separately on each modality, and the
+two detectors share the identical YOLO26-L graph with a single
+exception: the stem convolution, whose input depth is 3 for the RGB
+model and 25 for the NIR model, whose demosaiced Ximea bands feed the
+first convolution directly.
+Every layer downstream of the stem operates on the same 64-channel
+feature map, so the two networks are identical from the first block
+onward; widening the stem accounts for a difference of only 12{,}672
+parameters out of roughly 26.2 million.
+The consequential difference is therefore not the architecture but the
+initialization: the RGB model fine-tunes the COCO-pretrained
+\texttt{yolo26l.pt} checkpoint, whereas no 25-channel pretrained
+checkpoint exists, so the NIR model is trained entirely from scratch,
+learning its full feature hierarchy from the field data alone.
+As Section~\ref{secDetectionResults} discusses, this asymmetry, rather
+than the trivial parameter-count difference, is what separates the two
+detectors' performance.
 
 \subsection{Training Details} \label{secTraining}
 
-% TODO: Hyperparameters, hardware, training duration.
-% \begin{table}[h]
-%   \centering
-%   \caption{TODO: Training configuration.}
-%   \label{tabTrainingConfig}
-%   \begin{tabular}{ll}
-%     \hline
-%     Hyperparameter & Value \\
-%     \hline
-%     Architecture & \\
-%     Input size & \\
-%     Optimizer & \\
-%     Learning rate & \\
-%     Epochs & \\
-%     Batch size & \\
-%     \hline
-%   \end{tabular}
-% \end{table}
+Both detectors were trained for up to 200 epochs (early-stop patience
+50) with the AdamW optimizer auto-selected by the framework, an
+initial learning rate of $0.01$ with a fixed (non-cosine) schedule,
+weight decay $5\times10^{-4}$, and a three-epoch warmup, on a single
+NVIDIA RTX 4090 GPU with automatic mixed precision.
+A physical batch of 3 images was gradient-accumulated to a nominal
+batch of 64.
+The RGB model trained at 1088$\times$1440 with a mild augmentation
+set---HSV color jitter, horizontal flips, small translation and scale
+jitter, slight perspective, and mosaic (disabled for the final 30
+epochs)---empirically tuned so that weaker translate, scale, and
+mosaic settings were found to perform worse.
+The NIR model is trained at 416 pixels, matched to the far smaller
+demosaiced Ximea frames, and with all color-space augmentations
+disabled, since HSV jitter is meaningless and numerically unsafe on
+25-channel data; only the geometric augmentations (flips, translation,
+scale) are retained.
+Table~\ref{tabTrainingConfig} summarizes the configuration and the
+modality-specific differences.
+
+\begin{table}[h]
+    \centering
+    \caption{Detector training configuration. Settings are shared
+             across modalities except where the RGB and NIR columns
+             differ.}
+    \label{tabTrainingConfig}
+    \begin{tabular}{l|cc}
+        \hline
+        Hyperparameter & RGB & NIR \\
+        \hline
+        Architecture      & \multicolumn{2}{c}{YOLO26-L} \\
+        Classes           & \multicolumn{2}{c}{2 (shepherd's crook, canker)} \\
+        Input channels    & 3                & 25 \\
+        Initialization    & COCO-pretrained  & from scratch \\
+        Epochs            & \multicolumn{2}{c}{200 (patience 50)} \\
+        Optimizer         & \multicolumn{2}{c}{AdamW (auto)} \\
+        Learning rate     & \multicolumn{2}{c}{$0.01$, fixed schedule} \\
+        Weight decay      & \multicolumn{2}{c}{$5\times10^{-4}$} \\
+        Warmup            & \multicolumn{2}{c}{3 epochs} \\
+        Batch (nominal)   & \multicolumn{2}{c}{3 (accumulated to 64)} \\
+        Image size        & $1088\times1440$ & $416$ \\
+        HSV jitter        & on               & off \\
+        Flip / translate / scale & on         & on \\
+        Mosaic            & 1.0 (last 30 off) & off \\
+        \hline
+    \end{tabular}
+\end{table}
 
 \subsection{Detection Results} \label{secDetectionResults}
 
-% TODO: Report quantitative results (mAP@0.5, precision, recall, F1)
-% on the test split. Compare RGB vs. NIR models; show per-class breakdown.
-% Include precision-recall curves.
+The RGB and NIR detectors are evaluated on the validation and held-out
+test splits of Section~\ref{secDatasetSplits}, and their performance is
+summarized in Table~\ref{tabDetectionResults}.
+We report mean average precision at an IoU threshold of 0.5 (mAP@0.5)
+and averaged over IoU thresholds from 0.5 to 0.95 (mAP@0.5:0.95), along
+with the peak $F_1$ score and the confidence threshold at which it is
+attained.
 
-% \begin{table}[h]
-%   \centering
-%   \caption{TODO: Detection performance comparison.}
-%   \label{tabDetectionResults}
-%   \begin{tabular}{lcccc}
-%     \hline
-%     Model & mAP@0.5 & Precision & Recall & F1 \\
-%     \hline
-%     RGB (YOLOv?) & & & & \\
-%     NIR (YOLOv?) & & & & \\
-%     RGB+NIR fused & & & & \\
-%     \hline
-%   \end{tabular}
-% \end{table}
+\begin{table}[h]
+    \centering
+    \caption{Detection performance of the RGB and NIR YOLO26-L models
+             on the validation and held-out test splits. $F_1$ is the
+             peak score over confidence, reported with the confidence
+             threshold at which it occurs.}
+    \label{tabDetectionResults}
+    \begin{tabular}{ll|cccc}
+        \hline
+        Model & Split & mAP@0.5 & mAP@0.5:0.95 & $F_1$ & conf.\ at $F_1$ \\
+        \hline
+        RGB & Val  & 0.671 & 0.285 & 0.63 & 0.241 \\
+        RGB & Test & 0.605 & 0.300 & 0.62 & 0.302 \\
+        NIR & Val  & 0.573 & 0.220 & 0.571 & 0.190 \\
+        NIR & Test & 0.565 & 0.251 & 0.56 & 0.240 \\
+        \hline
+    \end{tabular}
+\end{table}
 
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/dataset/detection_examples}
-%   \caption{TODO: Qualitative detection examples on test images
-%            (RGB and NIR side by side with predicted bounding boxes).}
-%   \label{figDetectionExamples}
-% \end{figure}
+The RGB detector outperforms the NIR detector on both splits and under
+both metrics.
+Notably, the gap is wider at the stricter mAP@0.5:0.95 (0.300 versus
+0.251 on test, and 0.285 versus 0.220 on validation) than at mAP@0.5
+(0.605 versus 0.565 on test).
+Because mAP@0.5:0.95 rewards precise localization, and precise
+localization depends most on well-trained low-level features, this
+pattern is consistent with the initialization asymmetry noted in
+Section~\ref{secModelArch}: the RGB model inherits edge, texture, and
+shape features from COCO pretraining, whereas the NIR model must learn
+its entire feature hierarchy from scratch on the roughly 983 training
+images, a dataset three orders of magnitude smaller than COCO.
+The two models being otherwise architecturally identical, this is the
+most plausible explanation for the performance difference.
+Encouragingly, test performance closely tracks validation for both
+models---mAP@0.5:0.95 is in fact marginally higher on the test split
+than on validation---indicating that the leakage-free split of
+Section~\ref{secDatasetSplits} yields an honest estimate of
+generalization rather than a memorized one.
+Peak $F_1$ is reached at a moderate confidence (roughly 0.19--0.30 across
+models), which sets the detection threshold used when these per-view
+predictions are fused into the semantic map in Chapter~\ref{chapNBV}.
+
+Figure~\ref{figPRCurves} shows the precision--recall curves for the two
+detectors, and Figure~\ref{figDetectionExamples} presents qualitative
+detections on test images from both modalities.
+
+\begin{figure}[h]
+    \centering
+    \subfloat[RGB detector.]{%
+        \IfFileExists{figs/pr_curve_rgb.png}{%
+            \includegraphics[width=0.49\linewidth]{figs/pr_curve_rgb.png}}{%
+            \fbox{\parbox[c][0.3\linewidth][c]{0.46\linewidth}{%
+                \centering\ttfamily\small figs/pr\_curve\_rgb.png\\[2pt](to be added)}}}%
+        \label{figPRCurveRGB}}
+    \hfil
+    \subfloat[NIR detector.]{%
+        \IfFileExists{figs/pr_curve_nir.png}{%
+            \includegraphics[width=0.49\linewidth]{figs/pr_curve_nir.png}}{%
+            \fbox{\parbox[c][0.3\linewidth][c]{0.46\linewidth}{%
+                \centering\ttfamily\small figs/pr\_curve\_nir.png\\[2pt](to be added)}}}%
+        \label{figPRCurveNIR}}
+    \caption{Precision--recall curves for the
+             \protect\subref{figPRCurveRGB}~RGB and
+             \protect\subref{figPRCurveNIR}~NIR detectors on the test
+             split.}
+    \label{figPRCurves}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \IfFileExists{figs/detection_examples.jpg}{%
+        \includegraphics[width=\linewidth]{figs/detection_examples.jpg}}{%
+        \fbox{\parbox[c][0.28\linewidth][c]{0.95\linewidth}{%
+            \centering\ttfamily\small figs/detection\_examples.jpg\\[2pt](to be added)}}}
+    \caption{Qualitative detections on test images, with the flash RGB
+             detector and the registered NIR detector shown side by
+             side. Predicted boxes are labeled with class and
+             confidence.}
+    \label{figDetectionExamples}
+\end{figure}
 
 \subsection{Failure Mode Analysis} \label{secFailureModes}
 
-% TODO: Analyze where and why the detector fails.
-% - Small or partially occluded lesions.
-% - Lighting artifacts.
-% - Early-stage infection with subtle appearance.
-% Motivate downstream uncertainty-aware mapping and NBV planning.
+Beyond the raw accuracy numbers, a systematic failure mode of the
+detector is worth examining, because it exposes a limitation of
+standard detection metrics on this kind of data and motivates the
+mapping-based approach of the following chapters.
+The issue is that cankers and shepherd's crooks have no well-defined
+spatial extent: a canker fades gradually into healthy bark with no
+crisp boundary, and the lower end of a shepherd's crook blends into
+the stem below it.
+Annotators must nonetheless commit to a specific box, and two
+reasonable annotators---or the annotator and the detector---will
+routinely draw boxes that cover the same lesion on the same branch but
+differ in where they start and stop.
+Under the standard mAP@0.5 matching rule, such a prediction is scored
+as a miss whenever its intersection-over-union with the ground-truth
+box falls below 0.5, even though it correctly identifies the diseased
+tissue.
+
+Figure~\ref{figFalseNegatives} shows three representative cases.
+In each, the detector's prediction (red) lands squarely on a diseased
+branch and would be judged correct by a human, yet because its box
+does not overlap the ground-truth box (yellow) closely enough, the
+ground truth is counted as a false negative and the prediction as a
+false positive.
+Relaxing the IoU threshold to 0.3 recovers most of these matches,
+confirming that the predictions are spatially close rather than wrong,
+but a 0.3 threshold is difficult to defend as a general standard, so
+we retain the conventional 0.5 threshold and accept that it
+understates the detector's practical usefulness.
+The broader lesson is that frame-level detection metrics can only say
+so much about performance in the field on symptoms with ambiguous
+boundaries; aggregating evidence across many views of the same tree,
+as the semantic mapping and NBV planning of Chapter~\ref{chapNBV} do,
+is a more robust way to convert imperfect per-frame detections into
+reliable tree-level diagnoses.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figs/fns_from_dataset.jpg}
+    \caption{False negatives arising from ambiguous symptom
+             boundaries. In each panel, the detector's predictions
+             (red, with confidence) correctly land on diseased
+             branches, but because their bounding boxes do not overlap
+             the ground-truth boxes (yellow) at IoU~$\geq 0.5$, the
+             ground truth is scored as a false negative (``FN'') and
+             the prediction as a false positive. Relaxing the
+             threshold to 0.3 matches these detections, illustrating
+             that they are spatially close rather than incorrect.}
+    \label{figFalseNegatives}
+\end{figure}
 
 \section{Summary} \label{secDatasetSummary}
 
-% TODO: Summarize contributions of this chapter:
-% - Multi-modal dataset with N annotated images across M modalities.
-% - SAM-assisted + cross-modal annotation pipeline reducing labeling effort.
-% - Baseline detection performance of X mAP@0.5 (RGB) and Y mAP@0.5 (NIR).
-% - The trained detector is deployed in Chapter~\ref{chapNBV} as the
-%   perception front-end for semantic mapping.
+This chapter built the perception system underlying the rest of the
+thesis, from sensor to trained detector.
+We described a handheld, multi-modal camera rig combining a
+flash-illuminated stereo RGB camera and a 25-band NIR multispectral
+camera, and the field collection protocol used to gather close-range,
+dormant-season imagery across three orchards.
+Because no existing dataset matched these conditions, we assembled our
+own: 1{,}275 flash RGB images from the Pittsburgh site, each paired
+with a registered NIR frame, labeled for two dormant-season symptom
+classes---shepherd's crook and canker---under an annotation protocol
+developed with a plant pathologist and partitioned into leakage-free
+train, validation, and test splits.
+To make hand-labeling this data tractable, we built an annotation
+pipeline combining SAM2-assisted box-to-mask conversion with geometric
+cross-modal label transfer from the RGB frames to the NIR frames.
+A spectral analysis of the resulting NIR labels confirmed that the
+red-edge and near-infrared region carries discriminative information
+for dormant fire blight, and separate YOLO26 detectors were trained on
+each modality.
+Finally, a failure-mode analysis showed that the ambiguous boundaries
+of these symptoms cause standard detection metrics to understate
+real-world performance, motivating the multi-view semantic mapping and
+next-best-view planning developed in Chapter~\ref{chapNBV}, where this
+detector is deployed as the perception front-end.
