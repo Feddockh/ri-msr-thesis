@@ -978,9 +978,9 @@ The manual labels are bounding boxes, but the cross-modal transfer
 step (Section~\ref{secCrossModal}) and the eventual move to instance
 segmentation both benefit from pixel-level masks.
 Rather than have annotators trace masks by hand, we convert each
-labeled box to a mask automatically with Segment Anything 2
+labeled box to a mask with Segment Anything 2
 (SAM2)~\cite{ravi2024sam2}, prompting the model with the annotated box
-and taking its highest-confidence mask as the symptom segmentation.
+and having the annotator select the correct mask from its proposals.
 This box-to-mask tool is used both to enrich the RGB labels and as an
 intermediate representation in the label-transfer pipeline below; its
 implementation is detailed in Appendix~\ref{apxSAM2}.
@@ -1046,6 +1046,101 @@ splits, and class balance (Section~\ref{secDatasetSplits}).
              tightens the transferred mask.}
     \label{figCrossModal}
 \end{figure}
+
+To quantify how much manual effort this transfer pipeline actually
+saves, we ran it unattended over all 1,275 RGB frames with existing
+annotations and had a human annotator review and correct every
+reprojected NIR box.
+FoundationStereo and SAM2 were used out of the box in this pipeline,
+with no fine-tuning or task-specific training on our data, so the
+numbers below reflect a zero-shot starting point rather than a
+ceiling.
+Because the correction pass defines the ground truth, this evaluation
+does not measure cross-modal detection accuracy against an
+independent reference; it measures how close the pipeline's raw
+output already is to a fully-corrected NIR label, i.e., the labeling
+effort it removes.
+Of the 1,275 frames, 44 (3.5\%) produced no usable prediction because
+fewer than half of the reprojected mask points survived the
+pipeline's validity filter; these were excluded from the statistics
+below and still required fully manual annotation.
+
+On the remaining 1,231 frames (1,632 ground-truth boxes, 1,788
+predicted boxes), predicted and ground-truth boxes were matched
+greedily by IoU and classified at each of three IoU thresholds into
+four buckets: \emph{ok} (usable as is), \emph{adjust} (right symptom,
+box needs resizing), \emph{add} (a missed symptom, drawn from
+scratch), and \emph{delete} (a spurious prediction, removed).
+Table~\ref{tabCrossModalEval} reports detection accuracy and the
+resulting correction workload at IoU thresholds of 0.25, 0.5, and
+0.75.
+Class labels transfer perfectly since they are copied directly from
+the source RGB annotation, so all residual error is spatial; results
+are therefore reported class-agnostically.
+At the practical IoU-0.5 threshold, 68.2\% of all annotations required
+no correction at all, only 4.3\% of ground-truth symptoms were missed
+outright (\emph{add}), and adjusting an existing box's extent was
+roughly four times more common than drawing or deleting one---most of
+the remaining annotator effort is tightening boxes, not finding missed
+symptoms or removing false alarms.
+
+\begin{table}[h]
+    \centering
+    \caption{Class-agnostic accuracy and human correction workload of
+             the cross-modal label transfer pipeline, evaluated on
+             1,231 frames (1,632 ground-truth, 1,788 predicted boxes)
+             at three IoU thresholds. Mean IoU is computed over matched
+             pairs only; \emph{add} and \emph{delete} counts are
+             threshold-independent by construction.}
+    \label{tabCrossModalEval}
+    \begin{tabular}{l|ccc|c|cccc}
+        \hline
+        IoU thr. & Prec. & Recall & $F_1$ & Mean IoU
+            & OK & Adjust & Add & Delete \\
+        \hline
+        0.25 & 0.811 & 0.888 & 0.848 & 0.796 & 1451 & 111 & 70 & 226 \\
+        0.50 & 0.709 & 0.776 & 0.741 & 0.856 & 1268 & 294 & 70 & 226 \\
+        0.75 & 0.504 & 0.553 & 0.527 & 0.944 &  902 & 660 & 70 & 226 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Figure~\ref{figCrossModalQual} shows two representative frames.
+In the median-quality case (mean IoU 0.458), the predicted box lands
+on the correct lesion but is narrower and shifted relative to the
+ground truth---the dominant \emph{adjust} failure mode, consistent
+with matched-pair mean IoU rising from 0.796 at the loosest threshold
+to 0.944 at the strictest, i.e., most of the gap between recall at
+0.25 and at 0.75 is due to box tightness rather than gross
+misplacement.
+The best case (mean IoU 1.000) is a pixel-perfect match, representative
+of the 68.2\% of annotations in the \emph{ok} bucket that required no
+correction at all.
+
+\begin{figure}[h]
+    \centering
+    \subfloat[Median case (mean IoU 0.458).]{%
+        \includegraphics[width=0.95\linewidth, trim={25pt 25pt 25pt 25pt}, clip]{figs/iou0.458_1739374179_847755008.png}%
+        \label{figCrossModalMedian}}\\
+    \subfloat[Best case (mean IoU 1.000).]{%
+        \includegraphics[width=0.95\linewidth, trim={25pt 25pt 25pt 25pt}, clip]{figs/iou1.000_1739374124_347676928.png}%
+        \label{figCrossModalBest}}
+    \caption{Ground truth (left) versus the cross-modal label transfer
+             pipeline's output (right), for two representative frames.
+             Top: \protect\subref{figCrossModalMedian}~the median-quality
+             case (mean IoU 0.458), the typical residual correction of
+             tightening a box around the correct symptom. Bottom:
+             \protect\subref{figCrossModalBest}~the best case (mean IoU
+             1.000), a perfect match requiring no annotator edit.}
+    \label{figCrossModalQual}
+\end{figure}
+
+Overall, the pipeline turns NIR annotation from a from-scratch task
+into a correction task: two-thirds of transferred boxes need no edit,
+and of the remainder, most just need nudging rather than being drawn
+or discarded, which is why we adopt it as the default starting point
+for NIR labeling rather than relying on independent manual annotation
+of every modality.
 
 \section{2D Disease Detection Models} \label{sec2DDetection}
 
@@ -1259,12 +1354,53 @@ counted as a false negative and the prediction as a false positive.
 The bottom row of the figure confirms that these are near-misses
 rather than genuine detection failures: the same boxes match once the
 overlap requirement is loosened.
-We show this only to characterize the failure mode, not to propose a
-looser threshold as a substitute metric; a 0.3 IoU criterion is
-difficult to defend as a general standard, so we report all detection
-results in this thesis at the conventional 0.5 threshold and accept
-that it understates the detector's practical usefulness on this kind
-of ambiguous-boundary symptom.
+This near-miss pattern is not isolated to the two examples shown:
+relaxing the matching threshold to IoU~$\geq 0.3$ on the test split
+recovers substantially more matches for both models, as shown by the
+jump in mAP and $F_1$ in Table~\ref{tabDetectionResults03} relative
+to the IoU~$\geq 0.5$ figures of Table~\ref{tabDetectionResults}.
+
+\begin{table}[h]
+    \centering
+    \caption{Detection performance of the RGB and NIR YOLO26-L models
+             on the test split, comparing the conventional
+             IoU~$\geq 0.5$ matching threshold (repeated from
+             Table~\ref{tabDetectionResults}) to the relaxed
+             IoU~$\geq 0.3$ threshold. Max $F_1$ is the peak of the
+             class-averaged $F_1$-confidence curve.}
+    \label{tabDetectionResults03}
+    \begin{tabular}{l|cc|cc}
+        \hline
+        Model & mAP@0.5 & mAP@0.3 & $F_1$@0.5 & $F_1$@0.3 \\
+        \hline
+        RGB & 0.605 & 0.734 & 0.62 & 0.72 \\
+        NIR & 0.565 & 0.703 & 0.56 & 0.65 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Two patterns stand out.
+First, at IoU~$\geq 0.3$ the RGB/NIR gap seen in
+Table~\ref{tabDetectionResults} narrows almost entirely to the
+shepherd's crook class: canker mAP is essentially tied between the two
+models (0.594 versus 0.595), while shepherd's crook mAP still favors
+RGB (0.874 versus 0.810), consistent with the initialization-asymmetry
+explanation of Section~\ref{secDetectionResults}---the RGB model's edge
+comes from pretrained low-level features that most directly benefit the
+crook's fine-grained hooked shape, not from any residual advantage on
+cankers.
+Second, the confidence threshold at which each model reaches its peak
+$F_1$ is higher for RGB (0.322) than NIR (0.222), meaning the NIR
+model must be operated at a more permissive confidence cutoff to reach
+its best achievable precision--recall balance, consistent with its
+generally noisier predictions.
+We show these relaxed-threshold results only to characterize how much
+of the apparent failure rate is boundary ambiguity rather than missed
+detections; we do not adopt IoU~$\geq 0.3$ as a general-purpose
+replacement for the conventional IoU~$\geq 0.5$ criterion used
+elsewhere in this thesis, including for the confidence threshold that
+sets the per-view detections fused into the semantic map of
+Chapter~\ref{chapNBV}.
 The broader lesson is that frame-level detection metrics can only say
 so much about performance in the field on symptoms with ambiguous
 boundaries; aggregating evidence across many views of the same tree,
