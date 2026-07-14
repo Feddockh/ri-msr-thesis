@@ -37,7 +37,7 @@ majority of dataset collection.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={0 100pt 0 100pt},
+    \includegraphics[width=0.95\linewidth, trim={0 100pt 0 100pt},
         clip]{figs/camera_rig_exploded.jpg}
     \caption{Exploded view of the multi-modal camera rig showing
              the placement and mounting of each sensor.}
@@ -205,7 +205,7 @@ required for symptom detection is unnecessary.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={0 100pt 0 100pt}, clip]{figs/all_img_comparison.jpg}
+    \includegraphics[width=0.95\linewidth, trim={0 100pt 0 100pt}, clip]{figs/all_img_comparison.jpg}
     \caption{The same fire blight canker viewed by each camera on the
              rig, at nearly the same position.
              \textit{From left to right:} the flash stereo RGB camera
@@ -274,14 +274,19 @@ and NIR frames.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={0 98pt 0 98pt},
-        clip]{figs/v2_camera_rig.jpg}
-    \caption{The revised, front-loaded camera rig design, shown as a
-             CAD model (left) and the assembled hardware (right).
-             Sliding mounts lock each camera in place for quick
-             swaps in the field, and the inter-camera spacing is
-             reduced relative to the initial design to increase
-             field-of-view overlap.}
+    \includegraphics[width=0.95\linewidth]{figs/v1_v2_camera_rig.jpg}
+    \caption{The initial, back-loaded camera rig design (Version 1,
+             top) and the revised, front-loaded design (Version 2,
+             bottom), each shown as an isometric CAD model, a
+             side-profile CAD model, and the assembled hardware.
+             Between Version 1 and Version 2, the flash stereo Firefly
+             (gold, top, with its two imagers and central flash) and
+             Ximea NIR (blue) mounts were reworked for front-loading
+             and sliding locks were added for quick camera swaps in
+             the field, and the spacing between the Firefly and Ximea
+             cameras was reduced to increase field-of-view overlap;
+             the ZED2i (black, bottom) remained mounted beneath both
+             versions.}
     \label{figRigEvolution}
 \end{figure}
 
@@ -356,8 +361,7 @@ their content can be checked at a glance.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\linewidth, trim={111pt 0 111pt 0},
-        clip]{figs/v3_gui.jpg}
+    \includegraphics[width=0.95\linewidth]{figs/v3_gui.png}
     \caption{The final handheld capture interface, with large START
              and RECORD buttons, a readable status log, a slider
              column for flash duration, frame rate, Firefly
@@ -466,6 +470,25 @@ time.
     }
 \end{table}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\textwidth, trim={0 225pt 0 225pt}, clip]{figs/field_collection.jpg}
+    \includegraphics[width=0.90\textwidth, trim={0 225pt 0 225pt}, clip]{figs/field_trees.jpg}
+    \caption{The three orchards used in this work.
+             \textit{From left to right:} the severe, high-density
+             commercial site near Pittsburgh, Pennsylvania; the mild,
+             free-standing research block at the Alson H. Smith Jr.
+             Agricultural Research and Extension Center in Frederick
+             County, Virginia; and the moderate-severity, held-out
+             test orchard at the Penn State Fruit Research and
+             Extension Center in Adams County, Pennsylvania.
+             \textit{Top:} aerial maps of each block, with collection
+             points marked in red.
+             \textit{Bottom:} representative sample trees from each
+             site.}
+    \label{figFieldComparison}
+\end{figure}
+
 The third orchard, at the Penn State Fruit Research and Extension
 Center in Adams County, Pennsylvania, was held out entirely from the
 detector dataset and used only to test the complete inspection
@@ -481,25 +504,6 @@ Each next-best-view planner variant was evaluated on the same set of
 Because that evaluation is conducted per tree rather than per frame,
 raw image counts are less meaningful for this site and are deferred
 to Chapter~\ref{chapErwin}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\textwidth, trim={0 225pt 0 225pt}, clip]{figs/field_collection.jpg}
-    \includegraphics[width=0.85\textwidth, trim={0 225pt 0 225pt}, clip]{figs/field_trees.jpg}
-    \caption{The three orchards used in this work.
-             \textit{From left to right:} the severe, high-density
-             commercial site near Pittsburgh, Pennsylvania; the mild,
-             free-standing research block at the Alson H. Smith Jr.
-             Agricultural Research and Extension Center in Frederick
-             County, Virginia; and the moderate-severity, held-out
-             test orchard at the Penn State Fruit Research and
-             Extension Center in Adams County, Pennsylvania.
-             \textit{Top:} aerial maps of each block, with collection
-             points marked in red.
-             \textit{Bottom:} representative sample trees from each
-             site.}
-    \label{figFieldComparison}
-\end{figure}
 
 \section{Dataset Description} \label{secDatasetDescription}
 
@@ -1184,8 +1188,7 @@ models), which sets the detection threshold used when these per-view
 predictions are fused into the semantic map in Chapter~\ref{chapNBV}.
 
 Figure~\ref{figPRCurves} shows the precision--recall curves for the two
-detectors, and Figure~\ref{figDetectionExamples} presents qualitative
-detections on test images from both modalities.
+detectors.
 
 \begin{figure}[h]
     \centering
@@ -1196,18 +1199,18 @@ detections on test images from both modalities.
     \label{figPRCurves}
 \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \IfFileExists{figs/detection_examples.jpg}{%
-        \includegraphics[width=0.85\linewidth]{figs/detection_examples.jpg}}{%
-        \fbox{\parbox[c][0.28\linewidth][c]{0.95\linewidth}{%
-            \centering\ttfamily\small figs/detection\_examples.jpg\\[2pt](to be added)}}}
-    \caption{Qualitative detections on test images, with the flash RGB
-             detector and the registered NIR detector shown side by
-             side. Predicted boxes are labeled with class and
-             confidence.}
-    \label{figDetectionExamples}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     \IfFileExists{figs/detection_examples.jpg}{%
+%         \includegraphics[width=0.85\linewidth]{figs/detection_examples.jpg}}{%
+%         \fbox{\parbox[c][0.28\linewidth][c]{0.95\linewidth}{%
+%             \centering\ttfamily\small figs/detection\_examples.jpg\\[2pt](to be added)}}}
+%     \caption{Qualitative detections on test images, with the flash RGB
+%              detector and the registered NIR detector shown side by
+%              side. Predicted boxes are labeled with class and
+%              confidence.}
+%     \label{figDetectionExamples}
+% \end{figure}
 
 \subsection{Failure Mode Analysis} \label{secFailureModes}
 
@@ -1216,7 +1219,7 @@ detector is worth examining, because it exposes a limitation of
 standard detection metrics on this kind of data and motivates the
 mapping-based approach of the following chapters.
 The issue is that cankers and shepherd's crooks have no well-defined
-spatial extent: a canker fades gradually into healthy bark with no
+spatial extent: a canker often fades gradually into healthy bark with no
 crisp boundary, and the lower end of a shepherd's crook blends into
 the stem below it.
 Annotators must nonetheless commit to a specific box, and two
@@ -1230,19 +1233,21 @@ tissue.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.95\linewidth, trim={400pt 0 200pt 0}, clip]{figs/map_05_03_fns.jpg}
+    \includegraphics[width=0.95\linewidth, trim={200pt 0 0 0}, clip]{figs/map_05_03_fns.jpg}
     \caption{False negatives arising from ambiguous symptom
-             boundaries. Top row: under the standard IoU~$\geq 0.5$
-             matching rule, the detector's predictions (red, with
-             confidence) correctly land on diseased branches, but
-             their bounding boxes do not overlap the ground-truth
-             boxes (yellow) closely enough, so the ground truth is
-             scored as a false negative (``FN'') and the prediction as
-             a false positive. Bottom row: the same predictions
-             (green) and ground-truth boxes (magenta) at a relaxed
-             IoU~$\geq 0.3$, shown purely to illustrate that the
-             predictions are spatially close to the lesion rather than
-             incorrect, not as an alternative operating threshold.}
+             boundaries. A prediction and its corresponding
+             ground-truth box are colored red and yellow,
+             respectively, when unmatched, and green and magenta,
+             respectively, once matched. Top row: under the standard
+             IoU~$\geq 0.5$ matching rule, the detector's predictions
+             (red, with confidence) correctly land on diseased
+             branches, but their bounding boxes do not overlap the
+             ground-truth boxes (yellow) closely enough, so the ground
+             truth is scored as a false negative (``FN'') and the
+             prediction as a false positive. Bottom row: the same
+             boxes become true positives (green predictions, magenta
+             ground truth) once the matching threshold is relaxed to
+             IoU~$\geq 0.3$.}
     \label{figFalseNegatives}
 \end{figure}
 
