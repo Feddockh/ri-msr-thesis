@@ -15,7 +15,6 @@ shepherd's crook detection is a high-value but currently manual task.
 Section~\ref{secCurrentEfforts} reviews prior automated and robotic approaches
 to fire blight and orchard disease diagnosis, identifying the specific gap
 this thesis addresses.
-Section~\ref{secBackgroundSummary} ties these threads together.
 
 \section{Agricultural Robotics} \label{secAgRobotics}
 
@@ -24,14 +23,14 @@ rising labor costs, a shrinking farm workforce, and increasing demand for
 precision interventions that reduce input waste \cite{droukas2023survey}.
 Deployed and research systems span harvesting, pruning, spraying, phenotyping,
 and scouting tasks, and typically combine a mobile platform with one or more
-sensing modalities and, in many cases, a manipulator for physical interaction
+sensing modalities and, in some cases, a manipulator for physical interaction
 with the crop \cite{droukas2023survey}.
 Robotic harvesters for high-value tree fruit, including apple, have
 demonstrated per-fruit cycle times of seconds with success rates approaching
 90\% under favorable conditions \cite{droukas2023survey}, and ground platforms
-purpose-built for orchard rows---such as the Thorvald and Farm-ng Amiga---have
-become common research bases because their narrow footprint and modular
-mounting points suit the constrained geometry of a tree row.
+purpose-built for orchard rows---such as the SAGA Robotics Thorvald and Farm-ng 
+Amiga---have become common research bases because their narrow footprint and 
+modular mounting points suit the constrained geometry of an orchard row.
 
 Despite this progress, orchard environments remain difficult for autonomous
 perception.
@@ -39,7 +38,7 @@ Canopy variation between trees and seasons, severe self-occlusion from
 overlapping branches, thin branch geometry, and large swings
 in natural illumination across a single day all degrade the reliability of
 fixed-camera, fixed-trajectory sensing \cite{droukas2023survey}.
-These challenges are most acute for tasks, like disease detection, that depend
+These challenges are most acute for tasks like disease detection, that depend
 on fine visual cues rather than large, high-contrast objects such as fruit.
 Two complementary responses have emerged in the literature, though both remain
 relatively recent departures from the fixed-camera, fixed-trajectory norm in
@@ -54,8 +53,8 @@ appearance is dominated by a controlled light source rather than ambient
 sunlight, substantially improving the consistency of crop detection across
 lighting conditions \cite{Silwal2021FlashCamera}.
 We adopt the same flash-stereo principle for our RGB sensing rig
-(Section~\ref{secFlirCamera}) to ensure that our 2D detector is not confounded
-by shadowing and dappled light inside the canopy.
+(Section~\ref{secFlirCamera}) to ensure that our 2D detector is resilient to 
+the light variation inside the canopy.
 
 Manipulator arms mounted on mobile agricultural bases have been used to bring
 a sensor or end-effector into close, oriented contact with a target plant part
@@ -95,7 +94,7 @@ to resolve uncertainty about the presence and location of disease symptoms.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.95\linewidth, trim={0 150pt 0 150pt}, clip]{figs/active_perception_concept.jpg}
+    \includegraphics[width=0.95\linewidth, trim={0 270pt 0 270pt}, clip]{figs/active_perception_concept.jpg}
     \caption{Motivation for active perception in orchard disease detection.
     \textit{Left:} a fixed camera cannot see past an occluding branch, leaving
     the symptomatic target undetected. \textit{Right:} a camera mounted on a
@@ -124,8 +123,8 @@ reconstruction, finding meaningful differences in efficiency and
 reconstruction quality between metrics that nominally pursue the same
 objective \cite{Delmerico2018VolumeticIGFormulation}.
 These volumetric formulations are agnostic to the semantic content of the
-scene: a voxel near a flower is treated identically to one near a canker,
-provided both are equally uncertain.
+scene: a branch showing signs of disease may be treated identically to one 
+that is not, provided both are equally uncertain.
 
 More recent work has incorporated task relevance directly into the
 view-planning objective.
@@ -188,20 +187,20 @@ On trees between one and ten years old, a canker that girdles the rootstock,
 trunk, or central leader can kill the entire tree within a season
 \cite{Acimovic2023RootstockFireBlight, acimovic2026fireblight}.
 This vulnerability is compounded by a broader shift in the U.S. apple industry
-toward high-value, fire-blight-susceptible cultivars: Gala, the most widely
-produced apple variety in the country, is rated highly susceptible with no
+toward high-value, fire-blight-susceptible cultivars: Gala, the most commercially
+popular apple variety in the country, is rated highly susceptible with no
 genetic wood resistance, and other widely planted cultivars such as Granny
 Smith and Jonagold carry similarly high susceptibility ratings
 \cite{gerlach2025usapple, acimovic2026fireblight}.
-Because high-density plantings represent a substantial up-front capital
+Since high-density plantings represent a substantial up-front capital
 investment that takes years to recoup, a severe fire blight outbreak in a
 young block can be financially devastating for a grower already operating on
 thin margins \cite{gerlach2025usapple}.
 
 \subsection{Disease Mechanism} \label{secFireBlightMechanism}
 
-Fire blight is caused by \textit{Erwinia amylovora}, a Gram-negative,
-rod-shaped bacterium that overwinters within cankers---necrotic, often sunken
+Fire blight is caused by \textit{Erwinia amylovora}, a rod-shaped bacterium 
+that overwinters within cankers---necrotic, often sunken
 lesions on the bark of branches, the trunk, or the central leader
 \cite{van1979FireBlight, Zeng2023PathogenSpotlightErwiniaAmylovora}.
 As temperatures rise above approximately 10\textdegree C in late winter and
@@ -209,9 +208,9 @@ early spring, bacteria resume activity within these overwintering cankers and
 ooze from canker margins as a sticky, bacteria-laden exudate.
 This exudate is the primary source of inoculum for new infections, which are
 most commonly initiated during bloom: bacteria deposited on open flowers by
-rain splash, wind-driven rain, or pollinating insects multiply on the floral
-stigma and are washed into the nectary, where they enter the plant's vascular
-system \cite{acimovic2026fireblight, Ivey2016OhioAdvicePost}.
+rain splash, wind-driven contact, or pollinating insects enter the plant's 
+vascular system through the flower's nectaries and begin to multiply 
+\cite{acimovic2026fireblight, Ivey2016OhioAdvicePost}.
 
 From an infected flower, the bacterium moves systemically through the vascular
 tissue into the supporting shoot, producing the disease's hallmark symptom: a
@@ -227,16 +226,15 @@ the next.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.425\linewidth]{figs/shepherds_crook_example_cropped.jpg}
-    \includegraphics[width=0.425\linewidth]{figs/canker_example_cropped.jpg}
+    \includegraphics[width=0.4\linewidth]{figs/shepherds_crook_example_cropped.jpg}
+    \includegraphics[width=0.4\linewidth]{figs/canker_example_cropped.jpg}
     \caption{Primary dormant-season fire blight symptoms used for detection.
     \textit{Left:} a shepherd's crook, the wilted, blackened shoot tip that
     curls downward following systemic infection. \textit{Right:} a fire blight
-    canker, the dark, sunken bark lesion that persists through the dormant
-    season and seeds the following spring's epidemic.}
+    canker, the dark, sunken bark lesion that shelters the bacteria
+    through the dormant season and seeds the following spring's epidemic.}
     \label{figFireBlightSymptoms}
 \end{figure}
-
 
 Detection of fire blight is complicated by the fact that some of the disease's
 most visually distinctive symptoms---water-soaked floral tissue, orange-brown
@@ -262,15 +260,15 @@ inclusion of a multispectral sensing modality in our data collection platform
 
 \subsection{Current Solutions and Problems} \label{secFireBlightCurrentSolutions}
 
-Because fire blight cankers cannot be eliminated chemically once formed, the
+Since fire blight cankers cannot be eliminated chemically once formed, the
 standard management practice for reducing the overwintering inoculum reservoir
 is manual dormant-season pruning: an orchardist walks each row, visually
 identifies cankers, and removes them by cutting well below the visible margin
 of infection \cite{Peter2023PennStateExtension}.
 In-season management instead relies on predictive infection models that
 trigger preventive antibiotic application (most commonly streptomycin) during
-bloom, since once shoot blight symptoms are visible the infection is already
-systemic and antibiotics are no longer effective
+bloom. Unfortunately, once shoot blight symptoms are visible the infection is
+already systemic and antibiotics are no longer effective
 \cite{Norelli2003FireBlightManagementTwentyFirst, acimovic2026fireblight}.
 
 Both halves of this management strategy depend on accurate knowledge of where
@@ -329,18 +327,27 @@ Most directly related to our objective, Linker and Dafny-Yalin used a Faster
 R-CNN detector to identify fire blight cankers on dormant pear trees from
 close-range, tripod-mounted DSLR imagery, restricting detection to trunk and
 central-leader cankers within a defined region of interest and excluding
-shepherd's crooks; a UAV was used only for their separate autumn-blooming task
-\cite{Linker2024MappingFireBlightCankersFRCNN}.
+shepherd's crooks \cite{Linker2024MappingFireBlightCankersFRCNN}.
 
 These efforts establish that fire blight produces detectable visual and
 spectral signatures and that those signatures can be mapped at the orchard
-scale.
-However, nearly all of this prior work targets foliar or floral symptoms
-visible during the growing season, from a sensing standpoint---aerial or
-handheld---that trades spatial resolution and viewpoint control for coverage.
-None of the datasets used in this prior work pairs close-range RGB and dense
-multispectral imagery of dormant woody tissue, and none was collected to
-support in-field ground robotic sensing.
+scale. However there are two limitations that hold true across nearly all of 
+this prior work.
+First, these works target the foliar and floral symptoms of the 
+growing season, by which point the infection is already systemic and 
+spreading; the canker and shepherd's crook symptoms that must be found 
+and pruned during the dormant season, before they seed the next epidemic
+(Section~\ref{secFireBlightCurrentSolutions}), go largely unaddressed.
+Second, the aerial and UAV platforms that provide orchard-scale coverage do
+so at the cost of resolution and coverage, and several of these
+studies report that dense foliage occludes symptoms beneath the tree crown,
+limiting what an overhead pass can
+resolve~\cite{Bagheri2020AerialDetectionFireBlightPear,
+Mahmud2023MaskRCNNFireBlight}.
+As a result, none of the datasets used in this prior work pairs close-range
+RGB and dense multispectral imagery of dormant woody tissue, and none was
+collected to support the in-field, ground-based robotic sensing that reaching
+these symptoms at close range requires.
 This is the gap our multi-modal dataset (Chapter~\ref{chapDataset}) is
 designed to fill.
 
@@ -375,30 +382,12 @@ subtle dormant-season canker and shepherd's crook symptoms; (2) a 3D semantic
 representation that fuses noisy per-view detections into a single map of
 disease confidence across the canopy; and (3) an NBV planner that uses that
 representation to decide where to look next.
-This thesis develops and validates a system that brings all three together.
-
-\section{Summary} \label{secBackgroundSummary}
-
-Agricultural robotics has demonstrated that mobile platforms and
-manipulator-equipped sensing systems can operate effectively in orchard
-environments (Section~\ref{secAgRobotics}), and active perception and NBV
-planning provide a principled framework for using a manipulator to actively
-resolve sensing uncertainty rather than relying on a fixed viewpoint
-(Section~\ref{secActivePerception}).
-Fire blight is a severe and economically significant disease whose management
-depends on accurate, spatially resolved knowledge of dormant-season canker and
-shepherd's crook load---knowledge that is currently gathered only through
-slow, subjective manual scouting (Section~\ref{secFireBlight}).
-Prior automated detection efforts have shown that fire blight produces
-detectable signatures across RGB and spectral imagery, but have concentrated
-on growing-season, aerial, or handheld sensing rather than close-range,
-viewpoint-aware, ground-robotic sensing of dormant woody tissue
-(Section~\ref{secCurrentEfforts}).
 % TODO: Insert system overview diagram showing the three components
 % (close-range sensing → semantic OctoMap → NBV planner) to visually summarize
 % the thesis contribution.
 
-This thesis addresses that combined gap through, respectively, the multi-modal
-dataset and 2D detector of Chapter~\ref{chapDataset}, the confidence-aware
-semantic occupancy map and semantic NBV planner of Chapter~\ref{chapNBV}, and
-the field-validated integrated system, Erwin, of Chapter~\ref{chapErwin}.
+This thesis develops and validates a system that brings all three together,
+through, respectively, the multi-modal dataset and 2D detector of
+Chapter~\ref{chapDataset}, the confidence-aware semantic occupancy map and
+semantic NBV planner of Chapter~\ref{chapNBV}, and the field-validated
+integrated system, Erwin, of Chapter~\ref{chapErwin}.
