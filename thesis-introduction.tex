@@ -41,17 +41,18 @@ large swings in natural lighting all degrade the reliability of fixed-camera,
 fixed-viewpoint sensing.
 The visual cues that distinguish infected tissue from healthy tissue are
 subtle, and resolving them reliably requires close-range imaging at fine
-spatial resolution, conditions that a fixed, wide-area viewpoint cannot
+spatial resolution, conditions that a fixed, wide-angle views cannot
 consistently provide.
-Moreover, the output a grower needs is not a binary classification of disease
-presence but a spatial map of disease confidence across the tree that can
-guide targeted pruning or treatment applications.
-Despite growing research interest in agricultural robotics, and although
-close-range vision has recently been shown to detect dormant cankers on
-pear~\cite{Linker2024MappingFireBlightCankersFRCNN}, the specific problem of
-autonomously detecting and spatially localizing fire blight cankers and
-shepherd's crooks throughout the canopy of dormant apple trees has received
-little attention.
+Moreoever, we aim to provide growers with a system capable of branch-level
+disease localization, which will enable growers to assess the severity of 
+disease and make informed decisions about pruning and treatment.
+
+% Despite growing research interest in agricultural robotics, and although
+% close-range vision has recently been shown to detect dormant cankers on
+% pear~\cite{Linker2024MappingFireBlightCankersFRCNN}, the specific problem of
+% autonomously detecting and spatially localizing fire blight cankers and
+% shepherd's crooks throughout the canopy of dormant apple trees has received
+% little attention.
 
 % TODO: Add figs/robot_symptoms_collage_2.png, then uncomment.
 % \begin{figure}[t]
@@ -66,11 +67,10 @@ little attention.
 
 These limitations motivate an active perception approach in which a robotic
 manipulator positions a camera to acquire discriminative, task-relevant views.
-This approach enables the use of specialized sensors, namely flash RGB and
+This approach takes advantage of specialized sensors, namely flash RGB and
 near-infrared cameras, that are highly effective for disease detection because
-they resolve the fine bark texture characteristic of cankers, but that must be
-operated at close range and in tight focus to do so, and consequently have
-narrow fields of view.
+they can resolve the fine bark texture characteristic of cankers, but consequently 
+have narrow fields of view.
 Realizing this approach end-to-end requires three components that, to our
 knowledge, have not previously been brought together for fire blight: a
 dataset and detector capable of recognizing disease symptoms across sensing
@@ -113,8 +113,8 @@ them.
 
 We collect a dataset of flash stereo RGB, 25-band NIR multispectral, and ZED2i
 RGB-D imagery of dormant apple trees exhibiting a range of fire blight
-symptoms, gathered across multiple collection sessions in orchards in Virginia
-and the greater Pittsburgh region.
+symptoms, gathered across multiple collection sessions in orchards including 
+Virginia and the greater Pittsburgh region.
 Manual expert annotation is accelerated with a SAM-assisted labeling workflow,
 and a cross-modal label transfer procedure propagates RGB annotations onto the
 corresponding NIR frames; to our knowledge, this is the first dataset pairing
@@ -141,7 +141,7 @@ in Chapter~\ref{chapNBV}.
 
 \subsection{A Field-Validated Robotic System}
 
-We integrate these components into Erwin, a robotic active perception system
+We combine these components into Erwin, a robotic active perception system
 for targeted fire blight detection in dormant apple trees, built around an
 Amiga mobile base and a UFACTORY xArm6 manipulator.
 The mobile base remains fixed in front of a tree during inspection while the
