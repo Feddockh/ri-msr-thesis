@@ -115,6 +115,9 @@ Constraining the spatial extent in this way keeps voxel read and write
 operations fast enough to sustain the closed-loop inspection cycle, and
 defines a consistent region of interest (ROI) against which coverage is
 later measured (Section~\ref{secSimExperiments}).
+Figure~\ref{figOctomapBuilding} shows this incremental filling-in process
+across three viewpoints selected by the volumetric planner of
+Section~\ref{secVolNBVPlanner}.
 
 \subsection{Semantic Extension: Disease Class Labels}
 \label{secSemanticExtension}
@@ -129,6 +132,23 @@ Crucially, semantic updates are applied only to voxels that have already
 been marked occupied through geometric integration, so that disease labels
 are only ever attached to physical surfaces and never to free or unknown
 space.
+Figure~\ref{figSemanticOctoMap} shows an example semantic OctoMap built
+this way from a simulated symptomatic tree.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth, trim={0 100pt 0 100pt}, clip]{figs/semantic_octomap.jpg}
+    \caption{A semantic OctoMap (left) built from a simulated
+             symptomatic apple tree (right), with matched insets zooming
+             into a single symptomatic branch in both the voxelized map
+             and the underlying Blender mesh. Occupied voxels are gray
+             by default and colored by fused disease class where a
+             symptom has been detected: red for canker and green for
+             shepherd's crook, matching the pair of nearby cankers and
+             single shepherd's crook visible on the corresponding branch
+             in the mesh inset.}
+    \label{figSemanticOctoMap}
+\end{figure}
 
 The challenge in accumulating labels across views is that the 2D detector
 is imperfect: the same patch of bark may be labeled canker from one
@@ -201,17 +221,6 @@ Table~\ref{tabPlanningParams}.
 %   \label{figConfidenceFusion}
 % \end{figure}
 
-% TODO(fig): add figs/nbv/semantic_octomap once rendered.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/nbv/semantic_octomap}
-%   \caption{Illustration of the confidence-aware semantic OctoMap.
-%            Occupied voxels are colored by disease class (canker,
-%            shepherd's crook, background), with color intensity
-%            encoding the fused per-voxel confidence $s$.}
-%   \label{figSemanticOctoMap}
-% \end{figure}
-
 \subsection{Projection from 2D Detections to 3D Voxels}
 \label{secProjection}
 
@@ -234,7 +243,7 @@ registered pixel-for-pixel with the RGB image.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figs/perception_pipeline.jpg}
+    \includegraphics[width=0.95\textwidth, trim={0 250pt 0 250pt}, clip]{figs/perception_pipeline.jpg}
     \caption{End-to-end perception pipeline from a single captured
              frame to the fused semantic map.
              \textit{Left:} the 2D detector output on the RGB frame,
@@ -271,9 +280,9 @@ Section~\ref{secPerceptionPipeline}.
 
 \section{Simulation Environment} \label{secSimulation}
 
-Real symptomatic trees are scarce, immovable, and impossible to reset to a
-known state between planner runs, which makes them a poor setting in which
-to develop and fairly compare viewpoint planners.
+Real symptomatic trees are scarce, and runs out in the field are costly, 
+which makes it difficult to use them for the rapid iteration and controlled 
+comparison of different viewpoint planners.
 We therefore built a simulation environment in which trees of known, fully
 specified geometry can be inspected repeatably and under identical
 conditions across all three planners, before committing to field
@@ -282,7 +291,8 @@ deployment.
 \subsection{Orchard Simulation Setup} \label{secOrchardSim}
 
 Simulated trees were modeled in Blender and inspected in a Gazebo
-simulation of the robot, its manipulator, and its stereo camera.
+simulation of the robot, its manipulator, and its stereo camera
+(Figure~\ref{figSimulation}).
 Five symptomatic apple trees were generated, each carrying between five and
 eight cankers and between five and eight shepherd's crooks distributed
 across varying canopy geometries.
@@ -294,24 +304,18 @@ The Gazebo model reproduces the camera's field of view and the
 manipulator's reachable workspace, so that the same viewpoint-feasibility
 constraints that apply in the field also apply in simulation.
 
-To increase canopy diversity without the cost of modeling additional trees,
-each tree was augmented by rotating it about the vertical axis in
-$60^\circ$ increments, yielding up to six distinct orientations per tree
-and up to $30$ unique evaluation configurations across the five trees.
-Because each rotation presents a different pattern of self-occlusion and a
-different distribution of symptoms relative to the frontal viewing plane,
-these augmentations exercise the planners on a substantially wider range of
-viewing challenges than five static trees would.
-
-% TODO(fig): add figs/nbv/simulation screenshot once rendered.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.85\textwidth]{figs/nbv/simulation}
-%   \caption{The Gazebo orchard simulation, showing the simulated robot
-%            and manipulator inspecting a Blender-rendered symptomatic
-%            apple tree.}
-%   \label{figSimulation}
-% \end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figs/gazebo_with_tree.jpg}
+    \caption{The Gazebo simulation environment: the simulated
+             Amiga-xArm6 platform positioned in front of a single
+             Blender-rendered symptomatic apple tree, with the ROI
+             wireframe box (Section~\ref{secOctoMapBase}) enclosing
+             the tree. Each of the five trees is loaded and evaluated
+             individually in this way, one at a time, rather than as a
+             combined multi-tree orchard scene.}
+    \label{figSimulation}
+\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -324,6 +328,15 @@ viewing challenges than five static trees would.
              and geometric complexity.}
     \label{figBlenderTrees}
 \end{figure}
+
+To increase canopy diversity without the cost of modeling additional trees,
+each tree was augmented by rotating it about the vertical axis in
+$60^\circ$ increments, yielding up to six distinct orientations per tree
+and up to $30$ unique evaluation configurations across the five trees.
+Because each rotation presents a different pattern of self-occlusion and a
+different distribution of symptoms relative to the frontal viewing plane,
+these augmentations exercise the planners on a substantially wider range of
+viewing challenges than five static trees would.
 
 \subsection{Simulation Ground Truth} \label{secSimGT}
 
@@ -357,6 +370,23 @@ loop (Algorithm~\ref{algNBV}) and differ only in two components: their
 candidate generator $\mathcal{G}(\cdot)$, which proposes where to consider
 looking, and their information-gain function $\mathrm{IG}(\cdot)$, which
 scores how valuable each candidate is expected to be.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth, trim={0 720pt 0pt 50pt}, clip]{figs/octomap_building.jpg}
+    \caption{Incremental OctoMap construction across three successive
+             viewpoints (left to right) selected by the volumetric NBV
+             planner of Section~\ref{secVolNBVPlanner}, shown before the
+             semantic extension of Section~\ref{secSemanticExtension} is
+             applied.
+             Green voxels are free space, red voxels are occupied surfaces
+             (the tree canopy and surrounding trellis structure), and the
+             blue wireframe marks the ROI. As the arm moves to each new
+             viewpoint, ray casting fills in previously unknown space
+             within the ROI, most visibly in the canopy region and the
+             ground plane beneath it.}
+    \label{figOctomapBuilding}
+\end{figure}
 
 \subsection{Problem Formulation} \label{secNBVFormulation}
 
@@ -404,20 +434,23 @@ reachable volume is rejected immediately, before any motion planning is
 attempted, and only the surviving candidates are passed to full feasibility
 checking.
 
-% TODO(fig): add figs/nbv/workspace_reachability once rendered. A
-% rendering of the precomputed reachable-workspace voxel grid (e.g. as
-% a point cloud or translucent volume) shown relative to the
-% manipulator base and a representative tree/ROI, illustrating which
-% region of candidate viewpoint space survives this cheap pre-filter
-% before any candidate reaches full IK-based feasibility checking.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.7\linewidth]{figs/nbv/workspace_reachability}
-%   \caption{Precomputed reachable-workspace voxel grid used to
-%            pre-filter candidate viewpoints, shown relative to the
-%            manipulator base and a representative canopy ROI.}
-%   \label{figWorkspaceReachability}
-% \end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\linewidth, trim={0 250pt 0 250pt}, clip]{figs/vp_reach_filter.jpg}
+    \caption{Offline construction of the reachable-workspace model, left
+             to right: the manipulator with no end-effector samples yet
+             recorded; a sparse point cloud (green) of sampled
+             end-effector positions after $10^6$
+             configurations have been evaluated; and the resulting dense
+             point cloud once sampling is complete, approximating a
+             sphere of reachable positions about the manipulator base.
+             Each candidate viewpoint is checked against this precomputed
+             volume before any per-candidate inverse kinematics is run.}
+    \label{figWorkspaceReachability}
+\end{figure}
+
+Figure~\ref{figWorkspaceReachability} shows this offline sampling process
+building up the reachable-workspace model.
 
 \subsection{Baseline: Grid Scan Planner} \label{secGridScan}
 
@@ -447,22 +480,23 @@ grid is fixed in advance it cannot adapt to the specific architecture of a
 tree or to what the map already contains: it will dwell on empty space and
 skip past occluded symptoms indifferently.
 
-% TODO(fig): add figs/nbv/grid_scan_pattern once rendered. A top-down
-% or oblique diagram of the fixed midplane grid tiled across the ROI,
-% with the boustrophedon (row-alternating) execution order marked by
-% numbered/arrowed viewpoints, and the overlap fraction $\rho$ between
-% adjacent camera frusta indicated. Would make the fixed, non-adaptive
-% coverage pattern easy to contrast visually against the adaptive
-% frontier- and confidence-driven candidates of the other two
-% planners (Figure~\ref{figViewpointCandidates}).
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.7\linewidth]{figs/nbv/grid_scan_pattern}
-%   \caption{Fixed midplane viewpoint grid used by the baseline
-%            planner, executed in boustrophedon order with adjacent
-%            camera frusta overlapping by a fraction $\rho$.}
-%   \label{figGridScanPattern}
-% \end{figure}
+Figure~\ref{figGridScanPattern} shows the resulting viewpoint grid and
+execution order.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\linewidth, trim={538pt 0 700pt 0}, clip]{figs/baseline_planner_motion.jpg}
+    \caption{Fixed midplane viewpoint grid used by the baseline planner.
+             Each red-green-blue coordinate frame marks a viewpoint at
+             which the arm stops to capture an image, and the white
+             arrows trace the boustrophedon execution order from Start
+             to End. The white wireframe at one viewpoint shows the
+             camera frustum, and the dashed red rectangle shows its
+             cross-section on the ROI midplane relative to the
+             neighboring viewpoint's footprint, illustrating the overlap
+             fraction $\rho$ of Equation~\ref{eqFootprint}.}
+    \label{figGridScanPattern}
+\end{figure}
 
 \subsection{Volumetric NBV Planner} \label{secVolNBVPlanner}
 
@@ -518,6 +552,8 @@ camera standoff.
 The frontier source is what lets the volumetric planner actively seek out
 and peer into unexplored pockets of the canopy, rather than only sweeping
 the frontal plane.
+The left branch of Figure~\ref{figSemanticVolumetricClustering} shows the
+resulting frontier clusters and the candidate poses sampled around them.
 
 \subsubsection{Volumetric Information Gain} \label{secVolIG}
 
@@ -539,22 +575,26 @@ maximum sensor range is exceeded, or when the ray leaves the ROI, so that a
 candidate is credited only with the unknown volume it could actually reveal
 and not with space hidden behind a surface.
 
-% TODO(fig): add figs/nbv/volumetric_ig_raymarch once rendered. A
-% diagram of a candidate camera frustum with several rays $r \in R$
-% marched through it, each ray colored by the occupancy states
-% ($\mathcal{O}(p_{r,i})$) it passes through and terminating at the
-% first occupied voxel, an ROI boundary, or max range; the resulting
-% per-ray unknown-voxel count $U_r$ should be annotated for one or
-% two example rays to connect the diagram to Equation~\ref{eqVolIG}.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.7\linewidth]{figs/nbv/volumetric_ig_raymarch}
-%   \caption{Ray marching through a candidate camera frustum to
-%            estimate volumetric information gain. Each ray
-%            terminates at the first occupied voxel, the ROI
-%            boundary, or the sensor's maximum range.}
-%   \label{figVolIGRaymarch}
-% \end{figure}
+Figure~\ref{figVolIGRaymarch} shows this ray marching for one candidate
+viewpoint.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth, trim={0pt 0pt 0pt 15pt}, clip]{figs/ig_rays_computation.png}
+    \caption{Ray marching through a candidate viewpoint's 70 rays,
+             shown in three orthographic projections (xz, xy, yz)
+             against the simulated tree's point cloud. Each sampled
+             point along a ray is colored by its queried occupancy
+             state $\mathcal{O}(p_{r,i})$: unknown (green), free
+             (yellow), or occupied (blue), with rays terminating at
+             the first occupied voxel or the ROI boundary. The black
+             star marks the candidate camera position and the gray
+             star the previous camera position. For this candidate,
+             the 70 rays together pass through 1592 unknown-voxel
+             samples, giving $\mathrm{IG}(v) = 1592/70 \approx 22.74$
+             by Equation~\ref{eqVolIG}.}
+    \label{figVolIGRaymarch}
+\end{figure}
 
 The resulting gain enters the shared utility of Equation~\ref{eqUtility},
 and feasible candidates are evaluated in descending order of utility until
@@ -592,6 +632,29 @@ as before.
 The effect is that the planner's exploratory attention is drawn toward
 contested, low-confidence disease evidence rather than toward geometric
 unknowns.
+Figure~\ref{figSemanticVolumetricClustering} contrasts the two candidate
+generators on the same scene.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth, trim={190pt 0 190pt 0}, clip]{figs/semantic_volumetric_clustering.jpg}
+    \caption{Candidate generation in the volumetric and semantic planners,
+             starting from the same semantic OctoMap (top), where grey
+             voxels are occupied surfaces, red voxels carry a symptomatic
+             class label, and the transparent green volume is the known
+             free space carved out by ray casting.
+             \textit{Left:} the volumetric planner clusters geometric
+             frontier voxels with $k$-means (clusters shown in orange,
+             yellow, and cyan) and samples viewpoint candidates on a
+             hemisphere facing each cluster centroid.
+             \textit{Right:} the semantic planner instead clusters
+             occupied voxels of low semantic confidence (yellow) and
+             samples candidates facing that centroid, concentrating the
+             candidate set on contested disease evidence rather than on
+             geometric unknowns.
+             Viewpoint candidates are drawn as RGB coordinate frames.}
+    \label{figSemanticVolumetricClustering}
+\end{figure}
 
 \paragraph{Semantic Information Gain.}
 The semantic information gain augments the volumetric unknown-voxel term
@@ -621,46 +684,6 @@ be read as the degree to which view selection is disease-aware rather than
 purely geometric.
 Parameter values, including $\beta$, are reported in
 Table~\ref{tabPlanningParams}.
-
-% TODO(fig): add figs/nbv/ig_comparison_heatmap once rendered. For a
-% single fixed map state, a side-by-side comparison showing the same
-% set of candidate viewpoints colored by volumetric IG
-% (Equation~\ref{eqVolIG}) on one side and by semantic IG
-% (Equation~\ref{eqSemIG}) on the other, so the reader can see
-% concretely that the two scoring functions rank candidates
-% differently and that the semantic planner is drawn toward
-% low-confidence symptomatic regions rather than merely unexplored
-% ones.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/nbv/ig_comparison_heatmap}
-%   \caption{Candidate viewpoints for the same map state, scored by
-%            volumetric information gain (left) versus semantic
-%            information gain (right), illustrating how the semantic
-%            term redirects the planner toward low-confidence
-%            symptomatic regions.}
-%   \label{figIGComparison}
-% \end{figure}
-
-Figure~\ref{figViewpointCandidates} contrasts the two NBV candidate
-generators: both cluster voxels of interest (geometric frontier voxels for
-the volumetric planner, semantically uncertain voxels for the semantic
-planner) and sample candidate poses on a hemisphere facing each cluster
-centroid.
-
-\begin{figure}[t]
-    \centering
-    % TODO(fig): add figs/nbv/viewpoint_candidates (cropped from
-    % System_Diagram) once rendered.
-    % \includegraphics[width=0.98\linewidth]{figs/nbv/viewpoint_candidates}
-    \caption{Viewpoint candidate generation for the volumetric (left)
-             and semantic (right) planners.
-             Both cluster voxels of interest (frontier voxels and
-             semantically uncertain voxels, respectively) and sample
-             candidate poses on a hemisphere facing each cluster
-             centroid.}
-    \label{figViewpointCandidates}
-\end{figure}
 
 \section{Simulation Experiments} \label{secSimExperiments}
 
@@ -785,6 +808,13 @@ configurations in total (Section~\ref{secOrchardSim}).
 Each tree is placed $1.0$\,m from the robot base to fix the sensing
 geometry, and a $1.0 \times 1.0 \times 2.0$\,m bounding box is fitted to
 each tree to define a consistent ROI across all planners.
+Every run, for all three planners, begins with the same four fixed
+initialization viewpoints, counted within the $30$-viewpoint budget;
+this initialization was introduced for collision safety during the field
+deployment (Chapter~\ref{chapErwin}) and is applied identically in
+simulation so that the two settings remain comparable, which is why the
+per-viewpoint curves of all planners coincide over the first few
+viewpoints.
 The detector deployed in simulation is the model fine-tuned on simulation
 imagery (Section~\ref{secDetectionResults}).
 All planning parameters are listed in Table~\ref{tabPlanningParams}.
@@ -863,13 +893,14 @@ Semantic   & \textbf{0.479} & \textbf{0.588} & 70.21 \\
 
 \begin{figure}[t]
     \centering
-    % TODO(fig): add figs/nbv/sim_metrics.png once rendered.
-    % \includegraphics[width=0.7\linewidth]{figs/nbv/sim_metrics}
+    \includegraphics[width=0.7\linewidth]{figs/avg_tree_all_sim.png}
     \caption{Planner performance averaged across the five simulated
              symptomatic apple trees and their $60^\circ$ rotational
              augmentations.
-             Curves show mean mAP, max-F1, and ROI coverage over 30
-             viewpoints.
+             Curves show mean mAP (top), max-F1 (middle), and ROI coverage
+             (bottom) over 30 viewpoints for the baseline grid scan (dark
+             blue), the volumetric NBV planner (orange), and the semantic
+             NBV planner (light blue).
              The corresponding field curves are reported in
              Section~\ref{secFieldResults} of Chapter~\ref{chapErwin}.}
     \label{figSimResults}
@@ -894,19 +925,33 @@ map contains fewer low-confidence symptomatic voxels and more confidently
 resolved symptoms, at the cost of some geometric coverage in disease-free
 parts of the canopy that it deliberately declines to explore.
 
-% TODO(fig): add a side-by-side qualitative comparison of semantic
-% maps produced by each planner at a matched viewpoint budget (e.g.
-% figs/nbv/qualitative_maps), highlighting a region resolved by the
-% semantic planner but not the volumetric one.
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/nbv/qualitative_maps}
-%   \caption{Example semantic maps produced by each planner at a
-%            matched viewpoint budget, illustrating regions the
-%            semantic planner resolves earlier than the volumetric
-%            planner.}
-%   \label{figSimQualitative}
-% \end{figure}
+Figure~\ref{figSimQualitative} makes this difference concrete on one of the
+simulated trees.
+Because the volumetric planner scores candidates by the unknown space they
+would reveal, it distributes its early views over the whole ROI, including
+the empty volume surrounding the canopy, and its map of the tree itself
+accumulates comparatively slowly.
+The semantic planner, drawn toward the voxels carrying uncertain disease
+labels, concentrates its views on the tree from the outset and recovers
+symptoms in the interior of the canopy several viewpoints earlier, while
+the baseline, constrained to a frontal sweep, reaches the interior latest of
+the three.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figs/trajectory_tree4_cropped.png}
+    \caption{Semantic maps and arm configurations for the baseline (left),
+             volumetric (middle), and semantic (right) planners on the same
+             simulated tree, shown at viewpoint indices 10, 20, and 30
+             (top to bottom).
+             Grey voxels are occupied surfaces, red and blue voxels carry
+             symptomatic class labels, and the blue wireframe marks the ROI.
+             The volumetric planner spends its early views mapping the ROI
+             as a whole and so builds up the canopy more slowly, whereas the
+             semantic planner concentrates on the tree and recovers
+             symptoms in the interior of the canopy earlier.}
+    \label{figSimQualitative}
+\end{figure}
 
 \section{Summary} \label{secNBVSummary}
 

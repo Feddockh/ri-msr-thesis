@@ -1,14 +1,21 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
-\chapter{Stuff I forgot} \label{chapAppendix}
+\chapter{Annotation Tools} \label{chapAppendix}
 
-Robots are really, really great.
+This appendix documents two purpose-built annotation tools developed for
+this thesis: the SAM2 box-to-mask tool used to produce instance masks
+for the dataset of Chapter~\ref{chapDataset}, and the SuperSplat
+alignment and annotation tool used to produce the field ground truth of
+Chapter~\ref{chapErwin}.
 
 \section{SAM2 Box-to-Mask Tool} \label{apxSAM2}
 
 The box-to-mask conversion of Section~\ref{secSAMAnnotation} is
 performed with a purpose-built annotation tool rather than by taking
-SAM2's output automatically.
+SAM2's output automatically. This tool, along with the code used to
+train and evaluate the detectors of
+Chapter~\ref{chapDataset}, is publicly
+available\footnote{\url{https://github.com/Feddockh/fireblight_models}}.
 For each labeled box, the tool prompts SAM2 (initialized from a base
 ViT-H checkpoint, or from a fine-tuned checkpoint once one exists) with
 the box and generates a set of candidate masks; the annotator steps
@@ -41,3 +48,71 @@ displaying it for review, leaving only objects the annotator had not
 already labeled to be filled in this way.
 This fine-tune-then-automate loop is what makes exhaustive mask
 annotation across the full dataset practical.
+
+\section{SuperSplat Alignment and Annotation Tool} \label{apxSuperSplat}
+
+The Gaussian-splat ground-truth pipeline of Section~\ref{secGSSplat}
+requires two operations that no existing tool provided: registering a
+Gaussian splat into an external reference frame (the robot's), and
+annotating a splat at the level of its individual Gaussians.
+We therefore forked the open-source SuperSplat
+editor\footnote{\url{https://github.com/playcanvas/supersplat}} and
+extended it with both
+capabilities\footnote{\url{https://github.com/Feddockh/supersplat-seg}}.
+
+The alignment workflow is shown in
+Figure~\ref{figSupersplatAlignment}.
+The scene manager loads multiple models side by side---here the
+phone-video splat of a field tree, the flash splat of the same tree,
+and the stereo-fused point cloud accumulated by the robot, which is
+natively in the robot's frame.
+The user selects a source and a target model and picks corresponding
+points on each; from four or more pairs the tool solves for the
+similarity transform (rotation, translation, and scale) that maps the
+source onto the target, reporting the per-pair residuals and the
+root-mean-square error so that a bad correspondence can be identified
+and re-picked before the transform is applied.
+In the session shown, four point pairs align the phone splat to the
+robot's point cloud with a root-mean-square error of $6.4$\,mm.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figs/supersplat_alignment.png}
+    \caption{The alignment mode of the modified SuperSplat editor. The
+             phone-video splat of a field tree (left, in color) and the
+             robot's stereo-fused point cloud of the same tree (right,
+             gray) are loaded together in the scene manager;
+             corresponding points picked on each (blue and orange
+             markers) define a similarity transform, with per-pair
+             residuals and the root-mean-square error reported in the
+             alignment panel at the bottom right.}
+    \label{figSupersplatAlignment}
+\end{figure}
+
+The annotation workflow is shown in
+Figure~\ref{figSupersplatSegment}.
+The user defines a set of symptom classes (here shepherd's crook and
+canker), selects Gaussians with the editor's selection tools, and
+assigns the selection to a class, which recolors the selected Gaussians
+with an adjustable-opacity overlay.
+Because every model in the scene shares the aligned frame, the
+annotator can toggle between the phone-video splat and the flash splat
+while labeling, using whichever modality shows a symptom more clearly.
+Labeled Gaussians are grouped into instances by a minimum
+cluster-distance parameter, the centroid of each instance is computed
+on demand, and the centroids are exported as JSON in the aligned robot
+frame, where they serve directly as the ground-truth symptom locations
+for the evaluation of Section~\ref{secFieldResults}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figs/supersplat_segment.png}
+    \caption{The annotation mode of the modified SuperSplat editor.
+             Gaussians selected on a symptomatic region of the splat are
+             assigned to the canker class and recolored with an
+             adjustable-opacity overlay (green). The annotation panel at
+             the bottom right manages the class list, overlay opacity,
+             instance clustering distance, and centroid computation and
+             export.}
+    \label{figSupersplatSegment}
+\end{figure}
