@@ -6,40 +6,39 @@
 
 \noindent
 United States apple growers lose more than \$100 million a year to fire blight,
-a bacterial disease caused by \textit{Erwinia amylovora} that can kill young apple
-trees within a single season.
-The disease is best fought during the dormant season: the infected tissue that
-survives winter on the tree is what seeds the following spring's outbreak, so
-removing that tissue before spring growth begins is the most effective way to
-stop the disease from spreading.
-Finding it still depends almost entirely on manual scouting, a slow and
-subjective process that does not scale to the multi-acre plantings of modern
-commercial operations and is increasingly constrained by a shrinking
-agricultural workforce.
+a bacterial disease caused by \textit{Erwinia amylovora} that is detrimental to
+pome fruit trees such as apple and pear.This bacterium infects blossoms, shoots, 
+and branches during the bloom season causing tissue to die. Therefore, the 
+detection and removal of infected tissues over the dormant season is critical 
+to preventing an outbreak in the following spring. However, the symptoms of fire 
+blight are subtle and difficult to detect, and finding them still depends almost 
+entirely on manual scouting, a process that does not scale to large orchards and 
+is prohibitively expensive and time-consuming for growers to perform at the 
+scale required for effective disease management. With the decreasing availability
+of labor in the agricultural sector, there is a pressing need for automated
+solutions that can perform this inspection at scale, and with high accuracy.
 
-This thesis develops a robotic system capable of performing that inspection
-autonomously.
-Because the visual cues that distinguish infected tissue are subtle, easily
-obscured by occlusion and variable natural lighting, and reliably resolved only
+This thesis aims to develop a robotic system capable of performing that inspection
+autonomously. Since the visual cues that distinguish infected tissue are subtle,
+easily occluded, vary with natural lighting, and are reliably resolved only
 at close range, the system relies on active perception: a manipulator positions
 a camera to acquire discriminative, task-relevant views of the canopy.
-We built a multi-modal dataset of dormant apple trees, the first to pair dense
-near-infrared imagery with flash-illuminated stereo RGB for this task, and
-trained instance-segmentation detectors to recognize disease symptoms across
-both modalities.
-We then introduced a confidence-aware semantic mapping method that fuses these
-per-view detections into a persistent 3D representation of disease confidence
-across the canopy, and a next-best-view planner that actively selects
-viewpoints to refine the map's least confident, most contested predictions.
-Finally, we integrated the full pipeline onto Erwin, a mobile manipulator built
-on an Amiga base and an xArm6 arm, and deployed it on real dormant apple trees
-in a working orchard.
+We have collected a multi-modal dataset of dormant apple trees, the first to pair
+dense near-infrared imagery with flash-illuminated stereo RGB for this task, and
+trained detectors to recognize disease symptoms across both modalities. We then 
+introduce a confidence-aware semantic mapping method that fuses these per-view 
+detections into a persistent 3D representation of disease confidence
+across the canopy, and a next-best-view planner that actively selects viewpoints 
+to refine the map's least confident, most contested predictions. Finally, we 
+integrated the full pipeline onto Erwin, a mobile active perception robot built
+using an Amiga base and an xArm6 arm for manipulation of the camera rig.
 
-Validated in simulation and in the field on 12 trees at the Penn State Fruit
-Research and Extension Center under a genuine train--test domain gap, the
-semantic planner reaches detection quality comparable to a complete fixed scan
-in roughly half the viewpoints and half the inspection time.
+We successfully validated the system both in simulation and in the field on 12 
+trees at the Penn State Fruit Research and Extension Center under a genuine 
+train--test domain gap, the semantic planner more than doubles the detection 
+accuracy of a complete planar scan by the halfway point of the inspection, 
+concentrating its views on the map's most contested disease evidence.
 This result demonstrates the central promise of active perception for orchard
-disease mapping: by deciding where to look next rather than only looking
-harder, a robot can build maps of disease that are both more accurate and
-faster to produce than one that follows a fixed scanning routine.
+disease mapping: by deciding where to look next a robot can build maps of orchard 
+disease that are accurate enough to support autonomous disease management, 
+while minimizing the time and energy spent on inspection.
