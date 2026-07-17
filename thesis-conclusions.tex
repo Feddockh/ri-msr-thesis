@@ -31,9 +31,9 @@ three isolated components, and then deployed and validated on real
 symptomatic trees in a working orchard.
 Its central finding is that deciding where to look next is worth as much
 as looking more carefully: a planner that spends its viewpoints resolving
-uncertainty about disease, rather than uncertainty about geometry,
-reaches detection quality comparable to a complete fixed scan in roughly
-half the viewpoints and half the time.
+uncertainty about disease, rather than uncertainty about geometry, more
+than doubles the detection accuracy of a complete fixed scan at the halfway
+point of the inspection.
 
 \section{Summary of Contributions} \label{secContribSummary}
 
@@ -107,9 +107,8 @@ half the viewpoints and half the time.
   The field results reproduced the simulation findings and sharpened the
   central one: at viewpoint 15 the semantic planner more than doubled the
   baseline's mAP, 0.209 against 0.089, and nearly quadrupled its max-F1,
-  0.461 against 0.124, reaching detection quality comparable to a
-  complete baseline scan in roughly half the viewpoints and half the
-  inspection time.
+  0.461 against 0.124, already separating decisively from the baseline at
+  the inspection's midpoint.
   Two supporting results made the deployment possible: a FoundationStereo
   configuration optimized from 3.8\,s to 32\,ms per frame, and a
   Gaussian-splat ground-truth pipeline that places expert 3D symptom
@@ -134,10 +133,11 @@ The bottleneck is mechanical rather than computational: with stereo depth
 running at 32\,ms and detection running alongside it in parallel
 (Section~\ref{secStereoDepth}), the cycle is dominated by the time the arm
 spends moving between viewpoints.
-The semantic planner's central result---comparable map accuracy in roughly
-half the viewpoints---is the first meaningful step against this limit,
-since halving the viewpoint count halves the motion, but it is a
-mitigation rather than a solution.
+The semantic planner's front-loading of detection quality---most of its
+accuracy is reached well before the full budget---is the first meaningful
+step against this limit, since a shortened inspection sacrifices far less
+than it would under a fixed scan, but it is a mitigation rather than a
+solution.
 
 \paragraph{Cost and durability.}
 Erwin is expensive, and it is not ruggedized.

@@ -186,14 +186,15 @@ exactly those of Section~\ref{secProjection}.
 The rig and pipeline together support a maximum sustained capture rate of
 $20$\,fps, achieved through the stereo optimizations of
 Section~\ref{secStereoDepth} together with running detection and depth
-estimation in parallel.
-We separately tested a continuous $5$\,fps feed and found that it
-reconstructed the scene substantially faster than single-image capture,
-since the map received many more observations per unit time. For the planner
-evaluation reported below, however, this continuous mode was deliberately
-disabled: all three planners were run with a single triggered image captured
-at each viewpoint, so that differences in performance reflect the planning
-strategy alone and are not confounded by capture rate.
+estimation in parallel; we verified this rate in the lab but did not use
+continuous capture for the field experiments.
+For the planner evaluation reported below, a single image was captured at
+each selected viewpoint rather than streaming continuously, so that each
+planner is judged on the views it deliberately selects rather than on the
+incidental images gathered along the arm's between-viewpoint motion.
+Because that motion is produced by a sampling-based (RRT) planner and so
+varies from run to run, admitting those in-transit images would confound
+the comparison with the particular path the arm happened to take.
 
 \subsection{Real-Time Stereo Depth in the Field} \label{secStereoDepth}
 
@@ -355,7 +356,7 @@ train the detector (Section~\ref{secDetectionResults}): no images from the
 evaluation site were used during training, so the field results measure
 performance under a genuine train--test domain gap. The number of trees was
 limited to 12 for two practical reasons: each tree had to be inspected by
-all three planners within a single multi-day site visit, and symptomatic
+all three planners within a single three-day site visit, and symptomatic
 trees are inherently scarce, since growers prune out fire blight infections
 as soon as they are found, leaving few orchards with standing disease
 available for study.
@@ -397,12 +398,12 @@ Ground truth for each field tree was obtained by reconstructing a 3D
 Gaussian splat of the tree and manually annotating its symptomatic regions,
 described in Section~\ref{secGSSplat} below. As in simulation, all three
 planners were evaluated with single-image-per-viewpoint capture rather than
-the continuous $5$\,fps feed described in
-Section~\ref{secPerceptionPipeline}. The continuous feed was tested
-separately and reconstructed scenes faster, but it was excluded from the
-planner comparison because it would conflate capture rate with planning
-strategy; holding capture fixed at one image per viewpoint ensures the
-comparison isolates the effect of the planner.
+continuous streaming (Section~\ref{secPerceptionPipeline}). Capturing one
+image at each selected viewpoint isolates the effect of the planner's
+viewpoint choices: it keeps the incidental images gathered along the arm's
+between-viewpoint motion---whose path is produced by a sampling-based (RRT)
+planner and therefore varies from run to run---from confounding the
+comparison.
 
 \subsection{Ground Truth Generation with Gaussian Splatting} \label{secGSSplat}
 
@@ -479,8 +480,8 @@ all three metrics. The field results follow the same overall pattern as
 simulation: the volumetric planner attains the most complete geometric
 coverage ($71.41\%$ at viewpoint $30$), while the semantic planner attains
 the best detection quality by the standard operating metric, reaching the
-highest max-F1 ($0.608$). As expected, absolute metric values are lower than
-in simulation, consistent with the greater difficulty of real orchard
+highest max-F1 ($0.608$). As expected, absolute mAP and coverage are lower
+than in simulation, consistent with the greater difficulty of real orchard
 conditions---natural lighting, real occlusion, and the train--test domain
 gap.
 
@@ -532,12 +533,14 @@ is sharper in the field than in simulation, indicating that targeted
 refinement of low-confidence regions is especially valuable under real-world
 uncertainty, where a symptom is more likely to be missed or mislabeled from
 any single view and therefore benefits most from deliberate re-observation.
-By viewpoint $30$ the baseline's mAP catches up to the semantic planner's
-($0.331$ versus $0.322$, a difference within evaluation noise), but only
-after spending the full budget; the semantic planner reaches comparable
-detection quality in roughly half the viewpoints, and thus roughly half the
-inspection time, which is the operationally relevant advantage for a system
-that must scale to many trees.
+By viewpoint $30$ the baseline's mAP has caught up to the semantic
+planner's ($0.331$ versus $0.322$, a difference within evaluation noise),
+but only at the full budget; through the first half of the inspection the
+semantic planner holds a large lead---more than double the baseline's mAP
+at viewpoint 15---and it retains the higher max-F1 ($0.608$ versus $0.560$)
+even at viewpoint 30. This front-loading of detection quality is the
+operationally relevant advantage for a system that must scale to many
+trees.
 
 \subsection{Qualitative Observations} \label{secFieldQualitative}
 
@@ -597,7 +600,7 @@ work of Chapter~\ref{chapConclusions}. The base is stationary during
 inspection, so the system currently maps one tree at a time and depends on
 an operator to reposition it along a row; autonomous row traversal is the
 most direct path to orchard-scale deployment. Field evaluation was also
-limited to 12 trees within a single two-day visit, constrained both by the
+limited to 12 trees within a single three-day visit, constrained both by the
 need to run all three planners on each tree and by the scarcity of standing
 fire blight; broader evaluation across more orchards and seasons is needed
 to characterize generalization fully. Detection quality, finally, remains
@@ -620,8 +623,8 @@ under a genuine train--test domain gap, Erwin reproduced the simulation
 findings of Chapter~\ref{chapNBV}: both adaptive planners clearly
 outperformed the deterministic baseline, the volumetric planner delivered
 the most complete coverage, and the semantic planner delivered the best
-detection quality, reaching comparable map accuracy to the fully-scanned
-baseline in roughly half the viewpoints and half the inspection time
+detection quality, more than doubling the baseline's mAP at the inspection
+midpoint and retaining the higher max-F1 through the full budget
 (Section~\ref{secFieldResults}). These results demonstrate that the
 confidence-aware semantic map and semantic NBV planner are not merely
 simulation artifacts but deliver fast, fine-grained disease maps under real

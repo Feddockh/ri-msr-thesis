@@ -25,7 +25,7 @@ began before the manipulator-based system was operational and
 continued in parallel with it.
 The rig combines a flash-illuminated stereo RGB camera, a 25-band
 NIR multispectral camera, and, in early versions, a wide-angle
-stero RGB camera, all rigidly mounted to a common frame and faced
+stereo RGB camera, all rigidly mounted to a common frame and faced
 in the same direction so that a single operator could walk the
 orchard rows and capture closely registered, multi-modal imagery
 of trunks and branches at close range.
@@ -144,8 +144,8 @@ After demosaicing, the effective spatial resolution per band is
 The 25 bands span 675--951\,nm, and Table~\ref{tabXimeaBands}
 lists the center wavelength at each position in the mosaic tile;
 six of the 25 bands---675, 690, 715, 730, 743, and
-757\,nm---fall within the 660--760\,nm red-edge window identified
-above as diagnostically relevant.
+757\,nm---fall within the 660--760\,nm red-edge window that the prior work
+above identified as diagnostically relevant.
 
 \begin{table}[h]
     \centering
@@ -514,8 +514,7 @@ This large reduction is a direct consequence of how difficult these
 symptoms are to annotate: unlike the crisp, high-contrast objects of
 general-purpose detection benchmarks, dormant fire blight symptoms are
 subtle, irregular, and embedded in visually cluttered branch
-structure, and each image demanded careful annotation which slowed down 
-the labeling process.
+structure, and each image demanded slow, deliberate annotation.
 The remainder of this section explains why an existing dataset could
 not simply be adopted for this task, and the following section
 details the annotation protocol and pipeline built to label our own
@@ -1078,11 +1077,12 @@ Class labels transfer perfectly since they are copied directly from
 the source RGB annotation, so all residual error is spatial; results
 are therefore reported class-agnostically.
 At the practical IoU-0.5 threshold, 68.2\% of all annotations required
-no correction at all, only 4.3\% of ground-truth symptoms were missed
-outright (\emph{add}), and adjusting an existing box's extent was
-roughly four times more common than drawing or deleting one---most of
-the remaining annotator effort is tightening boxes, not finding missed
-symptoms or removing false alarms.
+no correction at all, and only 4.3\% of ground-truth symptoms were missed
+outright (\emph{add}). Adjusting an existing box's extent (294 cases) and
+removing a spurious box (226) accounted for most of the residual effort,
+while genuinely missed symptoms were rare (70)---the remaining annotator
+work is dominated by tightening and pruning boxes rather than by finding
+symptoms the pipeline overlooked.
 
 \begin{table}[h]
     \centering
@@ -1279,8 +1279,11 @@ than on validation---indicating that the leakage-free split of
 Section~\ref{secDatasetSplits} yields an honest estimate of
 generalization rather than a memorized one.
 Peak $F_1$ is reached at a moderate confidence (roughly 0.19--0.30 across
-models), which sets the detection threshold used when these per-view
-predictions are fused into the semantic map in Chapter~\ref{chapNBV}.
+models), marking a sensible single-frame operating point; the semantic map
+of Chapter~\ref{chapNBV} itself admits every detection above a lower
+minimum-confidence floor ($\tau = 0.1$) and relies on multi-view fusion to
+suppress the resulting weak false positives, so that faint but genuine
+detections are not discarded before they can be corroborated.
 
 Figure~\ref{figPRCurves} shows the precision--recall curves for the two
 detectors.
@@ -1397,10 +1400,8 @@ generally noisier predictions.
 We show these relaxed-threshold results only to characterize how much
 of the apparent failure rate is boundary ambiguity rather than missed
 detections; we do not adopt IoU~$\geq 0.3$ as a general-purpose
-replacement for the conventional IoU~$\geq 0.5$ criterion used
-elsewhere in this thesis, including for the confidence threshold that
-sets the per-view detections fused into the semantic map of
-Chapter~\ref{chapNBV}.
+replacement for the conventional IoU~$\geq 0.5$ matching criterion used
+elsewhere in this thesis.
 The broader lesson is that frame-level detection metrics can only say
 so much about performance in the field on symptoms with ambiguous
 boundaries; aggregating evidence across many views of the same tree,
