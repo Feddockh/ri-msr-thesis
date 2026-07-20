@@ -135,7 +135,7 @@ The sensor used in this work has a resolution of
 2048$\times$1088 pixels with a calibrated focal length of
 approximately 2937 pixels, corresponding to a field of view of
 roughly 38.4$^\circ$ horizontal by 21.0$^\circ$
-vertical---a narrower, more telephoto view than the Firefly
+vertical, a narrower, more telephoto view than the Firefly
 stereo pair, concentrating spatial resolution on a smaller patch
 of bark at close range.
 After demosaicing, the effective spatial resolution per band is
@@ -145,8 +145,8 @@ mosaic tile that repeats periodically across the entire sensor
 array, so that every 5$\times$5 block of raw pixels contains one
 sample of each band; Table~\ref{tabXimeaBands} lists the center
 wavelength at each position within this repeating tile.
-Six of the 25 bands---675, 690, 715, 730, 743, and
-757\,nm---fall within the 660--760\,nm red-edge window that the prior work
+Six of the 25 bands (675, 690, 715, 730, 743, and
+757\,nm) fall within the 660--760\,nm red-edge window that the prior work
 above identified as diagnostically relevant.
 
 \begin{table}[h]
@@ -183,7 +183,7 @@ inspection area alongside depth for context and mapping.
 Each eye captures 2208$\times$1242 pixels (2K) with a calibrated
 focal length of approximately 1054 pixels, corresponding to a
 field of view of roughly 92.7$^\circ$ horizontal by
-61.0$^\circ$ vertical---substantially wider, at correspondingly
+61.0$^\circ$ vertical, substantially wider, at correspondingly
 coarser angular resolution, than either the Firefly stereo pair or
 the Ximea.
 At this 2K resolution the camera runs at up to 15\,fps; like the
@@ -337,11 +337,11 @@ recording controls were added; after each save the status field
 reported the resulting bag size, so the operator could confirm data
 was being written while walking the rows.
 A column of sliders was added in the middle of the interface to
-adjust camera settings directly in the field---in the second
-version these exposed the flash duration, Firefly (flash camera)
-exposure, Ximea gain, and Ximea exposure---along with buttons to run
+adjust camera settings directly in the field, along with buttons to run
 flat-field correction (FFC) calibration on the Ximea without leaving
-the orchard.
+the orchard. In the second version these sliders exposed the flash
+duration, Firefly (flash camera) exposure, Ximea gain, and Ximea
+exposure.
 \fi
 % --- end disabled GUI v2 details ---
 The final version addresses these issues directly.
@@ -445,7 +445,7 @@ wide spacing between trees.
 The block had been deliberately inoculated, but disease pressure was
 mild: a handful of shepherd's crooks were present and no cankers.
 Skies were clear that day, producing strong, hard-edged shadows
-across the canopy---the opposite lighting regime to the overcast
+across the canopy, the opposite lighting regime to the overcast
 Pittsburgh session.
 In total, 1{,}947 five-camera image sets were captured at this site,
 amounting to 31.9\,GB of raw data.
@@ -903,7 +903,7 @@ We first attempted to bootstrap annotation with open-vocabulary,
 text-to-annotation tools such as Grounding
 DINO~\cite{liu2023groundingdino}, prompting them with descriptions of
 cankers and shepherd's crooks, but these models failed to localize
-dormant fire blight symptoms with any reliability---unsurprisingly,
+dormant fire blight symptoms with any reliability. This is unsurprising,
 since the subtle, texture-based lesions on bare winter bark bear little
 resemblance to anything in their training distribution.
 All symptom instances were therefore annotated by hand in
@@ -921,8 +921,8 @@ transfer of labels from the RGB frames to the registered NIR frames
 The central difficulty in labeling this data is that there is no
 established convention for annotating fire blight cankers and
 shepherd's crooks with bounding boxes.
-Shepherd's crooks are relatively uniform---all share the
-characteristic hooked tip of a wilted, infected shoot---but cankers
+Shepherd's crooks are relatively uniform (all share the
+characteristic hooked tip of a wilted, infected shoot), but cankers
 vary widely in shape, location, and appearance, and their extent on
 the bark is often ambiguous.
 To make annotation repeatable across images and annotators, we
@@ -1108,7 +1108,7 @@ At the practical IoU-0.5 threshold, 68.2\% of all annotations required
 no correction at all, and only 4.3\% of ground-truth symptoms were missed
 outright (\emph{add}). Adjusting an existing box's extent (294 cases) and
 removing a spurious box (226) accounted for most of the residual effort,
-while genuinely missed symptoms were rare (70)---the remaining annotator
+while genuinely missed symptoms were rare (70): the remaining annotator
 work is dominated by tightening and pruning boxes rather than by finding
 symptoms the pipeline overlooked.
 
@@ -1136,7 +1136,7 @@ symptoms the pipeline overlooked.
 Figure~\ref{figCrossModalQual} shows two representative frames.
 In the median-quality case (mean IoU 0.458), the predicted box lands
 on the correct lesion but is narrower and shifted relative to the
-ground truth---the dominant \emph{adjust} failure mode, consistent
+ground truth, the dominant \emph{adjust} failure mode, consistent
 with matched-pair mean IoU rising from 0.796 at the loosest threshold
 to 0.944 at the strictest, i.e., most of the gap between recall at
 0.25 and at 0.75 is due to box tightness rather than gross
@@ -1218,10 +1218,10 @@ NVIDIA RTX 4090 GPU with automatic mixed precision.
 A physical batch of 3 images was gradient-accumulated to a nominal
 batch of 64.
 The RGB model trained at 1088$\times$1440 with a mild augmentation
-set---HSV color jitter, horizontal flips, small translation and scale
+set: HSV color jitter, horizontal flips, small translation and scale
 jitter, slight perspective, and mosaic (disabled for the final 30
-epochs)---empirically tuned so that weaker translate, scale, and
-mosaic settings were found to perform worse.
+epochs). These were empirically tuned, with weaker translate, scale, and
+mosaic settings found to perform worse.
 The NIR model is trained at 416 pixels, matched to the far smaller
 demosaiced Ximea frames, and with all color-space augmentations
 disabled, since HSV jitter is meaningless and numerically unsafe on
@@ -1302,8 +1302,8 @@ images, a dataset three orders of magnitude smaller than COCO.
 The two models being otherwise architecturally identical, this is the
 most plausible explanation for the performance difference.
 Encouragingly, test performance closely tracks validation for both
-models---mAP@0.5:0.95 is in fact marginally higher on the test split
-than on validation---indicating that the leakage-free split of
+models (mAP@0.5:0.95 is in fact marginally higher on the test split
+than on validation), indicating that the leakage-free split of
 Section~\ref{secDatasetSplits} yields an honest estimate of
 generalization rather than a memorized one.
 Peak $F_1$ is reached at a moderate confidence (roughly 0.19--0.30 across
@@ -1347,7 +1347,7 @@ spatial extent: a canker often fades gradually into healthy bark with no
 crisp boundary, and the lower end of a shepherd's crook blends into
 the stem below it.
 Annotators must nonetheless commit to a specific box, and two
-reasonable annotators---or the annotator and the detector---will
+reasonable annotators, or the annotator and the detector, will
 routinely draw boxes that cover the same lesion on the same branch but
 differ in where they start and stop.
 Under the standard mAP@0.5 matching rule, such a prediction is scored
@@ -1437,7 +1437,7 @@ dormant-season imagery across three orchards.
 Because no existing dataset matched these conditions, we assembled our
 own: 1{,}275 flash RGB images from the Pittsburgh site, each paired
 with a registered NIR frame, labeled for two dormant-season symptom
-classes---shepherd's crook and canker---under an annotation protocol
+classes, shepherd's crook and canker, under an annotation protocol
 developed with a plant pathologist and partitioned into leakage-free
 train, validation, and test splits.
 To make hand-labeling this data tractable, we built an annotation

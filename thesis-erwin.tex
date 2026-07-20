@@ -7,7 +7,7 @@ disease-inspection system in isolation: a multi-modal dataset and 2D
 detector (Chapter~\ref{chapDataset}), and a confidence-aware semantic map
 with a family of next-best-view planners evaluated in simulation
 (Chapter~\ref{chapNBV}). This chapter describes how those pieces are
-integrated into a single physical system---Erwin---and reports its
+integrated into a single physical system, Erwin, and reports its
 validation on real dormant apple trees in a working orchard. Erwin combines
 an Amiga mobile base, a UFACTORY xArm6 manipulator, and the multi-modal
 sensor rig into a closed perception--action loop that runs entirely onboard:
@@ -136,8 +136,8 @@ which fuses the resulting semantic point cloud into the semantic OctoMap
 NBV selection loop of Algorithm~\ref{algNBV}; and the manipulator control
 node, which plans and executes collision-free motions to the selected
 viewpoint. This modular decomposition is what allows the perception
-front-end to be swapped---for example, between the simulation-fine-tuned and
-real-image detector variants of Section~\ref{secDetectionResults}---without
+front-end to be swapped (for example, between the simulation-fine-tuned and
+real-image detector variants of Section~\ref{secDetectionResults}) without
 altering the mapping or planning stages.
 
 % TODO(fig): add a simplified ROS 2 process diagram once drawn (the full
@@ -192,7 +192,7 @@ One capability that simulation provides for free must be earned in the
 field: depth. The simulated camera of Section~\ref{secOrchardSim} renders
 an exact depth image alongside each RGB frame, but the physical rig must
 recover depth from its stereo pair, and the quality of that recovery
-bounds everything downstream---a branch whose disparity is wrong is a
+bounds everything downstream: a branch whose disparity is wrong is a
 branch the map places incorrectly and the planner then reasons about
 incorrectly. Dormant canopies are close to a worst case for stereo
 matching, dominated by thin, repetitive structures separated by large
@@ -338,7 +338,7 @@ trees within the orchard block, and the site's attributes are summarized
 alongside the two image-collection orchards in
 Table~\ref{tabCollectionSites}. The two healthy trees provide
 true-negative cases, testing whether the planners and detector avoid
-hallucinating symptoms on disease-free canopy---a case that pooled detection
+hallucinating symptoms on disease-free canopy, a case that pooled detection
 metrics explicitly penalize (Section~\ref{secSimSetup}). This site is
 deliberately distinct from the commercial orchard whose imagery was used to
 train the detector (Section~\ref{secDetectionResults}): no images from the
@@ -362,8 +362,8 @@ all three planners within a three-day site visit.
 
 \subsection{Experimental Protocol} \label{secFieldProtocol}
 
-Each of the 12 trees was inspected by all three planners---baseline grid
-scan, volumetric NBV, and semantic NBV---so that the planners are compared
+Each of the 12 trees was inspected by all three planners (baseline grid
+scan, volumetric NBV, and semantic NBV) so that the planners are compared
 on identical trees under matched conditions. For every tree, the base was
 positioned $1.0$\,m from the trunk to fix the sensing geometry, matching the
 standoff used in simulation, and a $1.0 \times 1.0 \times 2.0$\,m bounding
@@ -387,8 +387,8 @@ planners were evaluated with single-image-per-viewpoint capture rather than
 continuous streaming (Section~\ref{secPerceptionPipeline}). Capturing one
 image at each selected viewpoint isolates the effect of the planner's
 viewpoint choices: it keeps the incidental images gathered along the arm's
-between-viewpoint motion---whose path is produced by a sampling-based (RRT)
-planner and therefore varies from run to run---from confounding the
+between-viewpoint motion, whose path is produced by a sampling-based (RRT)
+planner and therefore varies from run to run, from confounding the
 comparison.
 
 \subsection{Ground Truth Generation with Gaussian Splatting} \label{secGSSplat}
@@ -467,7 +467,7 @@ the best detection quality by the standard operating metric, reaching the
 highest max-F1 ($0.608$), which is in fact higher than the semantic
 planner's max-F1 in simulation ($0.588$). Absolute mAP and coverage,
 however, are lower than in simulation, as expected given the greater
-difficulty of real orchard conditions---natural lighting, real occlusion,
+difficulty of real orchard conditions: natural lighting, real occlusion,
 and the train--test domain gap.
 
 \begin{table}[h]
@@ -511,8 +511,8 @@ Semantic   & \textbf{0.322} & \textbf{0.608} & 60.36 \\
 
 The most striking field result is how early the semantic planner separates
 from the other two on detection quality, while the volumetric planner leads
-on coverage throughout. At viewpoint $15$---roughly half the budget, and
-thus roughly half of the 3--5 minute inspection time---the semantic planner
+on coverage throughout. At viewpoint $15$ (roughly half the budget, and
+thus roughly half of the 3--5 minute inspection time), the semantic planner
 already leads both detection metrics by a wide margin: more than double the
 baseline's mAP ($0.209$ versus $0.089$) and nearly quadruple its max-F1
 ($0.461$ versus $0.124$), while also beating the volumetric planner on both
@@ -551,8 +551,8 @@ the field as in simulation. The clearest difference between the two settings
 is the magnitude of the semantic planner's early advantage over the
 baseline, which is larger in the field. We attribute this partly to the
 higher per-view uncertainty of real imagery: when any single observation is
-noisier, the value of deliberately revisiting ambiguous regions---precisely
-what the semantic information gain of Equation~\ref{eqSemIG} rewards---rises
+noisier, the value of deliberately revisiting ambiguous regions, precisely
+what the semantic information gain of Equation~\ref{eqSemIG} rewards, rises
 relative to a fixed scan that observes each region only once. Part of the
 lead may also come earlier still, from candidate generation: because the
 semantic planner already targets voxels the map regards as possibly
