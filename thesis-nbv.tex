@@ -258,12 +258,13 @@ registered pixel-for-pixel with the RGB image.
     \label{figProjectionPipeline}
 \end{figure}
 
-Second, each pixel with valid stereo depth is back-projected into 3D using
+Second, each pixel with valid stereo depth is projected into 3D using
 the camera intrinsics and the known camera pose, and the resulting point is
 assigned the class and confidence stored at its pixel.
-Depth is taken from the stereo matcher of Section~\ref{secFlirCamera} and
-clamped to the effective operating range of $0.1$--$0.9$\,m; points outside
-this range are discarded as unreliable.
+In simulation, this depth is taken directly from the simulator as
+ground truth, rather than estimated by a stereo matcher.
+Depth is clamped to the effective operating range of $0.1$--$0.9$\,m;
+points outside this range are discarded as unreliable.
 Pixels with invalid disparity or with depth beyond the maximum sensing
 range may optionally be retained as background points placed at the maximum
 range value, which allows the downstream occupancy update to carve out free
@@ -335,7 +336,7 @@ $60^\circ$ increments, yielding up to six distinct orientations per tree
 and up to $30$ unique evaluation configurations across the five trees.
 Because each rotation presents a different pattern of self-occlusion and a
 different distribution of symptoms relative to the frontal viewing plane,
-these augmentations exercise the planners on a substantially wider range of
+these augmentations exercise the planners on a wider range of
 viewing challenges than five static trees would.
 
 \subsection{Simulation Ground Truth} \label{secSimGT}
@@ -348,9 +349,6 @@ regardless of how the underlying ground truth was obtained.
 For simulated trees, ground truth is exact: symptomatic instances are
 segmented directly on the Blender mesh geometry, and the centroid of each
 segmented instance is stored as the reference symptom location.
-Real trees admit no such mesh, so field ground truth is instead
-reconstructed photogrammetrically via Gaussian splatting, as described in
-Section~\ref{secGSSplat} of Chapter~\ref{chapErwin}.
 
 \section{Next-Best-View Planning} \label{secNBVPlanning}
 
@@ -412,7 +410,9 @@ current camera pose to the candidate and $\alpha$ is a tunable weight
 balancing exploration benefit against travel.
 The planner selects the maximum-utility feasible candidate, commands the
 manipulator to it, captures an image, and updates the map, repeating until
-a fixed viewpoint budget is exhausted.
+a fixed viewpoint budget is exhausted or the best remaining candidate's
+information gain falls below a small threshold $\epsilon$, indicating
+that no candidate view is expected to meaningfully change the map.
 The three planners differ only in how $\mathcal{G}$ and $\mathrm{IG}$ are
 defined; the baseline additionally forgoes the map-dependent scoring
 entirely, as described below.
@@ -574,9 +574,11 @@ Each ray terminates at the first occupied voxel it reaches, when the
 maximum sensor range is exceeded, or when the ray leaves the ROI, so that a
 candidate is credited only with the unknown volume it could actually reveal
 and not with space hidden behind a surface.
-
 Figure~\ref{figVolIGRaymarch} shows this ray marching for one candidate
-viewpoint.
+viewpoint; the resulting gain enters the shared utility of
+Equation~\ref{eqUtility}, and feasible candidates are evaluated in
+descending order of utility until a valid motion plan is found and
+executed.
 
 \begin{figure}[h]
     \centering
@@ -589,16 +591,9 @@ viewpoint.
              (yellow), or occupied (blue), with rays terminating at
              the first occupied voxel or the ROI boundary. The black
              star marks the candidate camera position and the gray
-             star the previous camera position. For this candidate,
-             the 70 rays together pass through 1592 unknown-voxel
-             samples, giving $\mathrm{IG}(v) = 1592/70 \approx 22.74$
-             by Equation~\ref{eqVolIG}.}
+             star the previous camera position.}
     \label{figVolIGRaymarch}
 \end{figure}
-
-The resulting gain enters the shared utility of Equation~\ref{eqUtility},
-and feasible candidates are evaluated in descending order of utility until
-a valid motion plan is found and executed.
 
 \subsection{Semantic NBV Planner} \label{secSemanticNBVPlanner}
 
@@ -723,7 +718,7 @@ individual symptoms, two corrections are applied to predicted clusters
 before matching.
 First, a cluster that spans multiple ground-truth points within the
 matching threshold is split into sub-clusters, correcting for closely
-spaced symptoms that voxel adjacency has merged into one blob.
+spaced symptoms that voxel adjacency has merged into a single cluster.
 Second, multiple nearby clusters that all fall within the threshold of the
 same ground-truth point are merged, correcting for a single extended
 symptom that has fragmented into several adjacent detections.
@@ -949,7 +944,8 @@ the three.
              The volumetric planner spends its early views mapping the ROI
              as a whole and so builds up the canopy more slowly, whereas the
              semantic planner concentrates on the tree and recovers
-             symptoms in the interior of the canopy earlier.}
+             symptoms in the interior of the canopy earlier and refines
+             them more in later views.}
     \label{figSimQualitative}
 \end{figure}
 

@@ -48,25 +48,24 @@ majority of dataset collection.
 \label{secFlirCamera}
 
 The primary RGB sensor is a flash-illuminated stereo camera built
-around FLIR Firefly cameras, developed by Silwal
+using FLIR Firefly cameras, developed by Silwal
 et al.~\cite{Silwal2021FlashCamera} to provide consistent,
-shadow-free illumination regardless of ambient lighting conditions.
+shadow-free illumination regardless of external lighting conditions.
 This is especially important for dormant-season fire blight
 inspection: cankers and shepherd's crooks are distinguished from
 healthy bark largely by subtle texture and color cues (sunken or
 darkened lesions, cracked bark) that are easily washed out or
-obscured by the variable, often low and oblique, natural lighting
+obscured by the variable natural lighting
 found in orchard rows.
-The camera receives a hardware (serial) trigger command that
+The camera receives a hardware trigger command that
 synchronizes the flash pulse with the stereo image exposure, so
 that both the left and right frames are captured under identical,
 controlled illumination.
 The benefit is evident in the leftmost panel of
 Figure~\ref{figCameraComparison}: the flash suppresses the cast
-shadows and specular highlights that clutter the ambient-light
-iPhone image on the right, and the high image quality brings out
-the contrast between the raised, cracked canker tissue and the
-surrounding healthy bark.
+shadows that clutter the ambient-light iPhone image on the right,
+and the high image quality brings out the contrast between the
+raised, cracked canker tissue and the surrounding healthy bark.
 
 Each Firefly camera has a resolution of 1440$\times$1080 pixels
 with a calibrated focal length of approximately 1755 pixels,
@@ -141,16 +140,20 @@ stereo pair, concentrating spatial resolution on a smaller patch
 of bark at close range.
 After demosaicing, the effective spatial resolution per band is
 409$\times$216 pixels.
-The 25 bands span 675--951\,nm, and Table~\ref{tabXimeaBands}
-lists the center wavelength at each position in the mosaic tile;
-six of the 25 bands---675, 690, 715, 730, 743, and
+The 25 bands span 675--951\,nm and are arranged in a 5$\times$5
+mosaic tile that repeats periodically across the entire sensor
+array, so that every 5$\times$5 block of raw pixels contains one
+sample of each band; Table~\ref{tabXimeaBands} lists the center
+wavelength at each position within this repeating tile.
+Six of the 25 bands---675, 690, 715, 730, 743, and
 757\,nm---fall within the 660--760\,nm red-edge window that the prior work
 above identified as diagnostically relevant.
 
 \begin{table}[h]
     \centering
     \caption{Center wavelengths (nm) of the 25 Ximea spectral
-             bands by mosaic tile position.}
+             bands by position within the repeating
+             5$\times$5 mosaic tile that covers the sensor array.}
     \label{tabXimeaBands}
     \begin{tabular}{c|ccccc}
         \hline
@@ -366,9 +369,33 @@ their content can be checked at a glance.
              and RECORD buttons, a readable status log, a slider
              column for flash duration, frame rate, Firefly
              exposure, and Ximea gain and exposure, dark-calibration
-             and flat-field correction (FFC) buttons, and enlarged
+             and mid-calibration for flat-field correction (FFC) 
+             buttons, and enlarged
              flash RGB and Ximea NIR previews.}
     \label{figGuiEvolution}
+\end{figure}
+
+\subsection{Camera Calibration} \label{secCameraCalib}
+
+Cross-modal label transfer (Section~\ref{secCrossModal}) requires each
+camera's intrinsics and the rigid extrinsic transform between the flash
+stereo and Ximea cameras. Both were calibrated using the ROS 2 camera
+calibration tool with a ChArUco board, whose per-square ArUco markers
+allow the board pose to be recovered even when the board is partially
+occluded or only partially in view (Figure~\ref{figCameraCalib}).
+Calibration was repeated several times for each camera and accepted only
+once the reprojection error fell below $1.0$ pixel, and the same target
+was used to recover the rigid transform between the flash stereo and
+Ximea cameras.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figs/camera_calib.jpg}
+    \caption{Intrinsic calibration of the flash stereo camera using the ROS
+             2 camera calibration tool with a ChArUco board. The inset shows
+             the detected board pose, with identified ArUco marker IDs and
+             the estimated board corners overlaid on the live camera feed.}
+    \label{figCameraCalib}
 \end{figure}
 
 \section{Data Collection Protocol} \label{secDataCollection}
@@ -427,7 +454,7 @@ for annotation and was ultimately left unlabeled; it remains part
 of the collected dataset but does not contribute to detector
 training or evaluation.
 
-At both primary sites, the two rows of a pair were imaged by walking
+At both primary sites, the rows were imaged by walking
 the center aisle and alternating between the left and right canopy
 walls as symptoms were located.
 The rig was held at a target standoff of 0.4--0.6\,m from the
@@ -498,12 +525,8 @@ The trees here were widely spaced but grafted onto a dwarfing
 rootstock, and the block had been deliberately inoculated.
 Disease pressure was moderate, between the severe Pittsburgh site
 and the mild Virginia site: several cankers and a few shepherd's
-crooks were present.
-Each next-best-view planner variant was evaluated on the same set of
-12 trees, 9 infected and 3 healthy.
-Because that evaluation is conducted per tree rather than per frame,
-raw image counts are less meaningful for this site and are deferred
-to Chapter~\ref{chapErwin}.
+crooks were present. Each next-best-view planner variant was 
+evaluated on the same set of 12 trees: 10 infected and 2 healthy.
 
 \section{Dataset Description} \label{secDatasetDescription}
 
@@ -514,7 +537,7 @@ This large reduction is a direct consequence of how difficult these
 symptoms are to annotate: unlike the crisp, high-contrast objects of
 general-purpose detection benchmarks, dormant fire blight symptoms are
 subtle, irregular, and embedded in visually cluttered branch
-structure, and each image demanded slow, deliberate annotation.
+structure, and each image demanded careful, deliberate annotation.
 The remainder of this section explains why an existing dataset could
 not simply be adopted for this task, and the following section
 details the annotation protocol and pipeline built to label our own
@@ -567,8 +590,8 @@ publicly with its annotations, so neither could be reused here.
 Because we target dormant-season inspection and deliberately exploit
 the flash RGB and NIR modalities (Section~\ref{secSensingPlatform}),
 neither the imaging conditions nor the label taxonomy of these
-datasets transfers to our task, and building a purpose-collected,
-purpose-annotated dataset was unavoidable.
+datasets transfers to our task; therefore, building a dataset 
+specifically tailored to our needs was unavoidable.
 
 \subsection{Dataset Composition and Splits} \label{secDatasetSplits}
 
@@ -584,11 +607,14 @@ train/validation/test partition; the ZED2i RGB stream was not
 annotated and is excluded from the detection dataset entirely.
 
 Splitting burst-captured field imagery naively by frame index or at
-random is unsafe: consecutive frames of the same lesion are near
-duplicates, so a random split would place near-identical images on
-both sides of the train/test boundary and inflate the apparent
-performance of the detector.
-To avoid this, every image was encoded as a 1280-dimensional
+random is unsafe: consecutive frames may feature the same lesion 
+from slightly different viewpoints as the operator moves past it, 
+so a random split could
+place images of the same lesion on both sides of the train/test
+boundary and inflate the apparent performance of the detector. The
+goal of the splitting procedure below is therefore to keep all
+images of a given lesion within a single split.
+To achieve this, every image was encoded as a 1280-dimensional
 MobileNetV2 embedding~\cite{sandler2018mobilenetv2}, and the resulting
 cosine similarity between consecutive frames was used, together with
 the time gap between them, to partition the capture timeline into
@@ -601,10 +627,11 @@ balanced the canker-to-crook ratio across the three partitions, so
 that each split sees a similar class mixture
 (Table~\ref{tabClassBalance}).
 Figure~\ref{figTemporalSplit} shows the resulting assignment along the
-capture timeline: rather than carving off one contiguous block of time
-per split, the chunks are interspersed across the entire field walk,
-so every split spans the full range of trees, viewpoints, and lighting
-encountered during collection.
+capture timeline: because chunks are assigned by class balance rather
+than by contiguous blocks of time, the chunks belonging to each split
+end up interspersed across the entire field walk, so every split
+spans the full range of trees, viewpoints, and lighting encountered
+during collection.
 
 \begin{figure}[h]
     \centering
@@ -614,9 +641,11 @@ encountered during collection.
              timeline. The horizontal axis is time elapsed since the
              first capture; vertical grey lines mark the chunk
              boundaries used for the split. These chunks are assigned
-             to splits so that each split is interspersed across the
-             entire field walk rather than confined to one contiguous
-             block of time.}
+             to splits by a randomized search that balances the
+             canker-to-crook ratio across partitions, which as a
+             result interspersed each split across the entire field
+             walk rather than confining it to one contiguous block of
+             time.}
     \label{figTemporalSplit}
 \end{figure}
 
@@ -628,9 +657,9 @@ than just consecutive frames, and labeled each pair either
 \emph{cross-split} (images in different partitions).
 Figure~\ref{figLeakage} shows the two resulting distributions.
 As expected, the same-split distribution has a long tail of
-high-similarity pairs, due to consecutive frames of the same lesion that
+high-similarity pairs, due to frames revisiting the same lesion that
 correctly land together, extending past the 0.95 threshold
-conventionally used to flag duplicates.
+conventionally used to flag near-duplicate content.
 The cross-split distribution, in contrast, falls off well before that
 threshold: the single most similar cross-split pair reached only 0.916
 for RGB and 0.903 for NIR, both comfortably below 0.95.
@@ -640,7 +669,7 @@ than a near-duplicate frame, corroborating the embedding-based result.
 In plain terms, no two images that ended up in different splits are
 anywhere close to being the same photograph, which is the evidence
 that the split does not leak information from training into
-evaluation.
+validation or test splits.
 
 \begin{figure}[h]
     \centering
@@ -735,13 +764,13 @@ The clearest difference in shape appears across roughly
 toward the near-infrared than the comparatively flat diseased
 spectrum.
 This region coincides with the windows that prior work found
-diagnostic---the 700--850\,nm range reported by Skoneczny et al.\
+diagnostic, the 700--850\,nm range reported by Skoneczny et al.\
 for fire blight on leaves and the 660--760\,nm band pairs reported
 by Kurihara and Yamana for Valsa
 canker~\cite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf,
-Kurihara2022DetectionValsaCankerHyperspectralCanker}---confirming,
+Kurihara2022DetectionValsaCankerHyperspectralCanker}. This confirms,
 on dormant apple bark, that this portion of the spectrum carries
-discriminative information and motivating our use of the
+discriminative information and motivates our use of the
 near-infrared multispectral camera.
 
 % --- NDSI band-pair separation analysis: TEMPORARILY DISABLED ---
@@ -875,7 +904,7 @@ text-to-annotation tools such as Grounding
 DINO~\cite{liu2023groundingdino}, prompting them with descriptions of
 cankers and shepherd's crooks, but these models failed to localize
 dormant fire blight symptoms with any reliability---unsurprisingly,
-since the subtle, textureless lesions on bare winter bark bear little
+since the subtle, texture-based lesions on bare winter bark bear little
 resemblance to anything in their training distribution.
 All symptom instances were therefore annotated by hand in
 CVAT~\cite{cvat}, and the pipeline below was built to make that
@@ -943,9 +972,9 @@ the top row of Figure~\ref{figAnnotationDefs}.
 \end{table}
 
 Annotating all five types separately proved counterproductive.
-The four canker subtypes are visually similar to one another and,
-worse, similar to healthy bark, so the detector confused the subtypes
-with each other and with the background, and the fine-grained
+The four canker subtypes are visually similar to one another and
+the features are so small that they are difficult to reliably distinguish
+from the background. Additionally, the fine-grained
 distinctions carried little value for the downstream inspection task,
 which only needs to know that diseased tissue is present.
 We therefore collapsed the four canker subtypes into a single, broader
@@ -989,12 +1018,11 @@ implementation is detailed in Appendix~\ref{apxSAM2}.
 Annotating the NIR frames independently would have doubled an already
 costly labeling effort, so instead we transfer the RGB labels onto the
 registered Ximea frames geometrically, exploiting the fact that the
-two cameras are rigidly mounted and calibrated
-(Section~\ref{secPlatformMounting}).
-Both cameras were intrinsically and extrinsically calibrated with a
-ChArUco target, using the procedure detailed in
-Chapter~\ref{chapErwin} (Figure~\ref{figCameraCalib}), recovering the
-rigid transform between the flash stereo camera and the Ximea.
+two cameras are rigidly mounted (Section~\ref{secPlatformMounting}) and
+calibrated (Section~\ref{secCameraCalib}).
+Section~\ref{secCameraCalib} details the ChArUco-based calibration
+procedure and recovers the rigid transform between the flash stereo
+camera and the Ximea (Figure~\ref{figCameraCalib}).
 The Ximea additionally requires radiometric calibration: using the
 in-field dark-calibration and flat-field correction (FFC) controls on
 the rig (Section~\ref{secDesignIterations}), a flat frame is captured
@@ -1283,9 +1311,7 @@ models), marking a sensible single-frame operating point; the semantic map
 of Chapter~\ref{chapNBV} itself admits every detection above a lower
 minimum-confidence floor ($\tau = 0.1$) and relies on multi-view fusion to
 suppress the resulting weak false positives, so that faint but genuine
-detections are not discarded before they can be corroborated.
-
-Figure~\ref{figPRCurves} shows the precision--recall curves for the two
+detections are not discarded before they can be corroborated. Figure~\ref{figPRCurves} shows the precision--recall curves for the two
 detectors.
 
 \begin{figure}[h]
@@ -1382,27 +1408,18 @@ to the IoU~$\geq 0.5$ figures of Table~\ref{tabDetectionResults}.
     \end{tabular}
 \end{table}
 
-Two patterns stand out.
-First, at IoU~$\geq 0.3$ the RGB/NIR gap seen in
-Table~\ref{tabDetectionResults} narrows almost entirely to the
-shepherd's crook class: canker mAP is essentially tied between the two
-models (0.594 versus 0.595), while shepherd's crook mAP still favors
-RGB (0.874 versus 0.810), consistent with the initialization-asymmetry
-explanation of Section~\ref{secDetectionResults}---the RGB model's edge
-comes from pretrained low-level features that most directly benefit the
-crook's fine-grained hooked shape, not from any residual advantage on
-cankers.
-Second, the confidence threshold at which each model reaches its peak
-$F_1$ is higher for RGB (0.322) than NIR (0.222), meaning the NIR
-model must be operated at a more permissive confidence cutoff to reach
-its best achievable precision--recall balance, consistent with its
-generally noisier predictions.
+Relaxing the matching criterion from IoU~$\geq 0.5$ to IoU~$\geq 0.3$
+raises both mAP and $F_1$ substantially for both models (RGB: 0.605 to
+0.734 mAP, 0.62 to 0.72 $F_1$; NIR: 0.565 to 0.703 mAP, 0.56 to 0.65
+$F_1$), indicating that a meaningful share of the apparent misses at
+the conventional threshold are boxes that overlap the ground truth but
+not tightly enough to count, rather than symptoms missed outright.
 We show these relaxed-threshold results only to characterize how much
 of the apparent failure rate is boundary ambiguity rather than missed
 detections; we do not adopt IoU~$\geq 0.3$ as a general-purpose
 replacement for the conventional IoU~$\geq 0.5$ matching criterion used
 elsewhere in this thesis.
-The broader lesson is that frame-level detection metrics can only say
+The broader lesson is that standard detection metrics can only say
 so much about performance in the field on symptoms with ambiguous
 boundaries; aggregating evidence across many views of the same tree,
 as the semantic mapping and NBV planning of Chapter~\ref{chapNBV} do,
@@ -1429,7 +1446,9 @@ cross-modal label transfer from the RGB frames to the NIR frames.
 A spectral analysis of the resulting NIR labels confirmed that the
 red-edge and near-infrared region carries discriminative information
 for dormant fire blight, and separate YOLO26 detectors were trained on
-each modality.
+each modality; the RGB detector outperformed the NIR detector on both
+mAP and $F_1$, so the RGB model was carried forward as the detector
+used in the rest of the thesis.
 Finally, a failure-mode analysis showed that the ambiguous boundaries
 of these symptoms cause standard detection metrics to understate
 real-world performance, motivating the multi-view semantic mapping and

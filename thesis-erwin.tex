@@ -14,9 +14,9 @@ sensor rig into a closed perception--action loop that runs entirely onboard:
 the arm positions the camera, images are captured and processed into
 detections, the detections update the semantic OctoMap, and the NBV planner
 selects the next viewpoint, repeating until the inspection budget is
-exhausted. Erwin was developed as part of Carnegie Mellon University's Fire
-Blighters entry in the 2026 Farm Robotics Challenge, where the team received
-the Amiga Innovation Award.
+exhausted. Erwin was developed by Carnegie Mellon University's Fire Blighters
+team as its entry to the 2026 Farm Robotics Challenge, where the team
+received the Amiga Innovation Award.
 
 Section~\ref{secRobotPlatform} describes the physical platform and its
 sensor integration; Section~\ref{secSystemArch} describes the onboard
@@ -50,8 +50,8 @@ in a dormant orchard.
              a desktop-grade computing enclosure, a GPS receiver, a LiDAR
              unit, a ground-marking spray unit, the multi-modal
              camera rig, a UFACTORY xArm6 manipulator, and the Farm-ng Amiga
-             mobile base. \textit{Right:} the arm reaching into the canopy
-             of a dormant apple tree to acquire a close viewpoint during a
+             mobile base. \textit{Right:} the arm reaching towards
+             a dormant apple tree to acquire a close viewpoint during a
              field inspection.}
     \label{figRobotPlatform}
 \end{figure}
@@ -65,10 +65,18 @@ the constrained geometry of an orchard row
 manipulator, sensor rig, and onboard compute between trees and provides a
 stable, level platform from which the arm operates; it remains fixed in
 front of a tree throughout that tree's inspection, so that all viewpoint
-variation comes from the arm rather than the base. Autonomous row-to-row
-traversal, which would let the base reposition itself along a full row
-without an operator, is outside the scope of this thesis and is identified
-as a priority for future work (Chapter~\ref{chapConclusions}).
+variation comes from the arm rather than the base. Between trees, the base
+is capable of driving itself autonomously down the row, using RTK-corrected
+GPS for global positioning and model-predictive control to follow the row
+lines. This tree-to-tree navigation was developed by the broader Fire
+Blighters team rather than as part of this thesis, as were the behavior tree
+that sequences the overall field routine, the ground-marking spray unit
+that flags inspected trees, and a GUI that displays the resulting
+georeferenced symptom map to the operator; these subsystems are noted here
+only to place the inspection work in the context of the full platform and
+are not claimed as contributions. The contributions of this thesis concern 
+the perception, mapping, and viewpoint planning that run once the base is 
+positioned at a tree.
 
 \subsection{Manipulator: xArm6} \label{secXArm6}
 
@@ -84,41 +92,23 @@ filtering (Section~\ref{secWorkspaceFilter}), and collision-aware motion
 planning ensures that executed viewpoints avoid contact with the tree and
 the platform.
 
-\subsection{Sensor Integration and Calibration} \label{secSensorCalib}
+\subsection{Sensor Integration} \label{secSensorCalib}
 
 The camera rig fixed to the end effector houses the flash-illuminated stereo
 RGB camera and the 25-band NIR multispectral camera introduced in
 Chapter~\ref{chapDataset}; the multispectral camera is carried on the
 platform but is not used in the closed-loop inspection experiments reported
-here, which rely on the flash stereo RGB modality. Because the planners
-reason in a single global frame, every sensor observation must be expressed
-in that frame, which requires both intrinsic calibration of each camera and
-extrinsic calibration of the rig relative to the end effector. Intrinsic
-parameters (focal length, principal point, and distortion) and the stereo
+here, which rely on the flash stereo RGB modality. Both cameras were
+intrinsically and extrinsically calibrated as described in
+Section~\ref{secCameraCalib}; the resulting Firefly intrinsics and stereo
 baseline are those reported in Section~\ref{secFlirCamera}, and stereo
-frames are undistorted and rectified before depth estimation. At runtime,
-the fixed rig-to-end-effector transform is composed with the manipulator's
-forward kinematics and the base pose to place each semantic point cloud into
-the common global frame used by the map (Section~\ref{secProjection}).
-
-Each camera's intrinsics were calibrated using the ROS 2 camera calibration
-tool with a ChArUco board, which combines the corner-localization precision
-of a chessboard pattern with the per-square ArUco markers needed to identify
-board pose even when the board is partially occluded or only partially in
-view, as in Figure~\ref{figCameraCalib}. Calibration was repeated several
-times for each camera, and a calibration was accepted only once the
-resulting reprojection error fell below $1.0$ pixel, so that the intrinsic
-parameters used throughout this work are consistently sub-pixel accurate.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figs/camera_calib.jpg}
-    \caption{Intrinsic calibration of the flash stereo camera using the ROS
-             2 camera calibration tool with a ChArUco board. The inset shows
-             the detected board pose, with identified ArUco marker IDs and
-             the estimated board corners overlaid on the live camera feed.}
-    \label{figCameraCalib}
-\end{figure}
+frames are undistorted and rectified using them before depth estimation.
+Because the planners reason in a single global frame, the rig was
+additionally calibrated extrinsically relative to the end effector, and at
+runtime this fixed rig-to-end-effector transform is composed with the
+manipulator's forward kinematics and the base pose to place each semantic
+point cloud into the common global frame used by the map
+(Section~\ref{secProjection}).
 
 \section{System Architecture} \label{secSystemArch}
 
@@ -229,8 +219,7 @@ perception--action loop.
              apple tree. SGBM leaves large invalid regions (gray) and
              blocky artifacts along the thin branches, while
              FoundationStereo recovers smooth, complete disparity down to
-             the finest structures, including the trees in the adjacent
-             rows.}
+             the finest structures, including the small branches.}
     \label{figDisparityComparison}
 \end{figure}
 
@@ -305,29 +294,29 @@ back-projected.
     \label{figSpeckleFilter}
 \end{figure}
 
-\subsection{Planning and Control Loop} \label{secPlanningControl}
+\subsection{Field Inspection Cycle} \label{secPlanningControl}
 
-Once the base is positioned in front of a tree, inspection proceeds as a
-fixed cycle, executing the NBV selection loop of Algorithm~\ref{algNBV} at
-each step:
-\begin{enumerate}
-  \item the mapping node integrates the most recent image into the semantic
-        OctoMap;
-  \item the planning node generates candidate viewpoints from the current
-        map, filters them against the reachable workspace and collision
-        constraints (Section~\ref{secWorkspaceFilter}), scores the feasible
-        candidates by the utility of Equation~\ref{eqUtility}, and selects
-        the maximum-utility viewpoint;
-  \item the manipulator control node plans and executes a collision-free
-        motion to that viewpoint;
-  \item the stereo camera captures a triggered image at the new pose,
-        closing the loop.
-\end{enumerate}
-The cycle repeats until the viewpoint budget is exhausted. Candidates are
-evaluated in descending order of utility until one yields a feasible motion
-plan, so that the arm always moves to the best reachable view rather than
-stalling on an unreachable optimum. A complete 30-viewpoint inspection takes
+In the field, inspecting one tree is a single step of a longer per-row
+routine. The base positions itself in front of the tree
+(Section~\ref{secAmiga}), and the arm captures a fixed set of
+initialization viewpoints (Section~\ref{secFieldProtocol}), each processed
+by the perception pipeline of Section~\ref{secPerceptionPipeline} and
+fused into that tree's semantic OctoMap. From this initialized map, the
+semantic NBV planner takes over: it repeatedly selects the next viewpoint
+from the current map state, commands the arm there, and fuses the
+resulting image back into the map (Algorithm~\ref{algNBV}), continuing
+until either the 30-viewpoint budget is exhausted or the best remaining
+candidate's information gain drops below the stopping threshold of
+Section~\ref{secNBVFormulation}. A complete 30-viewpoint inspection takes
 on the order of 3--5 minutes to execute (Section~\ref{secFieldResults}).
+If the finished map contains a positive disease detection, the ground
+beneath the tree is marked by the spray unit. The tree's semantic OctoMap
+is then merged into the orchard-wide map regardless of outcome, so that
+the orchard-wide map is updated with this tree's result whether or not a
+detection was made, and the base plans and executes its path to the next
+tree; as noted in Section~\ref{secAmiga}, these surrounding routine-level
+and mapping steps were built by the broader Fire Blighters team rather
+than as part of this thesis.
 
 \section{Field Experiments} \label{secFieldExperiments}
 
@@ -343,11 +332,11 @@ simulation cannot fully reproduce.
 
 Field evaluation was conducted at the Penn State Fruit Research and
 Extension Center in Adams County, Pennsylvania, from March 18 to March 20,
-2026, using 12 dormant apple trees, of which 9 exhibited fire blight
-symptoms and 3 appeared healthy; Figure~\ref{figFieldSite} maps the study
+2026, using 12 dormant apple trees, of which 10 exhibited fire blight
+symptoms and 2 appeared healthy; Figure~\ref{figFieldSite} maps the study
 trees within the orchard block, and the site's attributes are summarized
 alongside the two image-collection orchards in
-Table~\ref{tabCollectionSites}. The three healthy trees provide
+Table~\ref{tabCollectionSites}. The two healthy trees provide
 true-negative cases, testing whether the planners and detector avoid
 hallucinating symptoms on disease-free canopy---a case that pooled detection
 metrics explicitly penalize (Section~\ref{secSimSetup}). This site is
@@ -356,10 +345,7 @@ train the detector (Section~\ref{secDetectionResults}): no images from the
 evaluation site were used during training, so the field results measure
 performance under a genuine train--test domain gap. The number of trees was
 limited to 12 for two practical reasons: each tree had to be inspected by
-all three planners within a single three-day site visit, and symptomatic
-trees are inherently scarce, since growers prune out fire blight infections
-as soon as they are found, leaving few orchards with standing disease
-available for study.
+all three planners within a three-day site visit.
 
 \begin{figure}[t]
     \centering
@@ -367,8 +353,8 @@ available for study.
     \caption{The experimental orchard site at the Penn State Fruit
              Research and Extension Center. The aerial view shows the
              orchard block, with the zoomed inset (right) locating the 12
-             study trees: red dots mark the 9 symptomatic trees and green
-             dots the 3 healthy trees, with white scale bars for
+             study trees: red dots mark the 10 symptomatic trees and green
+             dots the 2 healthy trees, with white scale bars for
              reference. The photo inset (top left) shows the view from
              within the orchard rows during the deployment.}
     \label{figFieldSite}
@@ -388,7 +374,7 @@ the metrics of Section~\ref{secSimSetup}.
 Every run began with the same four fixed initialization viewpoints,
 counted within the 30-viewpoint budget, before the planner's own selection
 strategy took over; the collision-avoidance motivation for this
-initialization is described in Section~\ref{secFieldQualitative}.
+initialization is described in Section~\ref{secFieldDiscussion}.
 For comparability, the simulation experiments of Chapter~\ref{chapNBV}
 were evaluated under the same four-viewpoint initialization, which is why
 the per-viewpoint curves of all three planners coincide over the first few
@@ -456,16 +442,14 @@ detected symptoms visibly coincide.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth, trim={0 360pt 0 370pt}, clip]{figs/splat_rotation.jpg}\\[2pt]
-    \includegraphics[width=\linewidth, trim={0 360pt 0 370pt}, clip]{figs/splat_rotation_detections.jpg}
-    \caption{Ground-truth annotation and detections on field tree 9.
-             \textit{Top:} four views orbiting the annotated Gaussian
-             splat, with the manually annotated symptomatic regions
-             highlighted in green.
-             \textit{Bottom:} the same orbit with the semantic planner's
-             fused detections overlaid, showing detected cankers in red
-             and detected shepherd's crooks in blue. The detections
-             cluster on the same regions of the canopy as the
+    \includegraphics[width=0.8\linewidth, trim={500pt 0 500pt 0}, clip]{figs/splat_side-by-side.jpg}
+    \caption{Ground-truth annotation and detections on field tree 9,
+             viewed from the front. \textit{Left:} the annotated
+             Gaussian splat, with the manually annotated symptomatic
+             regions highlighted in neon green. \textit{Right:} the
+             same view with the semantic planner's fused OctoMap
+             detections overlaid, showing detected cankers in red. The
+             detections occupy the same regions of the canopy as the
              annotations.}
     \label{figSplatAnnotation}
 \end{figure}
@@ -480,10 +464,11 @@ all three metrics. The field results follow the same overall pattern as
 simulation: the volumetric planner attains the most complete geometric
 coverage ($71.41\%$ at viewpoint $30$), while the semantic planner attains
 the best detection quality by the standard operating metric, reaching the
-highest max-F1 ($0.608$). As expected, absolute mAP and coverage are lower
-than in simulation, consistent with the greater difficulty of real orchard
-conditions---natural lighting, real occlusion, and the train--test domain
-gap.
+highest max-F1 ($0.608$), which is in fact higher than the semantic
+planner's max-F1 in simulation ($0.588$). Absolute mAP and coverage,
+however, are lower than in simulation, as expected given the greater
+difficulty of real orchard conditions---natural lighting, real occlusion,
+and the train--test domain gap.
 
 \begin{table}[h]
 \centering
@@ -525,46 +510,75 @@ Semantic   & \textbf{0.322} & \textbf{0.608} & 60.36 \\
 \end{figure}
 
 The most striking field result is how early the semantic planner separates
-from the baseline. At viewpoint $15$---roughly half the budget, and thus
-roughly half of the 3--5 minute inspection time---the semantic planner
-already more than doubles the baseline's mAP ($0.209$ versus $0.089$) and
-nearly quadruples its max-F1 ($0.461$ versus $0.124$). This early separation
-is sharper in the field than in simulation, indicating that targeted
-refinement of low-confidence regions is especially valuable under real-world
-uncertainty, where a symptom is more likely to be missed or mislabeled from
-any single view and therefore benefits most from deliberate re-observation.
-By viewpoint $30$ the baseline's mAP has caught up to the semantic
-planner's ($0.331$ versus $0.322$, a difference within evaluation noise),
-but only at the full budget; through the first half of the inspection the
-semantic planner holds a large lead---more than double the baseline's mAP
-at viewpoint 15---and it retains the higher max-F1 ($0.608$ versus $0.560$)
-even at viewpoint 30. This front-loading of detection quality is the
-operationally relevant advantage for a system that must scale to many
-trees.
+from the other two on detection quality, while the volumetric planner leads
+on coverage throughout. At viewpoint $15$---roughly half the budget, and
+thus roughly half of the 3--5 minute inspection time---the semantic planner
+already leads both detection metrics by a wide margin: more than double the
+baseline's mAP ($0.209$ versus $0.089$) and nearly quadruple its max-F1
+($0.461$ versus $0.124$), while also beating the volumetric planner on both
+(mAP $0.209$ versus $0.166$; max-F1 $0.461$ versus $0.346$). The volumetric
+planner, meanwhile, already leads on coverage at this point ($56.39\%$
+versus the semantic planner's $48.13\%$), consistent with its objective of
+driving down geometric uncertainty rather than refining detections. This
+early detection-quality gap is sharper in the field than in simulation,
+indicating that targeted refinement of low-confidence regions is especially
+valuable under real-world uncertainty, where a symptom is more likely to be
+missed or mislabeled from any single view and therefore benefits most from
+deliberate re-observation.
 
-\subsection{Qualitative Observations} \label{secFieldQualitative}
+By viewpoint $30$ the baseline and volumetric planners close the gap by
+different amounts. The baseline nearly catches up: its mAP ties the
+semantic planner's ($0.331$ versus $0.322$, a difference within evaluation
+noise) once it has exhausted the full scan, and its max-F1 gap narrows
+substantially, though the semantic planner still finishes ahead ($0.608$
+versus $0.560$). The volumetric planner closes far less of its detection
+gap (mAP $0.234$, max-F1 $0.411$, both still well behind the semantic
+planner), but it keeps its lead on coverage to the end ($71.41\%$ versus
+$60.36\%$). This front-loading of detection quality by the semantic
+planner is the operationally relevant advantage for a system that must
+scale to many trees.
 
-% TODO: expand with concrete field observations once compiled from the
-% deployment logs.
-Beyond the aggregate metrics, several qualitative observations from the
-deployment are worth recording. The flash-illuminated sensing behaved as
-intended under variable outdoor lighting, suppressing the cast shadows and
-specular highlights that degrade ambient-light imaging of bark
-(Section~\ref{secFlirCamera}), which is the most likely reason the detector
-generalized across the domain gap without site-specific retraining. The
-consistency of detection performance between the training orchard and the
-evaluation site, despite no overlap in imagery, supports the conclusion that
-the learned symptom representations and the flash-illuminated pipeline
+\section{Discussion} \label{secFieldDiscussion}
+
+The field experiments confirm the central simulation finding under real
+conditions: adaptive, map-driven viewpoint selection substantially
+outperforms deterministic coverage, and the disease-aware semantic planner
+reaches high-quality detection maps markedly faster than either the baseline
+or the volumetric planner. The division of labor between the two adaptive
+planners also transfers: the volumetric planner remains the strongest at
+geometric coverage, and the semantic planner the strongest at detection, in
+the field as in simulation. The clearest difference between the two settings
+is the magnitude of the semantic planner's early advantage over the
+baseline, which is larger in the field. We attribute this partly to the
+higher per-view uncertainty of real imagery: when any single observation is
+noisier, the value of deliberately revisiting ambiguous regions---precisely
+what the semantic information gain of Equation~\ref{eqSemIG} rewards---rises
+relative to a fixed scan that observes each region only once. Part of the
+lead may also come earlier still, from candidate generation: because the
+semantic planner already targets voxels the map regards as possibly
+symptomatic (Section~\ref{secSemanticNBVPlanner}), even its first
+viewpoints could be biased toward likely-diseased regions rather than
+toward geometry in general, though we have not measured this directly.
+
+The flash-illuminated sensing behaved as
+intended under variable outdoor lighting, suppressing the cast shadows
+that degrade ambient-light imaging of bark (Section~\ref{secFlirCamera}),
+which is the most likely reason the detector generalized across the
+domain gap without site-specific retraining. The consistency of
+detection performance between the training orchard and the evaluation
+site, despite no overlap in imagery, supports the conclusion that the
+learned symptom representations and the flash-illuminated pipeline
 transfer to new orchards rather than overfitting to a single site.
-The bottom row of Figure~\ref{figSplatAnnotation} gives a visual sense of
-the resulting map quality: the detections the semantic planner accumulated
-on tree 9 fall on the same regions of the canopy as the independently
-annotated ground truth.
+The right panel of Figure~\ref{figSplatAnnotation} gives a visual sense
+of the resulting map quality overlaid onto the splats: the detections 
+the semantic planner
+accumulated on tree 9 fall on the same regions of the canopy as the
+independently annotated ground truth.
 
 The main failure mode encountered in the field involved the arm's first
 motions at a new tree. Before the map has been populated, the motion
 planner knows nothing of the branches directly in front of the platform,
-and in early runs the arm repeatedly brushed against near branches on its
+and in early runs the arm repeatedly collided with near branches on its
 way to its first selected viewpoints. The fix was the four mandatory
 initialization viewpoints described in Section~\ref{secFieldProtocol}:
 executing a short fixed sequence first populates the OctoMap with the
@@ -578,38 +592,6 @@ settings remains matched.
 % (e.g. depth artifacts on thin branches, wind-induced canopy motion
 % between views) and how they were handled, once compiled.
 
-\section{Discussion} \label{secFieldDiscussion}
-
-The field experiments confirm the central simulation finding under real
-conditions: adaptive, map-driven viewpoint selection substantially
-outperforms deterministic coverage, and the disease-aware semantic planner
-reaches high-quality detection maps markedly faster than either the baseline
-or the volumetric planner. The division of labor between the two adaptive
-planners also transfers: the volumetric planner remains the strongest at
-geometric coverage, and the semantic planner the strongest at detection, in
-the field as in simulation. The clearest difference between the two settings
-is the magnitude of the semantic planner's early advantage over the
-baseline, which is larger in the field. We attribute this to the higher
-per-view uncertainty of real imagery: when any single observation is
-noisier, the value of deliberately revisiting ambiguous regions---precisely
-what the semantic information gain of Equation~\ref{eqSemIG} rewards---rises
-relative to a fixed scan that observes each region only once.
-
-Several practical bottlenecks bound the current system and frame the future
-work of Chapter~\ref{chapConclusions}. The base is stationary during
-inspection, so the system currently maps one tree at a time and depends on
-an operator to reposition it along a row; autonomous row traversal is the
-most direct path to orchard-scale deployment. Field evaluation was also
-limited to 12 trees within a single three-day visit, constrained both by the
-need to run all three planners on each tree and by the scarcity of standing
-fire blight; broader evaluation across more orchards and seasons is needed
-to characterize generalization fully. Detection quality, finally, remains
-the dominant limit on absolute map accuracy: the planners can only refine
-and localize the symptoms the 2D detector is able to recognize, so
-improvements to the detector---including exploiting the multispectral
-modality carried but unused here---would raise the ceiling on the whole
-pipeline.
-
 \section{Summary} \label{secErwinSummary}
 
 This chapter integrated the components of the preceding chapters into Erwin,
@@ -620,14 +602,16 @@ onboard under ROS 2 in a closed perception--action loop
 (Sections~\ref{secRobotPlatform} and~\ref{secSystemArch}). Deployed on 12
 dormant apple trees at the Penn State Fruit Research and Extension Center
 under a genuine train--test domain gap, Erwin reproduced the simulation
-findings of Chapter~\ref{chapNBV}: both adaptive planners clearly
-outperformed the deterministic baseline, the volumetric planner delivered
-the most complete coverage, and the semantic planner delivered the best
-detection quality, more than doubling the baseline's mAP at the inspection
-midpoint and retaining the higher max-F1 through the full budget
+findings of Chapter~\ref{chapNBV}: the volumetric planner delivered the
+most complete geometric coverage, while the semantic planner front-loaded
+detection quality, more than doubling the baseline's mAP at the
+inspection midpoint and finishing with the highest max-F1, even as the
+baseline's mAP caught up by the full 30-viewpoint budget
 (Section~\ref{secFieldResults}). These results demonstrate that the
-confidence-aware semantic map and semantic NBV planner are not merely
-simulation artifacts but deliver fast, fine-grained disease maps under real
-field conditions. Chapter~\ref{chapConclusions} draws together the
-contributions of the full thesis, discusses the system's limitations, and
-outlines the path toward orchard-scale autonomous disease mapping.
+confidence-aware semantic map and semantic NBV planner deliver fast,
+fine-grained disease maps under real field conditions, though this
+evaluation was limited to 12 trees within a single three-day visit.
+Chapter~\ref{chapConclusions} draws together the contributions of the
+full thesis and discusses future work toward better detection models,
+faster and continuous inspection, and closing the loop from detection to
+treatment.

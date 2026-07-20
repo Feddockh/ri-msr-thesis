@@ -35,156 +35,21 @@ uncertainty about disease, rather than uncertainty about geometry, more
 than doubles the detection accuracy of a complete fixed scan at the halfway
 point of the inspection.
 
-\section{Summary of Contributions} \label{secContribSummary}
-
-\begin{enumerate}
-  \item \textbf{Multi-modal orchard dataset.}
-  We assembled 1{,}275 flash-illuminated stereo RGB images of dormant
-  apple trees, each paired with a spatially registered 25-band NIR frame,
-  and annotated them for the two dormant-season symptom
-  classes---shepherd's crook and canker---under a protocol developed with
-  a plant pathologist, yielding 1{,}000 crook and 1{,}302 canker
-  instances.
-  Hand-labeling was made tractable by a SAM2-assisted box-to-mask tool
-  and a geometric cross-modal transfer procedure that propagates RGB
-  annotations onto the corresponding NIR frames.
-  The data are partitioned into leakage-free train, validation, and test
-  splits by embedding similarity rather than by frame index, with the
-  most similar cross-split image pair reaching only 0.916, so that
-  reported performance reflects generalization rather than memorization.
-  To our knowledge this is the first dataset pairing dense NIR spectral
-  bands with RGB imagery of dormant woody tissue
-  (Chapter~\ref{chapDataset}).
-
-  \item \textbf{2D fire blight detection pipeline.}
-  YOLO26-L instance segmentation models trained separately on each
-  modality reach a test mAP@0.5 of 0.605 for RGB and 0.565 for NIR, with
-  the RGB model ahead on every metric.
-  We attribute that gap to an initialization asymmetry rather than to the
-  modality itself: the RGB model inherits COCO-pretrained low-level
-  features, whereas the NIR model must learn its entire feature hierarchy
-  from 983 training images.
-  A failure-mode analysis further showed that much of the apparent error
-  is boundary ambiguity rather than missed detection, since relaxing the
-  matching threshold to IoU~$\geq 0.3$ raises test mAP to 0.734 and 0.703
-  respectively on predictions a human would already judge correct.
-  This finding is what motivated aggregating evidence across many views
-  rather than trusting any single frame (Chapter~\ref{chapDataset}).
-
-  \item \textbf{Semantic OctoMap for disease mapping.}
-  We introduced a volumetric representation in which every voxel carries
-  an occupancy probability, a disease class label, and a fused
-  confidence, with semantic labels attached only to voxels already
-  established as occupied surfaces.
-  A boost-and-penalty fusion rule reinforces mutually consistent
-  observations toward high confidence while driving contested ones down,
-  which gives the map a self-correcting character: later, better views
-  override earlier detection errors, and the voxels left at low
-  confidence explicitly mark the regions that warrant another look
-  (Chapter~\ref{chapNBV}).
-
-  \item \textbf{Semantic Next-Best-View planner.}
-  Rather than scoring candidate views by geometric unknown alone, the
-  semantic planner scores them by the disease-label uncertainty they
-  would resolve, concentrating its attention on contested symptomatic
-  regions.
-  In simulation it attained the best detection performance of the three
-  planners at a 30-viewpoint budget, reaching an mAP of 0.479 and a
-  max-F1 of 0.588 against 0.366 and 0.465 for the deterministic baseline,
-  while the volumetric planner attained the most complete geometric
-  coverage at 82.03\%.
-  This division of labor---the volumetric planner best at mapping space,
-  the semantic planner best at finding disease---is consistent with what
-  each planner is asked to optimize, and it held in both settings
-  (Chapter~\ref{chapNBV}).
-
-  \item \textbf{Full-system field validation.}
-  Erwin integrates these components onto an Amiga base and an xArm6
-  manipulator, with all perception, mapping, and planning running
-  onboard, and was deployed on 12 dormant apple trees at the Penn State
-  Fruit Research and Extension Center under a genuine train--test domain
-  gap.
-  The field results reproduced the simulation findings and sharpened the
-  central one: at viewpoint 15 the semantic planner more than doubled the
-  baseline's mAP, 0.209 against 0.089, and nearly quadrupled its max-F1,
-  0.461 against 0.124, already separating decisively from the baseline at
-  the inspection's midpoint.
-  Two supporting results made the deployment possible: a FoundationStereo
-  configuration optimized from 3.8\,s to 32\,ms per frame, and a
-  Gaussian-splat ground-truth pipeline that places expert 3D symptom
-  annotations directly into the robot's own frame
-  (Chapter~\ref{chapErwin}).
-\end{enumerate}
-
-\section{Limitations} \label{secLimitations}
-
-The system works, but it is a research prototype, and the distance between
-what it demonstrates and what a grower could actually use is worth stating
-plainly.
-The limitations below are framed from the perspective of that end user.
-
-\paragraph{Inspection speed.}
-The most immediate barrier to practical use is throughput.
-A complete 30-viewpoint inspection takes 3--5 minutes, and the base must
-then be repositioned by an operator before the next tree, so even a single
-row of a few dozen trees becomes a multi-hour job and a commercial block
-is out of reach within a working day.
-The bottleneck is mechanical rather than computational: with stereo depth
-running at 32\,ms and detection running alongside it in parallel
-(Section~\ref{secStereoDepth}), the cycle is dominated by the time the arm
-spends moving between viewpoints.
-The semantic planner's front-loading of detection quality---most of its
-accuracy is reached well before the full budget---is the first meaningful
-step against this limit, since a shortened inspection sacrifices far less
-than it would under a fixed scan, but it is a mitigation rather than a
-solution.
-
-\paragraph{Cost and durability.}
-Erwin is expensive, and it is not ruggedized.
-The xArm6 is a general-purpose industrial manipulator designed for factory
-floors rather than orchards, and the computing enclosure is not
-weather-sealed; neither would survive sustained rain, and wind moving the
-canopy between views would undermine the static-scene assumption the map
-depends on.
-The system is therefore a fair-weather instrument, which is an awkward
-constraint for a task whose entire window falls in late winter and early
-spring, precisely when orchard weather is least cooperative.
-Its capital cost, meanwhile, is well above what an individual grower
-operating on the margins described in Chapter~\ref{chapIntroduction} could
-justify.
-
-\paragraph{Operational complexity.}
-Running the system today means bringing up and coordinating a set of
-concurrent ROS 2 nodes---camera driver, detector, stereo matcher, mapping,
-planning, and manipulator control---and diagnosing them individually when
-one misbehaves.
-That demands an operator fluent in the software stack rather than an
-orchard employee, and it is the clearest sense in which this remains a
-prototype rather than a product.
-None of it is fundamental, and the awkwardness is in part a deliberate
-trade: the modular decomposition that makes the stack demanding to operate
-is the same decomposition that allowed detectors and planners to be
-swapped freely during development (Section~\ref{secROS2}).
-
-\paragraph{Detection accuracy.}
-Map accuracy remains bounded by detector accuracy.
-The planners can only refine and localize the symptoms the 2D detector is
-able to recognize in the first place, so the field mAP of 0.322 at
-viewpoint 30 reflects the detector's ceiling as much as the planner's
-behavior.
-Multi-view fusion recovers a great deal of what any single frame misses,
-which is precisely why the mapping and planning contributions exist, but a
-grower would want a system that misses fewer symptoms outright, and
-substantial headroom remains.
-
 \section{Future Work} \label{secFutureWork}
 
-The limitations above suggest a fairly direct agenda.
+The clearest next steps follow directly from where the system falls
+short of what a grower could put to work today: detection accuracy still
+bounds map accuracy, per-tree inspection is too slow for a commercial
+block, and the pipeline still ends in a report rather than an action.
 
 \subsection{Improved Detection Models} \label{secFutureDetection}
 
-Because detection bounds everything downstream, it is the most valuable
-place to improve, and two directions follow from what
+Map accuracy remains bounded by detector accuracy: the planners can only
+refine and localize the symptoms the 2D detector is able to recognize in
+the first place, so the field mAP of 0.322 at viewpoint 30
+(Section~\ref{secFieldResults}) reflects the detector's ceiling as much
+as the planner's behavior, and closing that gap is the single most
+valuable place to improve the system. Two directions follow from what
 Chapter~\ref{chapDataset} already established.
 
 The first is to use both imaging modalities at once.
@@ -221,89 +86,65 @@ fine-tuning on that batch, and using the improved model to accelerate the
 rest; the same fine-tune-then-automate loop is the practical path to a
 segmentation dataset at scale.
 
-\subsection{Faster and Lighter-Weight Sensor Positioning}
+\subsection{Faster Sensor Positioning and Continuous Detection}
 \label{secFutureManipulation}
 
-The speed, cost, and durability limitations share a single root: the
-manipulator.
-A 6-DOF industrial arm is a heavy, slow, and expensive way to move a
-camera weighing a small fraction of what the arm is rated to carry, and
-replacing it with a lighter, faster, purpose-built positioning mechanism
-would attack all three limitations at once.
-What makes this an attractive direction rather than a rebuild is that the
-planning contribution does not depend on the mechanism.
-The planner requires only an action space of camera poses that are
-reachable and collision-free, expressed through the precomputed workspace
-model of Section~\ref{secWorkspaceFilter}; how those poses are physically
-attained is immaterial to the map, to the information-gain formulation,
-and to the selection loop.
-A new positioning mechanism would therefore inherit the semantic planner
-unchanged, and would convert the planner's half-the-viewpoints result
-directly into a proportionally faster inspection.
+Inspection speed is the most immediate barrier to practical use.
+A complete 30-viewpoint inspection takes 3--5 minutes, so even with the
+platform's autonomous row-to-row navigation moving the base between trees,
+a single row of a few dozen trees becomes a multi-hour job and a
+commercial block is out of reach within a working day.
+The bottleneck is mechanical rather than computational: with stereo depth
+running at 32\,ms and detection running alongside it in parallel
+(Section~\ref{secStereoDepth}), the cycle is dominated by the time the arm
+spends moving between viewpoints and stopping to capture at each one.
+The semantic planner's front-loading of detection quality is a first
+meaningful step against this limit, but it is a mitigation rather than a
+solution.
 
-\subsection{Orchard-Scale Autonomy} \label{secFuturePlanning}
-
-Erwin inspects one tree at a time from a stationary base, and an operator
-drives it to the next.
-Closing that gap with autonomous row-to-row traversal, so that the
-platform positions itself in front of each tree, inspects it, and moves
-on, is the most direct path from a per-tree capability to the
-orchard-scale system the problem actually calls for.
-
-It is also what would make broader evaluation tractable.
-The field validation of Chapter~\ref{chapErwin} covered 12 trees at a
-single site within one visit, bounded both by the need to run three
-planners on every tree and by the scarcity of standing fire blight, and
-characterizing generalization properly requires far more trees, across
-more orchards, varieties, and seasons than a hand-driven platform can
-reach.
-Autonomy and evidence scale together here: the same capability that makes
-the system useful to a grower is what would let its claims be tested at
-the scale they deserve.
-
-Beyond traversal, the per-tree maps this system already produces are the
-raw material for the orchard-wide severity map that current practice lacks
-(Section~\ref{secFireBlightCurrentSolutions}).
-Georeferencing each tree's symptom count and confidence into a block-level
-record is what would let a grower direct pruning crews toward the worst
-rows and calibrate bloom-period spray intensity to measured local risk
-rather than to a uniform assumption---the decisions that motivated this
-work in the first place.
-
-\subsection{Richer Map Representations} \label{secFutureMapping}
-
-The maps in this thesis are single-visit snapshots, but fire blight is a
-process that unfolds across seasons.
-Because the canker load standing at the end of one dormant season predicts
-the disease pressure of the next
-(Section~\ref{secFireBlightMechanism}), a map that persists across visits
-would be worth considerably more than the sum of its snapshots: a robot
-returning to the same trees could track whether an infection is
-progressing, confirm that a pruning crew removed what was prescribed, and
-accumulate the longitudinal record that manual scouting has never
-produced.
-The technical prerequisite is registration across visits, relating this
-season's map to last season's on a canopy that has both grown and been
-cut, and the splat alignment machinery of Appendix~\ref{apxSuperSplat},
-built here to place ground truth into the robot's frame, is a natural
-starting point for it.
+Two changes attack this bottleneck directly, and can be pursued together.
+The first is a lighter, faster, purpose-built positioning mechanism in
+place of the 6-DOF xArm6, which is a heavy, slow, general-purpose
+industrial arm rated to carry far more than the sensor rig weighs.
+This is an attractive direction rather than a rebuild because the
+planning contribution does not depend on the mechanism: the planner
+requires only an action space of camera poses that are reachable and
+collision-free, expressed through the precomputed workspace model of
+Section~\ref{secWorkspaceFilter}, so a new positioning mechanism would
+inherit the semantic planner unchanged.
+The second is continuous detection: the rig and perception pipeline
+already support a sustained capture rate of 20\,fps, verified in the lab
+(Section~\ref{secPerceptionPipeline}), but the field experiments
+captured a single image at each selected viewpoint rather than streaming
+continuously, so that planner comparisons were not confounded by
+incidental images gathered along the arm's in-transit motion.
+Outside of a controlled comparison, that constraint does not apply:
+fusing detections continuously while the arm is in motion, rather than
+stopping to capture at each selected viewpoint, would let a faster
+positioning mechanism convert its speed directly into inspection time.
+Together, a lighter mechanism and continuous detection are the most
+direct path from a few minutes to a few seconds per tree.
 
 \subsection{From Detection to Treatment} \label{secFutureManagement}
 
-The natural end of this line of work is a system that does something about
-what it finds.
+The natural end of this line of work is a system that does something
+about what it finds, rather than one that only ends in a report.
 Detection and treatment are separated today by a gap that is largely
 mechanical rather than informational, because the semantic map already
 supplies what an intervention needs: the 3D locations of symptoms, with
 confidences, in the robot's own frame.
 Standard practice is already to cut well below the visible margin of a
 canker (Section~\ref{secFireBlightCurrentSolutions}), so a map of canker
-locations is close to a pruning prescription; targeted spraying and
-germicidal UV treatment are likewise interventions that must be aimed,
-which is exactly what the map provides.
-An inspection pass that ends in treatment rather than in a report would
-close the loop from sensing to action, and would make the case for the
-robot to a grower far more directly than a map alone.
+locations is close to a pruning prescription, though pruning itself is a
+mechanically challenging action to automate on a live tree; targeted
+spraying and germicidal UV treatment are comparatively simpler
+interventions that must only be aimed, and some simpler form of in-place
+removal, such as cutting or scoring out the diseased tissue directly, may
+offer an easier middle ground than a full pruning cut.
+An inspection pass that ends by acting on what it finds---spraying,
+pruning, or otherwise removing the disease---would close the loop from
+sensing to action, and would make the case for the robot to a grower far
+more directly than a map alone.
 
 \section{Closing Remarks} \label{secClosingRemarks}
 
