@@ -1,6 +1,6 @@
 % -*- mode:LaTex; mode:visual-line; mode:flyspell; fill-column:75-*-
 
-\chapter{Data Collection and 2D Disease Detection} \label{chapDataset}
+\chapter{Data Collection and Disease Sensing} \label{chapDataset}
 
 Realizing the active perception approach described in
 Chapter~\ref{chapIntroduction} first requires a perception system
@@ -9,8 +9,8 @@ dormant-season imagery.
 This chapter develops that system from the ground up: the handheld
 multi-modal camera rig used to collect orchard imagery, the dataset
 assembled from multiple collection sessions across several rig
-revisions, the SAM-assisted and cross-modal annotation pipeline
-used to label that data efficiently, and the 2D instance
+revisions, the SAM-assisted~\cite{ravi2024sam2} and cross-modal annotation
+pipeline used to label that data efficiently, and the 2D instance
 segmentation models trained on the resulting dataset.
 The detector trained here is deployed as the perception front-end
 for the semantic mapping and next-best-view planning system
@@ -111,9 +111,10 @@ the flash camera, largely free of the cast shadows that affect
 ambient RGB, while the canker reflects the near-infrared band
 markedly differently from the surrounding healthy tissue.
 
-This spectral range was chosen because near-infrared reflectance
-has been shown to be discriminative for disease detection, as
-tissue moisture content and pigmentation shift with disease presence.
+The Ximea's 675--951\,nm spectral range was chosen because
+near-infrared reflectance has been shown to be discriminative for
+disease detection, as tissue moisture content and pigmentation shift
+with disease presence.
 Skoneczny et al.\ found reflectance discrepancies of up to 10\%
 between healthy and fire-blight-infected apple leaves across the
 red-edge and near-infrared region (700--850\,nm), while Kurihara
@@ -254,7 +255,7 @@ temporally aligned, registered imagery.
     \label{figFieldCapture}
 \end{figure}
 
-\subsection{Design Iterations and Triggering}
+\subsection{Design Iterations and Synchronization}
 \label{secDesignIterations}
 
 The rig went through several design revisions driven primarily by
@@ -310,9 +311,9 @@ resolution limitations described in Section~\ref{secZED2i}.
 \textbf{Control interface.}
 The control software was ported from Python to C++ to improve
 capture and preview throughput, and the user interface was
-redesigned around large, glove-friendly controls suited to
-operation on the small rig touchscreen outdoors; the final version
-is shown in Figure~\ref{figGuiEvolution}.
+redesigned around large buttons that were easy to hit accurately on
+the small rig touchscreen outdoors; the final version is shown in
+Figure~\ref{figGuiEvolution}.
 The initial version presented four small camera views alongside a
 single small capture button and a plain text log, which made
 captured images hard to inspect in the field and gave the operator
@@ -418,9 +419,9 @@ severity, orchard architecture, and lighting conditions; their
 principal attributes are summarized in
 Table~\ref{tabCollectionSites}.
 
-The first primary site was a commercial orchard in western
-Pennsylvania, just outside Pittsburgh, which we do not identify by
-name.
+The first primary site, referred to throughout as the Pittsburgh
+orchard, was a commercial orchard in western Pennsylvania, just
+outside Pittsburgh, which we do not identify by name.
 Data was collected there on February 12, 2025, from two rows of
 symptomatic apple trees.
 The trees were young, grafted onto a high-density rootstock and
@@ -1425,6 +1426,33 @@ boundaries; aggregating evidence across many views of the same tree,
 as the semantic mapping and NBV planning of Chapter~\ref{chapNBV} do,
 is a more robust way to convert imperfect per-frame detections into
 reliable tree-level diagnoses.
+
+% \section{Limitations} \label{secDatasetLimitations}
+
+% The dataset and detection results in this chapter should be read
+% against several limitations of the underlying data.
+% All annotated imagery comes from a single site, the Pittsburgh orchard,
+% collected on a single day; the second primary site (Frederick County,
+% VA) was collected but left unannotated, so no result in this chapter is
+% tested against a different orchard, cultivar, or training system.
+% The annotated dataset is also small, 983 training, 155 validation, and
+% 137 test images spanning 2{,}302 labeled instances, so the mAP figures
+% reported in Section~\ref{secDetectionResults} rest on a test set of
+% fewer than 150 images.
+% The cross-modal label transfer that produces NIR labels from RGB
+% annotations is itself a source of error rather than a clean ground
+% truth: even after an annotator reviewed and corrected every transferred
+% box, Table~\ref{tabCrossModalEval} shows that 3.5\% of frames yielded no
+% usable transferred prediction and roughly 18\% of the remaining boxes
+% still needed adjustment at the practical IoU-0.5 threshold, so the NIR
+% labels used for training depend on this correction pass rather than on
+% annotation performed directly from the NIR frame.
+% Finally, the RGB and NIR detectors are not compared on equal footing:
+% the RGB model is initialized from COCO-pretrained weights while the NIR
+% model is trained from scratch, since no pretrained checkpoint exists
+% for a 25-channel input, so the mAP gap between the two models reflects
+% this difference in initialization as much as it reflects any difference
+% in the discriminative content of the two modalities.
 
 \section{Summary} \label{secDatasetSummary}
 

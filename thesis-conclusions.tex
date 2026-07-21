@@ -40,7 +40,8 @@ point of the inspection.
 The clearest next steps follow directly from where the system falls
 short of what a grower could put to work today: detection accuracy still
 bounds map accuracy, per-tree inspection is too slow for a commercial
-block, and the pipeline still ends in a report rather than an action.
+block, and the planner itself is still a hand-engineered score rather
+than a learned policy.
 
 \subsection{Improved Detection Models} \label{secFutureDetection}
 
@@ -125,26 +126,22 @@ positioning mechanism convert its speed directly into inspection time.
 Together, a lighter mechanism and continuous detection are the most
 direct path from a few minutes to a few seconds per tree.
 
-\subsection{From Detection to Treatment} \label{secFutureManagement}
+\subsection{Learning the Information Gain Function} \label{secFutureLearnedPolicy}
 
-The natural end of this line of work is a system that does something
-about what it finds, rather than one that only ends in a report.
-Detection and treatment are separated today by a gap that is largely
-mechanical rather than informational, because the semantic map already
-supplies what an intervention needs: the 3D locations of symptoms, with
-confidences, in the robot's own frame.
-Standard practice is already to cut well below the visible margin of a
-canker (Section~\ref{secFireBlightCurrentSolutions}), so a map of canker
-locations is close to a pruning prescription, though pruning itself is a
-mechanically challenging action to automate on a live tree; targeted
-spraying and germicidal UV treatment are comparatively simpler
-interventions that must only be aimed, and some simpler form of in-place
-removal, such as cutting or scoring out the diseased tissue directly, may
-offer an easier middle ground than a full pruning cut.
-An inspection pass that ends by acting on what it finds (spraying,
-pruning, or otherwise removing the disease) would close the loop from
-sensing to action, and would make the case for the robot to a grower far
-more directly than a map alone.
+The planner presented in Chapter~\ref{chapNBV} scores candidate views
+with a hand-engineered utility function that combines semantic and
+occupancy uncertainty, and a hand-designed score can only combine the
+terms its authors thought to include.
+A learned alternative would replace that formula with a network trained
+to predict how much a candidate view will actually improve the map,
+using the observed change in map confidence after each real viewpoint
+is captured as the training signal, rather than a fixed uncertainty
+heuristic as a proxy for that improvement.
+Since this only replaces the scoring step, the rest of the pipeline,
+including candidate generation, workspace filtering, and greedy
+selection, would carry over unchanged, and the existing field and
+simulation rollouts already provide the map-before-and-after pairs
+needed to train it.
 
 \section{Closing Remarks} \label{secClosingRemarks}
 
@@ -154,11 +151,11 @@ It is to give a grower a fighting chance against a disease that can take a
 young block in a single season.
 A high-density planting represents years of capital committed before the
 first full harvest, and fire blight turns that investment into a wager on
-how much a person can see walking down a row.
+whether someone happens to notice a canker before it spreads.
 A robot that inspects every tree, records what it finds where it found it,
 and hands back a map is not a cure.
-It is something more modest and more useful: the difference between
-managing a disease from evidence and managing it from impression.
+It is something more modest: the difference between managing a disease
+from evidence and managing it from impression.
 Yields become more predictable, interventions land where they are
 actually needed, and a bad year becomes less likely to be a ruinous one.
 

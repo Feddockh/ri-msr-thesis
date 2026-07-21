@@ -6,11 +6,13 @@ The U.S. apple industry is a cornerstone of American agriculture, contributing
 more than \$23 billion to the national economy and supporting over 150,000
 jobs across a supply chain that spans orchards, packing houses, cold storage,
 and distribution~\cite{gerlach2025usapple}.
-Yet despite record production levels, many growers are operating at a loss:
-domestic demand has stagnated, export markets have eroded, labor costs
-continue to climb, and the margin for error is thin~\cite{gerlach2025usapple}.
+Yet despite record production levels, many growers are operating at a loss,
+and rising labor costs are making the intensive manual scouting that disease
+management depends on increasingly difficult to
+sustain~\cite{gerlach2025usapple}.
 In this environment, disease management is not merely an agronomic
-concern: it is an economic one.
+concern: it is an economic one, since a single missed outbreak can consume
+a season's already thin margin.
 
 Fire blight, caused by the bacterium \textit{Erwinia amylovora}, is among the
 most destructive threats facing apple growers today.
@@ -21,8 +23,8 @@ acimovic2026fireblight}.
 The bacterium overwinters in bark lesions called cankers and spreads in spring
 to infect blossoms and young shoots~\cite{van1979FireBlight}; infected shoots
 develop a characteristic ``shepherd's crook'' deformation, while infected
-woody tissue forms new cankers and, in severe cases, girdles and kills the
-rootstock or trunk outright.
+woody tissue forms new cankers (Figure~\ref{figFireBlightSymptoms}) and, in
+severe cases, girdles and kills the rootstock or trunk outright.
 Effective management depends on early detection of these cankers and
 shepherd's crooks during the dormant season, yet current practice relies
 almost entirely on manual scouting, a labor-intensive, subjective process
@@ -43,8 +45,8 @@ The visual cues that distinguish infected tissue from healthy tissue are
 subtle, and resolving them reliably requires close-range imaging at fine
 spatial resolution, conditions that a fixed, wide-angle views cannot
 consistently provide.
-Moreoever, we aim to provide growers with a system capable of branch-level
-disease localization, which will enable growers to assess the severity of 
+Moreover, we aim to provide technology for growers capable of branch-level
+disease localization, which will enable growers to assess the severity of
 disease and make informed decisions about pruning and treatment.
 
 % Despite growing research interest in agricultural robotics, and although
@@ -77,7 +79,7 @@ dataset and detector capable of recognizing disease symptoms across sensing
 modalities, a three-dimensional representation that can accumulate and
 reconcile noisy per-view detections into a single map of the canopy, and a
 planner that uses that representation to decide where to look next. This
-thesis aims to address that gap directly.
+thesis aims to address these gaps directly.
 
 % TODO: Add figs/system_diagram.png, then uncomment.
 % Diagram should show three linked parts: (1) hardware -- Amiga mobile base
@@ -105,9 +107,9 @@ thesis aims to address that gap directly.
 \section{Contributions} \label{secContributions}
 
 The primary contributions of this thesis are organized around three
-components: a multi-modal dataset and detector, a semantic mapping and
-planning framework, and the field-validated robotic system that integrates
-them.
+components: a multi-modal dataset and YOLO-based fire blight detector, a
+semantic mapping and planning framework, and the field-validated robotic
+system that integrates them.
 
 \subsection{Multi-Modal Dataset and Fire Blight Detection}
 
