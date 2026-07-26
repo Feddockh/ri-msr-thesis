@@ -155,10 +155,22 @@ is imperfect: the same patch of bark may be labeled canker from one
 viewpoint and background from another, at differing confidences, and a
 naive scheme that simply overwrites or averages these observations would
 either discard useful evidence or wash out true detections.
-We adopt the confidence-aware fusion rule of Burusa et
+We first tried reducing each detection to a binary label by thresholding
+its confidence, then fusing labels with fixed hit and miss probabilities in
+the same manner as geometric occupancy (Section~\ref{secOctoMapBase}); this
+performed worse in practice, because a detection just above threshold was
+weighted identically to one at very high confidence, and a handful of weak
+detections could overturn a voxel that several strong, high-confidence
+views had already established.
+A further alternative, which we did not explore, would calibrate a
+confidence-dependent likelihood directly from the 2D detector's precision
+at each confidence level on held-out validation data
+(Section~\ref{secDetectionResults}).
+We instead adopted the confidence-aware fusion rule of Burusa et
 al.~\cite{Burusa2024SemanticsAwareNBVPlantParts}, extended here with a
 per-match confidence boost $\gamma$ in addition to their mismatch penalty
-$\lambda$.
+$\lambda$, which preserves each detection's confidence magnitude rather
+than collapsing it to a binary label.
 Let $(c_t, s_t)$ denote the incoming class label and confidence for a voxel
 at time $t$, and let $(\hat{c}, \hat{s})$ denote the voxel's current stored
 estimate.
