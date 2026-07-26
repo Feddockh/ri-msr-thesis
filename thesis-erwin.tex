@@ -37,8 +37,8 @@ end effector. During inspection of a given tree the base remains stationary
 while the arm actively repositions the sensor, breaking the plane of the
 canopy, navigating around occluding branches, and acquiring the close,
 oriented views that the narrow-field flash and multispectral cameras
-require. Figure~\ref{figRobotPlatform} shows the assembled platform deployed
-in a dormant orchard.
+require (Section~\ref{secActivePerceptionFoundations}). Figure~\ref{figRobotPlatform}
+shows the assembled platform deployed in a dormant orchard.
 
 \begin{figure}[h]
     \centering
@@ -83,10 +83,10 @@ positioned at a tree.
 The manipulator is a UFACTORY xArm6, a 6-DOF arm mounted on horizontal rails
 on the Amiga. Its six degrees of freedom allow the camera rig to be
 positioned and oriented freely enough to break the plane of the canopy and
-look around occluding branches, which is the physical capability that active
-viewpoint selection depends on: without an arm able to reach oblique,
-in-canopy poses, the planners of Chapter~\ref{chapNBV} would have no
-meaningful action space. The reachable workspace of the arm, sampled
+look around occluding branches (Figure~\ref{figActivePerception}), which is
+the physical capability that active viewpoint selection depends on: without
+an arm able to reach oblique, in-canopy poses, the planners of
+Chapter~\ref{chapNBV} would have no meaningful action space. The reachable workspace of the arm, sampled
 offline, defines the feasible viewpoint set $\mathcal{Q}$ used for candidate
 filtering (Section~\ref{secWorkspaceFilter}), and collision-aware motion
 planning ensures that executed viewpoints avoid contact with the tree and

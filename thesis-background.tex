@@ -92,14 +92,45 @@ relying on whatever view of a tree is afforded by a fixed scouting trajectory,
 our system uses a manipulator to actively select viewpoints that are expected
 to resolve uncertainty about the presence and location of disease symptoms.
 
+Three properties of the orchard canopy make this closed-loop control necessary
+rather than incidental, illustrated in Figure~\ref{figActivePerception}.
+First, the dense, overlapping branch structure of the canopy occludes
+symptoms from any single fixed vantage point, so a stationary camera will
+systematically miss disease that a repositioned one would find, while an arm
+that can reach around an obstructing branch keeps the target in view.
+Second, our detection pipeline depends on controlled flash illumination
+rather than ambient light (Section~\ref{secFlirCamera}), and widening the
+camera's field of view to capture more of the tree at once would require a
+proportional increase in illumination power; if the camera's field of view is
+allowed to exceed the flash's, the unlit periphery of the frame vignettes
+toward the edges, and because fire blight symptoms can appear anywhere on a
+tree, from the rootstock to the upper canopy, every part of the tree must
+eventually be brought into a view that is both well illuminated and within
+the flash's coverage.
+Third, fire blight symptoms such as fine bark cankers and shepherd's crooks
+are small and defined largely by texture, so imaging a target from farther
+away sacrifices the spatial resolution needed to resolve that texture;
+moving the camera closer increases the pixels available per symptom, and
+that additional resolved detail is what a detector has available to key on,
+so higher spatial resolution translates directly into better detection
+performance.
+A single fixed view cannot simultaneously provide coverage, illumination,
+and resolution, which motivates a planner that chooses where the camera
+should move next.
+
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.95\linewidth, trim={0 270pt 0 270pt}, clip]{figs/active_perception_concept.jpg}
+    \includegraphics[width=0.95\linewidth, trim={225pt 0 225pt 0}, clip]{figs/active_perception_concept_v2.jpg}
     \caption{Motivation for active perception in orchard disease detection.
-    \textit{Left:} a fixed camera cannot see past an occluding branch, leaving
-    the symptomatic target undetected. \textit{Right:} a camera mounted on a
-    two-degree-of-freedom arm can reposition past the obstruction, bringing
-    the previously hidden target into view.}
+    \textit{Top left:} a fixed camera's line of sight to a target is blocked
+    by an occluding branch, while an articulated camera can move around the
+    obstruction to keep the target in view.
+    \textit{Top right:} keeping the camera's field of view inside the
+    flash's field of view keeps the frame evenly illuminated, whereas a
+    camera view wider than the flash's leaves part of the frame unlit.
+    \textit{Bottom:} the same shepherd's crook imaged from farther away, at
+    lower spatial resolution, and from closer, at higher spatial
+    resolution.}
     \label{figActivePerception}
 \end{figure}
 
@@ -172,13 +203,17 @@ hosts that can serve as inoculum reservoirs near commercial plantings
 Annual losses and management costs attributable to fire blight in the United
 States exceed \$100 million \cite{Norelli2003FireBlightManagementTwentyFirst,
 acimovic2026fireblight}, and individual regional outbreaks have caused tens of
-millions of dollars in losses within a single season, including a 2016
-outbreak in New York that killed half the trees in affected young orchards and
-outbreaks in Washington State between 2017 and 2019 that caused approximately
-\$9 million in annual losses \cite{acimovic2026fireblight}.
+millions of dollars in losses within a single season, including a single 2000
+epidemic in southwest Michigan that killed more than 220,000 trees, destroyed
+over 240 hectares of apple orchards, and caused an estimated \$42 million in
+economic losses \cite{Norelli2003FireBlightManagementTwentyFirst}, a 2016
+outbreak in New York that killed half the trees in affected young orchards,
+and outbreaks in Washington State between 2017 and 2019 that caused
+approximately \$9 million in annual losses \cite{acimovic2026fireblight}.
 Internationally, an epidemic in Korla, China destroyed an estimated one
-million pear trees in 2017 \cite{Sun2023CurrentSituationChina,
-acimovic2026fireblight}.
+million pear trees in 2017 and caused financial damage exceeding one billion
+CNY, equivalent to approximately \$140 million USD
+\cite{Sun2023CurrentSituationChina, acimovic2026fireblight}.
 
 The disease is particularly dangerous to young, high-density plantings, which
 now dominate commercial apple production because they reach full yield faster
@@ -265,10 +300,23 @@ standard management practice for reducing the overwintering inoculum reservoir
 is manual dormant-season pruning: an orchardist walks each row, visually
 identifies cankers, and removes them by cutting well below the visible margin
 of infection \cite{Peter2023PennStateExtension}.
-In-season management instead relies on predictive infection models that
-trigger preventive antibiotic application (most commonly streptomycin) during
-bloom. Unfortunately, once shoot blight symptoms are visible the infection is
-already systemic and antibiotics are no longer effective
+Chemical control is applied at two further points in the season, each timed
+to a specific phenological window. Copper-based bactericides, which act as
+non-systemic contact protectants, are applied from late winter through early
+spring, before bloom, to reduce overwintering inoculum, and are generally
+avoided at full bloom because of the risk of fruit russetting
+\cite{Holland2025WisconsinFireBlightManagement}. In-season management instead relies on predictive infection models (e.g.,
+Maryblyt, CougarBlight, NEWA) that trigger preventive application of
+streptomycin or oxytetracycline during bloom. Streptomycin is a true
+antibiotic that kills the pathogen outright and remains effective when
+applied within 12 to 24 hours after a rain or wetting event, whereas
+oxytetracycline is bacteriostatic, only suppressing bacterial multiplication,
+and must instead be applied proactively, within 24 hours before a forecasted
+rain event, with its already short residual effectiveness further reduced by
+rapid degradation in sunlight
+\cite{Holland2025WisconsinFireBlightManagement}. Unfortunately, once shoot
+blight symptoms are visible the infection is already systemic and antibiotics
+are no longer effective
 \cite{Norelli2003FireBlightManagementTwentyFirst, acimovic2026fireblight}.
 
 Both halves of this management strategy depend on accurate knowledge of where

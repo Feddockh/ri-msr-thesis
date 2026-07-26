@@ -389,6 +389,20 @@ once the reprojection error fell below $1.0$ pixel, and the same target
 was used to recover the rigid transform between the flash stereo and
 Ximea cameras.
 
+The Ximea additionally requires radiometric calibration: using the
+in-field dark-calibration and flat-field correction (FFC) controls on
+the rig (Section~\ref{secDesignIterations}), a flat frame is captured
+against a uniform diffuse-white reflectance panel and a dark frame is
+captured with the lens capped, and each raw pixel $R$ is corrected to
+\begin{equation}
+    P_{\mathrm{corrected}} =
+    (R - D)\,\frac{\overline{F} - \overline{D}}{F - D},
+    \label{eqFFC}
+\end{equation}
+where $D$ and $F$ are the per-pixel dark and flat responses and
+$\overline{D}$, $\overline{F}$ their means, removing fixed-pattern
+sensor and illumination nonuniformity before demosaicing.
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.85\textwidth]{figs/camera_calib.jpg}
@@ -424,8 +438,8 @@ orchard, was a commercial orchard in western Pennsylvania, just
 outside Pittsburgh, which we do not identify by name.
 Data was collected there on February 12, 2025, from two rows of
 symptomatic apple trees.
-The trees were young, grafted onto a high-density rootstock and
-trained as a dwarf central leader, an architecture common in modern
+The trees were young, grafted onto a dwarfing rootstock and
+trained using a trellis system, an architecture common in modern
 high-density plantings.
 Because the block was a working commercial planting rather than a
 research site, its infection arose naturally rather than through
@@ -433,23 +447,23 @@ deliberate inoculation, and disease pressure was severe: cankers
 and shepherd's crooks were both abundant.
 Skies were overcast that day, giving diffuse, even illumination.
 In total, 4{,}913 synchronized five-camera image sets were captured
-at this site, amounting to 78.9\,GB of raw data.
+at this site, amounting to 183.7\,GB of raw rosbag data.
 
 The second primary site was the Alson H. Smith Jr. Agricultural
 Research and Extension Center operated by Virginia Tech in Frederick
 County, Virginia.
 Data was collected there on February 14, 2025, from two rows of a
 single block.
-In contrast to the Pittsburgh site, this was an older, free-standing
+In contrast to the Pittsburgh site, this was an older, standard
 orchard of self-supporting trees grown with minimal training and
 wide spacing between trees.
 The block had been deliberately inoculated, but disease pressure was
-mild: a handful of shepherd's crooks were present and no cankers.
+mild: a handful of shepherd's crooks were present and cankers were rare.
 Skies were clear that day, producing strong, hard-edged shadows
 across the canopy, the opposite lighting regime to the overcast
 Pittsburgh session.
 In total, 1{,}947 five-camera image sets were captured at this site,
-amounting to 31.9\,GB of raw data.
+amounting to 71.9\,GB of raw rosbag data.
 Because symptoms here were sparse, this imagery proved less useful
 for annotation and was ultimately left unlabeled; it remains part
 of the collected dataset but does not contribute to detector
@@ -475,8 +489,8 @@ time.
              sites: the Pittsburgh block supplies the detector's
              annotated training and validation data, while the
              Virginia block was collected but left unannotated. The
-             Penn State block is used only to test the full system,
-             for which per-frame counts are not reported.}
+             Penn State block is used only to test the full system;
+             its image-set count excludes the ZED2i stream.}
     \label{tabCollectionSites}
     \resizebox{\textwidth}{!}{%
     \begin{tabular}{l|ccc}
@@ -487,12 +501,12 @@ time.
         Role           & Train + Val      & ---                  & Testing \\
         Date           & Feb.\ 12, 2025   & Feb.\ 14, 2025       & Mar.\ 18--20, 2026 \\
         Severity       & Severe           & Mild                 & Moderate \\
-        Tree system    & High-density     & Free-standing        & Wide, dwarfing \\
+        Tree system    & High-density, dwarfing & Wide, standard  & Wide, dwarfing \\
         Inoculation    & Natural          & Deliberate           & Deliberate \\
-        Cankers        & Abundant         & None                 & Several \\
+        Cankers        & Abundant         & Rare                 & Several \\
         Shepherd's crooks & Abundant       & Few                  & Few \\
-        Image sets     & 4{,}913          & 1{,}947              & --- \\
-        Raw data       & 78.9\,GB         & 31.9\,GB             & --- \\
+        Image sets     & 4{,}913          & 1{,}947              & 3{,}299 (no ZED) \\
+        Raw data       & 183.7\,GB        & 71.9\,GB             & 219.2\,GB \\
         \hline
     \end{tabular}%
     }
@@ -526,11 +540,22 @@ The trees here were widely spaced but grafted onto a dwarfing
 rootstock, and the block had been deliberately inoculated.
 Disease pressure was moderate, between the severe Pittsburgh site
 and the mild Virginia site: several cankers and a few shepherd's
-crooks were present. Each next-best-view planner variant was 
+crooks were present. Each next-best-view planner variant was
 evaluated on the same set of 12 trees: 10 infected and 2 healthy.
+In total, 3{,}299 synchronized image sets (without ZED) were captured
+across the test site, amounting to 219.2\,GB of raw rosbag data;
+because these rosbags also record lidar, GPS, and front-camera
+streams alongside the inspection cameras, this site's total raw data
+volume exceeds that of the Pittsburgh site despite its fewer image
+sets.
 
 \section{Dataset Description} \label{secDatasetDescription}
 
+Note that the raw data volumes reported above are full rosbag sizes,
+including all recorded sensor streams, rather than the size of the
+extracted image sets; only a small subset of this raw data was
+extracted into image sets and, of those, an even smaller subset was
+ultimately annotated.
 Of the 4{,}913 synchronized image sets captured at the Pittsburgh
 site (Section~\ref{secDataCollection}), only 1{,}275 flash stereo RGB
 frames were carried through to a labeled dataset.
@@ -578,10 +603,11 @@ tissue that is absent during dormancy, leaving only the
 relevant to our setting.
 A second relevant collection is the visible--near-infrared
 hyperspectral dataset of Gaci
-et al.~\cite{Gaci2023VisibleNIRDataset}, but it follows a small number
-of lab-controlled plants (on the order of six) over roughly two weeks
-to study infection progression, rather than providing the in-field
-diversity of symptoms needed to train a field detector.
+et al.~\cite{Gaci2023VisibleNIRDataset}; it primarily follows a small number
+of lab-controlled plants over roughly two weeks to study infection
+progression, and although it also includes a single image apiece from nine
+infected field trees, that subset is sized for spectral analysis rather than
+for the in-field symptom diversity needed to train a field detector.
 Other efforts have collected field imagery closer to our setting,
 namely the dormant-season canker images of Linker and
 Dafny-Yalin~\cite{Linker2024MappingFireBlightCankersFRCNN} and the
@@ -1023,20 +1049,8 @@ two cameras are rigidly mounted (Section~\ref{secPlatformMounting}) and
 calibrated (Section~\ref{secCameraCalib}).
 Section~\ref{secCameraCalib} details the ChArUco-based calibration
 procedure and recovers the rigid transform between the flash stereo
-camera and the Ximea (Figure~\ref{figCameraCalib}).
-The Ximea additionally requires radiometric calibration: using the
-in-field dark-calibration and flat-field correction (FFC) controls on
-the rig (Section~\ref{secDesignIterations}), a flat frame is captured
-against a uniform diffuse-white reflectance panel and a dark frame is
-captured with the lens capped, and each raw pixel $R$ is corrected to
-\begin{equation}
-    P_{\mathrm{corrected}} =
-    (R - D)\,\frac{\overline{F} - \overline{D}}{F - D},
-    \label{eqFFC}
-\end{equation}
-where $D$ and $F$ are the per-pixel dark and flat responses and
-$\overline{D}$, $\overline{F}$ their means, removing fixed-pattern
-sensor and illumination nonuniformity before demosaicing.
+camera and the Ximea (Figure~\ref{figCameraCalib}), as well as the
+Ximea's radiometric flat-field correction (Equation~\ref{eqFFC}).
 
 Given the calibrated cameras, labels are transferred in the four steps
 shown in Figure~\ref{figCrossModal}.
@@ -1088,10 +1102,15 @@ does not measure cross-modal detection accuracy against an
 independent reference; it measures how close the pipeline's raw
 output already is to a fully-corrected NIR label, i.e., the labeling
 effort it removes.
-Of the 1,275 frames, 44 (3.5\%) produced no usable prediction because
+Of the 1,275 frames, 44 (3.5\%) produced no usable prediction: in each
+of these frames every annotated symptom reprojected outside the
+Ximea's narrower field of view (Section~\ref{secXimeaCamera}), so
 fewer than half of the reprojected mask points survived the
-pipeline's validity filter; these were excluded from the statistics
-below and still required fully manual annotation.
+pipeline's validity filter, and the frame was excluded from the
+statistics below and required fully manual annotation.
+Other frames sometimes had an individual annotation fall outside the
+NIR frame in the same way, but at least one annotation still
+transferred successfully, so the frame was retained.
 
 On the remaining 1,231 frames (1,632 ground-truth boxes, 1,788
 predicted boxes), predicted and ground-truth boxes were matched
@@ -1300,8 +1319,14 @@ Section~\ref{secModelArch}: the RGB model inherits edge, texture, and
 shape features from COCO pretraining, whereas the NIR model must learn
 its entire feature hierarchy from scratch on the roughly 983 training
 images, a dataset three orders of magnitude smaller than COCO.
-The two models being otherwise architecturally identical, this is the
-most plausible explanation for the performance difference.
+The gap is also consistent with the NIR modality's lower native spatial
+resolution: after demosaicing, each Ximea band is only
+409$\times$216 pixels (Section~\ref{secXimeaCamera}), so the NIR
+detector regresses box boundaries against coarser spatial detail
+regardless of initialization.
+The two models being otherwise architecturally identical, initialization
+and native spatial resolution are the two most plausible explanations
+for the performance difference.
 Encouragingly, test performance closely tracks validation for both
 models (mAP@0.5:0.95 is in fact marginally higher on the test split
 than on validation), indicating that the leakage-free split of
@@ -1450,9 +1475,11 @@ reliable tree-level diagnoses.
 % Finally, the RGB and NIR detectors are not compared on equal footing:
 % the RGB model is initialized from COCO-pretrained weights while the NIR
 % model is trained from scratch, since no pretrained checkpoint exists
-% for a 25-channel input, so the mAP gap between the two models reflects
-% this difference in initialization as much as it reflects any difference
-% in the discriminative content of the two modalities.
+% for a 25-channel input, and the NIR modality's native resolution
+% (409x216 pixels after demosaicing) is far lower than the RGB frames, so
+% the mAP gap between the two models reflects these differences in
+% initialization and resolution as much as it reflects any difference in
+% the discriminative content of the two modalities.
 
 \section{Summary} \label{secDatasetSummary}
 
