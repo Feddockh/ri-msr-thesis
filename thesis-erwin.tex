@@ -120,7 +120,28 @@ images are processed into semantic 3D reconstructions, candidate viewpoints
 are generated from the current map state and detection uncertainty, and the
 manipulator is commanded to the selected viewpoint, with all sensor data
 transformed into a common global frame using robot odometry and manipulator
-kinematics.
+kinematics. Figure~\ref{figSystemDiagram} summarizes this loop and its place
+within the per-tree field routine. Within the loop, each flash-illuminated
+stereo pair is passed in parallel to the segmentation model and the stereo
+matcher, back-projected into a semantic point cloud, and fused into the
+semantic OctoMap (Section~\ref{secPerceptionPipeline}); the planner then
+samples candidate viewpoints, filters them for reachability and
+collision-freedom, scores the survivors by the utility of
+Equation~\ref{eqUtility}, and commands the arm to the maximizer
+(Algorithm~\ref{algNBV}). The blocks surrounding the loop are the
+routine-level subsystems built by the broader Fire Blighters team
+(Section~\ref{secAmiga}), and the routine as a whole is described in
+Section~\ref{secPlanningControl}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\textwidth, trim={200pt 0 200pt 0}, clip]{figs/erwin_system_diagram.jpg}
+    \caption{System diagram of Erwin's per-tree inspection routine. The
+             dashed groups within the NBV inspection loop are the perception
+             pipeline (blue, Section~\ref{secPerceptionPipeline}) and the NBV
+             planner (green, Algorithm~\ref{algNBV}).}
+    \label{figSystemDiagram}
+\end{figure}
 
 \subsection{ROS 2 Integration} \label{secROS2}
 
@@ -139,19 +160,6 @@ viewpoint. This modular decomposition is what allows the perception
 front-end to be swapped (for example, between the simulation-fine-tuned and
 real-image detector variants of Section~\ref{secDetectionResults}) without
 altering the mapping or planning stages.
-
-% TODO(fig): add a simplified ROS 2 process diagram once drawn (the full
-% node graph is too busy to show; a high-level diagram of the running
-% processes and their data flow is planned instead).
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/erwin/ros2_architecture}
-%   \caption{Simplified ROS 2 process diagram for Erwin, showing data flow
-%            from the stereo camera driver through detection, depth
-%            estimation, semantic mapping, and NBV planning to manipulator
-%            control.}
-%   \label{figROS2Arch}
-% \end{figure}
 
 \subsection{Perception Pipeline} \label{secPerceptionPipeline}
 
@@ -297,7 +305,8 @@ back-projected.
 \subsection{Field Inspection Cycle} \label{secPlanningControl}
 
 In the field, inspecting one tree is a single step of a longer per-row
-routine. The base positions itself in front of the tree
+routine, shown end-to-end in Figure~\ref{figSystemDiagram}. The base
+positions itself in front of the tree
 (Section~\ref{secAmiga}), and the arm captures a fixed set of
 initialization viewpoints (Section~\ref{secFieldProtocol}), each processed
 by the perception pipeline of Section~\ref{secPerceptionPipeline} and
