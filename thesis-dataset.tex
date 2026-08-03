@@ -11,7 +11,8 @@ multi-modal camera rig used to collect orchard imagery, the dataset
 assembled from multiple collection sessions across several rig
 revisions, the SAM-assisted~\cite{ravi2024sam2} and cross-modal annotation
 pipeline used to label that data efficiently, and the 2D instance
-segmentation models trained on the resulting dataset.
+segmentation models trained on the resulting dataset and evaluated here
+at the level of their bounding-box predictions.
 The detector trained here is deployed as the perception front-end
 for the semantic mapping and next-best-view planning system
 presented in Chapter~\ref{chapNBV}.
@@ -449,7 +450,7 @@ Skies were overcast that day, giving diffuse, even illumination.
 In total, 4{,}913 synchronized five-camera image sets were captured
 at this site, amounting to 183.7\,GB of raw rosbag data.
 
-The second primary site was the Alson H. Smith Jr. Agricultural
+The second primary site was the Alson H. Smith Jr.\ Agricultural
 Research and Extension Center operated by Virginia Tech in Frederick
 County, Virginia.
 Data was collected there on February 14, 2025, from two rows of a
@@ -519,8 +520,9 @@ time.
     \caption{The three orchards used in this work.
              \textit{From left to right:} the severe, high-density
              commercial site near Pittsburgh, Pennsylvania; the mild,
-             free-standing research block at the Alson H. Smith Jr.
-             Agricultural Research and Extension Center in Frederick
+             free-standing research block at the
+             Alson H. Smith Jr.\ Agricultural
+             Research and Extension Center in Frederick
              County, Virginia; and the moderate-severity, held-out
              test orchard at the Penn State Fruit Research and
              Extension Center in Adams County, Pennsylvania.
@@ -954,7 +956,7 @@ vary widely in shape, location, and appearance, and their extent on
 the bark is often ambiguous.
 To make annotation repeatable across images and annotators, we
 developed a written labeling protocol in consultation with plant
-pathologist Srdjan A\'{c}imovi\'{c}, iterating on definitions and box
+pathologist Sr\dj{}an G. A\'{c}imovi\'{c}, iterating on definitions and box
 placement rules until each symptom type could be labeled
 consistently.
 The protocol first distinguishes one crook type and four canker
@@ -1090,7 +1092,7 @@ splits, and class balance (Section~\ref{secDatasetSplits}).
 \end{figure}
 
 To quantify how much manual effort this transfer pipeline actually
-saves, we ran it unattended over all 1,275 RGB frames with existing
+saves, we ran it unattended over all 1{,}275 RGB frames with existing
 annotations and had a human annotator review and correct every
 reprojected NIR box.
 FoundationStereo and SAM2 were used out of the box in this pipeline,
@@ -1102,7 +1104,7 @@ does not measure cross-modal detection accuracy against an
 independent reference; it measures how close the pipeline's raw
 output already is to a fully-corrected NIR label, i.e., the labeling
 effort it removes.
-Of the 1,275 frames, 44 (3.5\%) produced no usable prediction: in each
+Of the 1{,}275 frames, 44 (3.5\%) produced no usable prediction: in each
 of these frames every annotated symptom reprojected outside the
 Ximea's narrower field of view (Section~\ref{secXimeaCamera}), so
 fewer than half of the reprojected mask points survived the
@@ -1112,7 +1114,7 @@ Other frames sometimes had an individual annotation fall outside the
 NIR frame in the same way, but at least one annotation still
 transferred successfully, so the frame was retained.
 
-On the remaining 1,231 frames (1,632 ground-truth boxes, 1,788
+On the remaining 1{,}231 frames (1{,}632 ground-truth boxes, 1{,}788
 predicted boxes), predicted and ground-truth boxes were matched
 greedily by IoU and classified at each of three IoU thresholds into
 four buckets: \emph{ok} (usable as is), \emph{adjust} (right symptom,
@@ -1136,7 +1138,7 @@ symptoms the pipeline overlooked.
     \centering
     \caption{Class-agnostic accuracy and human correction workload of
              the cross-modal label transfer pipeline, evaluated on
-             1,231 frames (1,632 ground-truth, 1,788 predicted boxes)
+             1{,}231 frames (1{,}632 ground-truth, 1{,}788 predicted boxes)
              at three IoU thresholds. Mean IoU is computed over matched
              pairs only; \emph{add} and \emph{delete} counts are
              threshold-independent by construction.}
@@ -1201,17 +1203,20 @@ and class definitions established in Section~\ref{secDatasetSplits}.
 
 \subsection{Model Architecture} \label{secModelArch}
 
-Detection uses YOLO26-L, the large variant of the YOLO26
-family~\cite{yolo26_ultralytics}, initialized from COCO-pretrained
-weights and fine-tuned end-to-end (no frozen layers) for the two-class
-problem of Section~\ref{secManualAnnotation}: shepherd's crook and
-canker.
+Detection uses YOLO26-L-seg, the large variant of the YOLO26
+family~\cite{yolo26_ultralytics} with an instance-segmentation head,
+initialized from COCO-pretrained weights and fine-tuned end-to-end (no
+frozen layers) for the two-class problem of
+Section~\ref{secManualAnnotation}: shepherd's crook and canker.
 Earlier experiments used YOLOv8, a well-established baseline, but we
-moved to YOLO26 for its faster training, improved accuracy, and a
-segmentation head that provides a clean path from the bounding-box
-detector used here to the instance-segmentation masks used downstream.
+moved to YOLO26 for its faster training and improved accuracy.
+The segmentation head is what supplies the per-instance masks consumed by
+the semantic mapping pipeline of Chapter~\ref{chapNBV}, which rasterizes
+them into the per-pixel class and confidence maps that are back-projected
+into the semantic OctoMap (Section~\ref{secProjection}). Accuracy is 
+nonetheless reported throughout this chapter at the level of bounding boxes.
 The same architecture is trained separately on each modality, and the
-two detectors share the identical YOLO26-L graph with a single
+two detectors share the identical YOLO26-L-seg graph with a single
 exception: the stem convolution, whose input depth is 3 for the RGB
 model and 25 for the NIR model, whose demosaiced Ximea bands feed the
 first convolution directly.
@@ -1237,12 +1242,12 @@ weight decay $5\times10^{-4}$, and a three-epoch warmup, on a single
 NVIDIA RTX 4090 GPU with automatic mixed precision.
 A physical batch of 3 images was gradient-accumulated to a nominal
 batch of 64.
-The RGB model trained at 1088$\times$1440 with a mild augmentation
+The RGB model was trained at 1088$\times$1440 with a mild augmentation
 set: HSV color jitter, horizontal flips, small translation and scale
 jitter, slight perspective, and mosaic (disabled for the final 30
 epochs). These were empirically tuned, with weaker translate, scale, and
 mosaic settings found to perform worse.
-The NIR model is trained at 416 pixels, matched to the far smaller
+The NIR model was trained at 416 pixels, matched to the far smaller
 demosaiced Ximea frames, and with all color-space augmentations
 disabled, since HSV jitter is meaningless and numerically unsafe on
 25-channel data; only the geometric augmentations (flips, translation,
@@ -1260,7 +1265,7 @@ modality-specific differences.
         \hline
         Hyperparameter & RGB & NIR \\
         \hline
-        Architecture      & \multicolumn{2}{c}{YOLO26-L} \\
+        Architecture      & \multicolumn{2}{c}{YOLO26-L-seg} \\
         Classes           & \multicolumn{2}{c}{2 (shepherd's crook, canker)} \\
         Input channels    & 3                & 25 \\
         Initialization    & COCO-pretrained  & from scratch \\
@@ -1269,7 +1274,7 @@ modality-specific differences.
         Learning rate     & \multicolumn{2}{c}{$0.01$, fixed schedule} \\
         Weight decay      & \multicolumn{2}{c}{$5\times10^{-4}$} \\
         Warmup            & \multicolumn{2}{c}{3 epochs} \\
-        Batch (nominal)   & \multicolumn{2}{c}{3 (accumulated to 64)} \\
+        Batch (physical)  & \multicolumn{2}{c}{3 (accumulated to 64)} \\
         Image size        & $1088\times1440$ & $416$ \\
         HSV jitter        & on               & off \\
         Flip / translate / scale & on         & on \\
@@ -1290,7 +1295,7 @@ attained.
 
 \begin{table}[h]
     \centering
-    \caption{Detection performance of the RGB and NIR YOLO26-L models
+    \caption{Detection performance of the RGB and NIR YOLO26-L-seg models
              on the validation and held-out test splits. $F_1$ is the
              peak score over confidence, reported with the confidence
              threshold at which it occurs.}
@@ -1317,16 +1322,16 @@ localization depends most on well-trained low-level features, this
 pattern is consistent with the initialization asymmetry noted in
 Section~\ref{secModelArch}: the RGB model inherits edge, texture, and
 shape features from COCO pretraining, whereas the NIR model must learn
-its entire feature hierarchy from scratch on the roughly 983 training
-images, a dataset three orders of magnitude smaller than COCO.
+its entire feature hierarchy from scratch on the 983 training images, a
+dataset three orders of magnitude smaller than COCO.
 The gap is also consistent with the NIR modality's lower native spatial
 resolution: after demosaicing, each Ximea band is only
 409$\times$216 pixels (Section~\ref{secXimeaCamera}), so the NIR
 detector regresses box boundaries against coarser spatial detail
 regardless of initialization.
-The two models being otherwise architecturally identical, initialization
-and native spatial resolution are the two most plausible explanations
-for the performance difference.
+Because the two models are otherwise architecturally identical,
+initialization and native spatial resolution are the two most plausible
+explanations for the performance difference.
 Encouragingly, test performance closely tracks validation for both
 models (mAP@0.5:0.95 is in fact marginally higher on the test split
 than on validation), indicating that the leakage-free split of
@@ -1337,7 +1342,8 @@ models), marking a sensible single-frame operating point; the semantic map
 of Chapter~\ref{chapNBV} itself admits every detection above a lower
 minimum-confidence floor ($\tau = 0.1$) and relies on multi-view fusion to
 suppress the resulting weak false positives, so that faint but genuine
-detections are not discarded before they can be corroborated. Figure~\ref{figPRCurves} shows the precision--recall curves for the two
+detections are not discarded before they can be corroborated.
+Figure~\ref{figPRCurves} shows the precision--recall curves for the two
 detectors.
 
 \begin{figure}[h]
@@ -1417,7 +1423,7 @@ to the IoU~$\geq 0.5$ figures of Table~\ref{tabDetectionResults}.
 
 \begin{table}[h]
     \centering
-    \caption{Detection performance of the RGB and NIR YOLO26-L models
+    \caption{Detection performance of the RGB and NIR YOLO26-L-seg models
              on the test split, comparing the conventional
              IoU~$\geq 0.5$ matching threshold (repeated from
              Table~\ref{tabDetectionResults}) to the relaxed
@@ -1452,34 +1458,60 @@ as the semantic mapping and NBV planning of Chapter~\ref{chapNBV} do,
 is a more robust way to convert imperfect per-frame detections into
 reliable tree-level diagnoses.
 
-% \section{Limitations} \label{secDatasetLimitations}
+\section{Limitations} \label{secDatasetLimitations}
 
-% The dataset and detection results in this chapter should be read
-% against several limitations of the underlying data.
-% All annotated imagery comes from a single site, the Pittsburgh orchard,
-% collected on a single day; the second primary site (Frederick County,
-% VA) was collected but left unannotated, so no result in this chapter is
-% tested against a different orchard, cultivar, or training system.
-% The annotated dataset is also small, 983 training, 155 validation, and
-% 137 test images spanning 2{,}302 labeled instances, so the mAP figures
-% reported in Section~\ref{secDetectionResults} rest on a test set of
-% fewer than 150 images.
-% The cross-modal label transfer that produces NIR labels from RGB
-% annotations is itself a source of error rather than a clean ground
-% truth: even after an annotator reviewed and corrected every transferred
-% box, Table~\ref{tabCrossModalEval} shows that 3.5\% of frames yielded no
-% usable transferred prediction and roughly 18\% of the remaining boxes
-% still needed adjustment at the practical IoU-0.5 threshold, so the NIR
-% labels used for training depend on this correction pass rather than on
-% annotation performed directly from the NIR frame.
-% Finally, the RGB and NIR detectors are not compared on equal footing:
-% the RGB model is initialized from COCO-pretrained weights while the NIR
-% model is trained from scratch, since no pretrained checkpoint exists
-% for a 25-channel input, and the NIR modality's native resolution
-% (409x216 pixels after demosaicing) is far lower than the RGB frames, so
-% the mAP gap between the two models reflects these differences in
-% initialization and resolution as much as it reflects any difference in
-% the discriminative content of the two modalities.
+The dataset and detection results in this chapter should be read against
+several limitations of the underlying data.
+
+All annotated imagery comes from a single site, the Pittsburgh orchard,
+collected on a single day (Section~\ref{secDataCollection}); the second
+primary site in Frederick County, Virginia was collected but left
+unannotated, so no result in this chapter is tested against a different
+orchard, cultivar, or training system.
+The annotated dataset is also small, 983 training, 155 validation, and 137
+test images spanning 2{,}302 labeled instances
+(Table~\ref{tabClassBalance}), so the mAP figures reported in
+Section~\ref{secDetectionResults} rest on a test set of fewer than 150
+images.
+The leakage analysis of Section~\ref{secDatasetSplits} establishes that
+these splits are free of near-duplicate contamination, but a
+contamination-free split of a single day at a single site still cannot
+speak to generalization across sites; that question is deferred to the
+field deployment of Chapter~\ref{chapErwin}.
+
+The cross-modal label transfer that produces the NIR labels is itself a
+source of error rather than a clean ground truth.
+Even after an annotator reviewed and corrected every transferred box, 44
+of the 1{,}275 frames (3.5\%) yielded no usable transferred prediction and
+had to be annotated from scratch, and of the annotations on the remaining
+frames only 68.2\% were usable as issued at the practical IoU-0.5
+threshold (Table~\ref{tabCrossModalEval}).
+The NIR labels used for training therefore depend on this correction pass
+rather than on annotation performed directly from the NIR frame.
+
+The RGB and NIR detectors are likewise not compared on equal footing.
+The RGB model is initialized from COCO-pretrained weights while the NIR
+model is trained from scratch, since no pretrained checkpoint exists for a
+25-channel input, and the NIR modality's native resolution
+(409$\times$216 pixels after demosaicing) is far lower than that of the
+RGB frames.
+The mAP gap between the two models therefore reflects these differences in
+initialization and resolution as much as it reflects any difference in the
+discriminative content of the two modalities, and should not be read as
+evidence that the near-infrared bands are less informative.
+
+Finally, two results in this chapter are reported at a coarser granularity
+than the underlying system operates at.
+The spectral comparison of Section~\ref{secSpectralAnalysis} rests on
+per-class mean spectra from 14 annotated images, which is adequate to
+establish that the red-edge and near-infrared region separates diseased
+from healthy bark but not to characterize the size or consistency of that
+separation across a population of trees.
+And although the deployed model carries a segmentation head whose masks are
+what the semantic mapping pipeline of Chapter~\ref{chapNBV} consumes
+(Section~\ref{secModelArch}), those masks are learned from SAM2-derived
+annotations rather than hand-drawn ground truth, and every accuracy figure
+reported here is measured at the level of bounding boxes for comparision.
 
 \section{Summary} \label{secDatasetSummary}
 

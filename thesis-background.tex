@@ -38,7 +38,7 @@ Canopy variation between trees and seasons, severe self-occlusion from
 overlapping branches, thin branch geometry, and large swings
 in natural illumination across a single day all degrade the reliability of
 fixed-camera, fixed-trajectory sensing \cite{droukas2023survey}.
-These challenges are most acute for tasks like disease detection, that depend
+These challenges are most acute for tasks like disease detection that depend
 on fine visual cues rather than large, high-contrast objects such as fruit.
 Two complementary responses have emerged in the literature, though both remain
 relatively recent departures from the fixed-camera, fixed-trajectory norm in
@@ -63,7 +63,7 @@ view.
 Freeman and Kantor used an arm-mounted camera and a next-best-view planner to
 size apple fruitlets that were otherwise occluded from a single fixed
 viewpoint, demonstrating that active viewpoint selection improves measurement
-coverage in cluttered canopy \cite{Freeman2024AppleFruitletSizing}.
+coverage in a cluttered canopy \cite{Freeman2024AppleFruitletSizing}.
 Similar arm-based active sensing has been explored in greenhouse settings for
 locating and reconstructing specific plant parts under heavy occlusion
 \cite{Burusa2024AttentionDrivenNBVPlantParts,
@@ -185,8 +185,9 @@ disease-aware view selection.
 
 \section{Fire Blight Disease} \label{secFireBlight}
 
-Fire blight is a bacterial disease of pome fruit (apple, pear, crab apple, quince, etc.) and other rosaceous plants
-that has been recognized as a threat to North American orchards since the late
+Fire blight is a bacterial disease of pome fruit, including apple, pear, crab
+apple, and quince, and of other rosaceous plants.
+It has been recognized as a threat to North American orchards since the late
 eighteenth century and now occurs in more than sixty countries
 \cite{van1979FireBlight, acimovic2026fireblight}.
 Its combination of rapid spread, difficulty of in-season treatment, and
@@ -203,12 +204,12 @@ hosts that can serve as inoculum reservoirs near commercial plantings
 Annual losses and management costs attributable to fire blight in the United
 States exceed \$100 million \cite{Norelli2003FireBlightManagementTwentyFirst,
 acimovic2026fireblight}, and individual regional outbreaks have caused tens of
-millions of dollars in losses within a single season, including a single 2000
-epidemic in southwest Michigan that killed more than 220,000 trees, destroyed
+millions of dollars in losses within a single season.
+A 2000 epidemic in southwest Michigan killed more than 220,000 trees, destroyed
 over 240 hectares of apple orchards, and caused an estimated \$42 million in
-economic losses \cite{Norelli2003FireBlightManagementTwentyFirst}, a 2016
-outbreak in New York that killed half the trees in affected young orchards,
-and outbreaks in Washington State between 2017 and 2019 that caused
+economic losses \cite{Norelli2003FireBlightManagementTwentyFirst}.
+More recently, a 2016 outbreak in New York killed half the trees in affected
+young orchards, and outbreaks in Washington State between 2017 and 2019 caused
 approximately \$9 million in annual losses \cite{acimovic2026fireblight}.
 Internationally, an epidemic in Korla, China destroyed an estimated one
 million pear trees in 2017 and caused financial damage exceeding one billion
@@ -379,7 +380,7 @@ shepherd's crooks \cite{Linker2024MappingFireBlightCankersFRCNN}.
 
 These efforts establish that fire blight produces detectable visual and
 spectral signatures and that those signatures can be mapped at the orchard
-scale. However there are two limitations that hold true across nearly all of 
+scale. However, there are two limitations that hold true across nearly all of
 this prior work.
 First, these works target the foliar and floral symptoms of the 
 growing season, by which point the infection is already systemic and 
@@ -387,8 +388,8 @@ spreading; the canker and shepherd's crook symptoms that must be found
 and pruned during the dormant season, before they seed the next epidemic
 (Section~\ref{secFireBlightCurrentSolutions}), go largely unaddressed.
 Second, the aerial and UAV platforms that provide orchard-scale coverage do
-so at the cost of resolution and coverage, and several of these
-studies report that dense foliage occludes symptoms beneath the tree crown,
+so at the cost of resolution and access to the canopy interior, and several of
+these studies report that dense foliage occludes symptoms beneath the tree crown,
 limiting what an overhead pass can
 resolve~\cite{Bagheri2020AerialDetectionFireBlightPear,
 Mahmud2023MaskRCNNFireBlight}.

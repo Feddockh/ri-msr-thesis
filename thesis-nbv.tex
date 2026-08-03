@@ -342,6 +342,22 @@ constraints that apply in the field also apply in simulation.
     \label{figBlenderTrees}
 \end{figure}
 
+\subsubsection{Simulation Detector} \label{secSimDetector}
+
+The 2D detector of Chapter~\ref{chapDataset} was trained on real orchard
+imagery, whose appearance differs from that of the Blender-rendered trees, so a
+separate detector variant was prepared for the simulation experiments.
+We collected $849$ images of the simulated trees from random viewing angles and
+fine-tuned the existing model on them, leaving the architecture, class
+definitions, and confidence handling of Section~\ref{secModelArch} unchanged.
+This simulation-fine-tuned variant is the detector used for every simulation
+result reported in Section~\ref{secSimResults}; the field experiments of
+Chapter~\ref{chapErwin} use the real-image detector of
+Section~\ref{secDetectionResults} instead.
+Because the two variants differ only in the imagery they were fine-tuned on,
+and because all three planners are compared against the same detector within
+each setting, the planner comparison is unaffected by this substitution.
+
 To increase canopy diversity without the cost of modeling additional trees,
 each tree was augmented by rotating it about the vertical axis in
 $60^\circ$ increments, yielding up to six distinct orientations per tree
@@ -575,7 +591,7 @@ each ray would encounter, averaged over a set of rays $R$:
 \begin{equation}
 \mathrm{IG}(v) = \frac{1}{|R|} \sum_{r \in R} U_r,
 \qquad
-U_r = \sum_{i=0}^{N_r} \mathbf{1}\!\left\{ \mathcal{O}(p_{r,i}) = \text{unknown} \right\},
+U_r = \sum_{i=1}^{N_r} \mathbf{1}\!\left\{ \mathcal{O}(p_{r,i}) = \text{unknown} \right\},
 \label{eqVolIG}
 \end{equation}
 where $p_{r,i}$ is the $i$-th sampled point along ray $r$, $N_r$ is the
@@ -672,7 +688,7 @@ $\beta \in [0,1]$:
 \label{eqSemIG}
 \end{equation}
 \begin{equation}
-S_r = N \sum_{i=0}^{N_r} \left( 1 - c(p_{r,i}) \right) \mathbf{1}\!\left\{ \mathcal{O}(p_{r,i}) = \text{occupied} \right\},
+S_r = N \sum_{i=1}^{N_r} \left( 1 - c(p_{r,i}) \right) \mathbf{1}\!\left\{ \mathcal{O}(p_{r,i}) = \text{occupied} \right\},
 \label{eqSemGainRay}
 \end{equation}
 where $U_r$ is the unknown-voxel count from Equation~\ref{eqVolIG},
@@ -785,7 +801,7 @@ Predictions and ground truth are accumulated across all trees and matched
 with the same procedure, applied independently at each of ten distance
 thresholds from $0.02$\,m to $0.20$\,m in steps of $0.02$\,m.
 The area under each per-class precision--recall curve gives that class's
-average precision, mAP averages over all classes present in either the
+average precision; mAP then averages over all classes present in either the
 predicted or ground-truth set, and over the ten thresholds.
 Classes with predictions but no ground truth are included in the average
 rather than excluded, so that false detections on symptom-free trees are
@@ -823,7 +839,7 @@ simulation so that the two settings remain comparable, which is why the
 per-viewpoint curves of all planners coincide over the first few
 viewpoints.
 The detector deployed in simulation is the model fine-tuned on simulation
-imagery (Section~\ref{secDetectionResults}).
+imagery (Section~\ref{secSimDetector}).
 All planning parameters are listed in Table~\ref{tabPlanningParams}.
 
 \begin{table}[h]

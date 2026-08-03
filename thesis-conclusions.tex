@@ -32,7 +32,7 @@ symptomatic trees in a working orchard.
 Its central finding is that deciding where to look next is worth as much
 as looking more carefully: a planner that spends its viewpoints resolving
 uncertainty about disease, rather than uncertainty about geometry, more
-than doubles the detection accuracy of a complete fixed scan at the halfway
+than doubles the detection accuracy of a fixed scan at the halfway
 point of the inspection.
 
 \section{Future Work} \label{secFutureWork}
@@ -65,20 +65,29 @@ comparison exposed: the pretrained low-level features and higher native
 spatial resolution that account for most of the RGB model's advantage,
 and the NIR sensitivity to physiological changes that accompany infection
 before they become obvious in visible light.
-That the NIR detector draws essentially level with RGB on cankers once
-boundary ambiguity is discounted, at 0.595 against 0.594 mAP@0.3, despite
-learning from scratch on fewer than a thousand images, suggests the
-modality is underused rather than uninformative.
+That the NIR detector trails RGB by only 0.031 mAP@0.3 once boundary
+ambiguity is discounted (0.703 against 0.734,
+Table~\ref{tabDetectionResults03}), despite learning from scratch on fewer
+than a thousand images, suggests the modality is underused rather than
+uninformative.
 
-The second is to move from bounding boxes toward semantic segmentation.
-The failure-mode analysis of Section~\ref{secDetectionResults} showed that
+The second is to supervise and evaluate the segmentation head directly.
+The deployed model already predicts masks, and it is those masks the
+semantic map consumes (Section~\ref{secProjection}), but they are learned
+from SAM2-derived masks rather than from hand-drawn ground truth, and
+accuracy is measured only at the level of bounding boxes
+(Section~\ref{secModelArch}).
+That measurement is the weaker part.
+The failure-mode analysis of Section~\ref{secFailureModes} showed that
 boxes are a poor primitive for symptoms that stretch irregularly along a
 branch with no clear start or end: predictions land on the right tissue
 and are scored as failures anyway because their boxes do not align with an
 equally arbitrary ground-truth box.
-Segmentation would describe a symptom's actual extent and would feed the
-semantic map more precisely than a box can.
-The obstacle is annotation cost, since segmentation labels are far slower
+Mask-level ground truth would describe a symptom's actual extent, would
+score the detector on the output the map actually uses, and would let the
+segmentation head be trained against human judgment rather than against
+another model's output.
+The obstacle is annotation cost, since mask labels are far slower
 to produce by hand, and the model that would make labeling fast is the
 very thing being trained.
 This is the same circularity the SAM2 tool of Appendix~\ref{apxSAM2}
@@ -164,8 +173,8 @@ Apple is a globally significant crop, fire blight now occurs in more than
 sixty countries, and the labor available to scout for it is shrinking
 nearly everywhere at once.
 Losses to plant disease are, ultimately, losses of food, and tools that
-prevent them (applied earlier, more precisely, and with less
-labor) compound into a food supply that is both larger and steadier than
+prevent them --- applied earlier, more precisely, and with less labor ---
+compound into a food supply that is both larger and steadier than
 it would otherwise be.
 This thesis contributes one piece of that: the demonstration that a robot
 can look at a tree, decide for itself where to look next, and come away

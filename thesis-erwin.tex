@@ -157,9 +157,10 @@ which fuses the resulting semantic point cloud into the semantic OctoMap
 NBV selection loop of Algorithm~\ref{algNBV}; and the manipulator control
 node, which plans and executes collision-free motions to the selected
 viewpoint. This modular decomposition is what allows the perception
-front-end to be swapped (for example, between the simulation-fine-tuned and
-real-image detector variants of Section~\ref{secDetectionResults}) without
-altering the mapping or planning stages.
+front-end to be swapped (for example, between the simulation-fine-tuned
+variant of Section~\ref{secSimDetector} and the real-image detector of
+Section~\ref{secDetectionResults}) without altering the mapping or planning
+stages.
 
 \subsection{Perception Pipeline} \label{secPerceptionPipeline}
 
@@ -232,7 +233,8 @@ perception--action loop.
 \end{figure}
 
 Table~\ref{tabStereoTiming} traces the optimization path, with all times
-measured on a laptop RTX 4090 GPU. Out of the box, the ViT-Large variant
+measured on a laptop RTX 4090 GPU; the platform's desktop RTX 4070
+(Section~\ref{secSystemArch}) showed similar performance. Out of the box, the ViT-Large variant
 took $3.8$\,s per frame at the full $1440\times1080$ flash resolution with
 the default $32$ disparity refinement iterations, and the ViT-Small
 variant $3.2$\,s. Halving the refinement iterations to $16$ brought
@@ -247,7 +249,8 @@ $2$\,ms of postprocessing.
 \begin{table}[h]
 \centering
 \caption{FoundationStereo inference time per frame at each optimization
-         step, measured on a laptop RTX 4090 GPU. The online configuration
+         step, measured on a laptop RTX 4090 GPU; the platform's desktop
+         RTX 4070 showed similar performance. The online configuration
          (last row) additionally incurs $5$\,ms of preprocessing and
          $2$\,ms of postprocessing.}
 \label{tabStereoTiming}
@@ -353,7 +356,7 @@ deliberately distinct from the Pittsburgh orchard whose imagery was used to
 train the detector (Section~\ref{secDetectionResults}): no images from the
 evaluation site were used during training, so the field results measure
 performance under a genuine train--test domain gap. The number of trees was
-limited to 12 for two practical reasons: each tree had to be inspected by
+limited to 12 since each tree had to be inspected by
 all three planners within a three-day site visit.
 
 \begin{figure}[t]
@@ -563,7 +566,7 @@ higher per-view uncertainty of real imagery: when any single observation is
 noisier, the value of deliberately revisiting ambiguous regions, precisely
 what the semantic information gain of Equation~\ref{eqSemIG} rewards, rises
 relative to a fixed scan that observes each region only once. Part of the
-lead may also come earlier still, from candidate generation: because the
+lead may also originate earlier, in candidate generation: because the
 semantic planner already targets voxels the map regards as possibly
 symptomatic (Section~\ref{secSemanticNBVPlanner}), even its first
 viewpoints could be biased toward likely-diseased regions rather than
@@ -572,17 +575,19 @@ toward geometry in general, though we have not measured this directly.
 The flash-illuminated sensing behaved as
 intended under variable outdoor lighting, suppressing the cast shadows
 that degrade ambient-light imaging of bark (Section~\ref{secFlirCamera}),
-which is the most likely reason the detector generalized across the
-domain gap without site-specific retraining. The consistency of
-detection performance between the training orchard and the evaluation
-site, despite no overlap in imagery, supports the conclusion that the
-learned symptom representations and the flash-illuminated pipeline
-transfer to new orchards rather than overfitting to a single site.
-The right panel of Figure~\ref{figSplatAnnotation} gives a visual sense
-of the resulting map quality overlaid onto the splats: the detections 
-the semantic planner
-accumulated on tree 9 fall on the same regions of the canopy as the
-independently annotated ground truth.
+which is the most likely reason the detector remained usable across the
+domain gap without site-specific retraining.
+The system produced disease maps of usable quality at a site whose imagery
+was never seen during training, which is consistent with the learned symptom
+representations and the flash-illuminated pipeline transferring to new
+orchards.
+We stop short of a stronger claim, however: the detection metrics reported in
+Chapter~\ref{chapDataset} are 2D bounding-box scores on held-out Pittsburgh
+imagery, whereas those reported above are 3D centroid-matched scores on Penn
+State trees (Section~\ref{secSimSetup}).
+The two are computed differently enough that they cannot be compared directly,
+so this work does not establish how much detector accuracy is retained across
+sites; a like-for-like cross-site evaluation remains future work.
 
 The main failure mode encountered in the field involved the arm's first
 motions at a new tree. Before the map has been populated, the motion
