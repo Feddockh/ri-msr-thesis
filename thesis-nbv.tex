@@ -85,6 +85,8 @@ integrated by ray casting.
 For each measured point, a ray is traced from the camera origin to the
 endpoint: voxels traversed along the ray are updated toward free space,
 while the voxel at the endpoint is updated toward occupied space.
+Figure~\ref{figRayCasting} illustrates this update for a single ray,
+including the voxels outside the ray's path that remain unknown.
 
 \begin{figure}[h]
     \centering
@@ -308,7 +310,7 @@ simulation of the robot, its manipulator, and its stereo camera
 (Figure~\ref{figSimulation}).
 Five symptomatic apple trees were generated, each carrying between five and
 eight cankers and between five and eight shepherd's crooks distributed
-across varying canopy geometries.
+across varying canopy geometries (Figure~\ref{figBlenderTrees}).
 Symptoms were placed to reflect realistic outbreak patterns, deliberately
 including instances that are occluded or awkward to view from a frontal
 vantage point, so that the simulation would reward planners capable of
@@ -342,6 +344,15 @@ constraints that apply in the field also apply in simulation.
     \label{figBlenderTrees}
 \end{figure}
 
+To increase canopy diversity without the cost of modeling additional trees,
+each tree was augmented by rotating it about the vertical axis in
+$60^\circ$ increments, yielding up to six distinct orientations per tree
+and up to $30$ unique evaluation configurations across the five trees.
+Because each rotation presents a different pattern of self-occlusion and a
+different distribution of symptoms relative to the frontal viewing plane,
+these augmentations exercise the planners on a wider range of
+viewing challenges than five static trees would.
+
 \subsubsection{Simulation Detector} \label{secSimDetector}
 
 The 2D detector of Chapter~\ref{chapDataset} was trained on real orchard
@@ -357,15 +368,6 @@ Section~\ref{secDetectionResults} instead.
 Because the two variants differ only in the imagery they were fine-tuned on,
 and because all three planners are compared against the same detector within
 each setting, the planner comparison is unaffected by this substitution.
-
-To increase canopy diversity without the cost of modeling additional trees,
-each tree was augmented by rotating it about the vertical axis in
-$60^\circ$ increments, yielding up to six distinct orientations per tree
-and up to $30$ unique evaluation configurations across the five trees.
-Because each rotation presents a different pattern of self-occlusion and a
-different distribution of symptoms relative to the frontal viewing plane,
-these augmentations exercise the planners on a wider range of
-viewing challenges than five static trees would.
 
 \subsection{Simulation Ground Truth} \label{secSimGT}
 
@@ -780,16 +782,16 @@ Pooling ensures that symptom-dense trees contribute in proportion to their
 symptom count and avoids the undefined per-tree scores that arise on
 healthy trees with no symptoms.
 
-The first metric is the maximum F1 score.
+The first metric is the max-F1 score.
 Predictions are sorted by descending confidence and admitted incrementally;
 at each implicit confidence threshold, the admitted predictions are matched
 greedily to ground-truth points of the same class in ascending order of
 distance, subject to the threshold $t$ and with the splitting and merging
 above applied.
 A matched prediction is a true positive, an unmatched prediction a false
-positive, and an unmatched ground-truth point a false negative; F1 is the
-harmonic mean of the resulting precision and recall, and we report the
-maximum F1 attained over the confidence sweep.
+positive, and an unmatched ground-truth point a false negative; $F_1$ is
+the harmonic mean of the resulting precision and recall, and we report the
+max-F1 attained over the confidence sweep.
 The matching threshold is set to $t = 0.10$\,m, chosen empirically to
 tolerate small centroid-localization noise while remaining tight enough to
 separate neighboring symptoms.
@@ -899,7 +901,7 @@ or disease detection.
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{l ccc}
 \toprule
-Planner & mAP & F1 & Cov. (\%) \\
+Planner & mAP & Max-F1 & Cov. (\%) \\
 \midrule
 \multicolumn{4}{l}{\textit{Viewpoint 15}} \\
 Baseline   & 0.167 & 0.273 & 37.88 \\

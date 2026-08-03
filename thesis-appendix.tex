@@ -16,8 +16,8 @@ SAM2's output automatically. This tool, along with the code used to
 train and evaluate the detectors of
 Chapter~\ref{chapDataset}, is publicly
 available\footnote{\url{https://github.com/Feddockh/fireblight_models}}.
-For each labeled box, the tool prompts SAM2 (initialized from a base
-ViT-H checkpoint, or from a fine-tuned checkpoint once one exists) with
+For each labeled box, the tool prompts SAM2 (initialized from the large
+Hiera backbone, or from a fine-tuned checkpoint once one exists) with
 the box and generates a set of candidate masks; the annotator steps
 through these proposals and saves the one that correctly matches the
 symptom, shown in Figure~\ref{figSamTool}.
@@ -43,9 +43,8 @@ above, and this reviewed batch is used to fine-tune SAM2's mask
 decoder on the specific appearance of fire blight symptoms.
 Once the fine-tuned decoder produces reliably correct top-ranked
 proposals, the tool is re-run in an automatic mode that saves the
-highest-confidence mask for every remaining unannotated object without
-displaying it for review, leaving only objects the annotator had not
-already labeled to be filled in this way.
+highest-confidence mask for every object the annotator has not already
+labeled, without displaying it for review.
 This fine-tune-then-automate loop is what makes exhaustive mask
 annotation across the full dataset practical.
 

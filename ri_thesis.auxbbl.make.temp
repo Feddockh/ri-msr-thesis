@@ -1,0 +1,676 @@
+}
+}
+}
+}
+}
+}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\bibdata{bibliography/references}
+\bibstyle{plainnat}
+\citation{Acimovic2023RootstockFireBlight,acimovic2026fireblight}
+\citation{acimovic2026fireblight}
+\citation{acimovic2026fireblight}
+\citation{acimovic2026fireblight,Ivey2016OhioAdvicePost}
+\citation{Bagheri2018DetectionFireBlightPearHyperspectral}
+\citation{Bagheri2018DetectionFireBlightPearHyperspectral,Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}
+\citation{Bagheri2020AerialDetectionFireBlightPear}
+\citation{Bagheri2020AerialDetectionFireBlightPear,kang2020DroneDetectionFireBlightPear,schoofs2020UAVFireBlightPearSpectral,Xiao2022UAVFireBlightAppleMultispectral}
+\citation{Bagheri2020AerialDetectionFireBlightPear,Mahmud2023MaskRCNNFireBlight}
+\citation{Bagheri2020AerialDetectionFireBlightPear,Mahmud2023MaskRCNNFireBlight}
+\citation{Bajcsy1988ActivePerception}
+\citation{Burusa2024AttentionDrivenNBVPlantParts}
+\citation{Burusa2024AttentionDrivenNBVPlantParts,Burusa2024SemanticsAwareNBVPlantParts}
+\citation{Burusa2024AttentionDrivenNBVPlantParts,Burusa2024SemanticsAwareNBVPlantParts}
+\citation{Burusa2024SemanticsAwareNBVPlantParts}
+\citation{Burusa2024SemanticsAwareNBVPlantParts}
+\citation{Connolly1985NextBestViewDetermination}
+\citation{cvat}
+\citation{Delmerico2018VolumeticIGFormulation}
+\citation{detone2018superpoint}
+\citation{droukas2023survey}
+\citation{droukas2023survey}
+\citation{droukas2023survey}
+\citation{droukas2023survey}
+\citation{droukas2023survey}
+\citation{droukas2023survey,Freeman2024AppleFruitletSizing}
+\citation{Freeman2024AppleFruitletSizing}
+\citation{Freeman2024AppleFruitletSizing}
+\citation{Freeman2024AppleFruitletSizing}
+\citation{Freeman2024AppleFruitletSizing}
+\citation{Gaci2023VisibleNIRDataset}
+\citation{gerlach2025usapple}
+\citation{gerlach2025usapple}
+\citation{gerlach2025usapple}
+\citation{gerlach2025usapple}
+\citation{gerlach2025usapple}
+\citation{gerlach2025usapple}
+\citation{gerlach2025usapple,acimovic2026fireblight}
+\citation{hirschmuller2008sgm}
+\citation{Holland2025WisconsinFireBlightManagement}
+\citation{Holland2025WisconsinFireBlightManagement}
+\citation{hornung13octomap}
+\citation{hornung13octomap}
+\citation{Isler2016IGFormulation}
+\citation{Isler2016IGFormulation,Delmerico2018VolumeticIGFormulation}
+\citation{kang2020DroneDetectionFireBlightPear}
+\citation{kerbl20233dgs}
+\citation{Kurihara2022DetectionValsaCankerHyperspectralCanker}
+\citation{lindenberger2023lightglue}
+\citation{Linker2024MappingFireBlightCankersFRCNN}
+\citation{Linker2024MappingFireBlightCankersFRCNN}
+\citation{Linker2024MappingFireBlightCankersFRCNN}
+\citation{liu2023groundingdino}
+\citation{Mahmud2023MaskRCNNFireBlight}
+\citation{Mahmud2023MaskRCNNFireBlight}
+\citation{Mass2024ErwiamDataset}
+\citation{Norelli2003FireBlightManagementTwentyFirst}
+\citation{Norelli2003FireBlightManagementTwentyFirst,Acimovic2023RootstockFireBlight,acimovic2026fireblight}
+\citation{Norelli2003FireBlightManagementTwentyFirst,acimovic2026fireblight}
+\citation{Norelli2003FireBlightManagementTwentyFirst,acimovic2026fireblight}
+\citation{Norelli2003FireBlightManagementTwentyFirst,acimovic2026fireblight}
+\citation{Peter2023PennStateExtension}
+\citation{Peter2023PennStateExtension}
+\citation{Peter2023PennStateExtension}
+\citation{ravi2024sam2}
+\citation{ravi2024sam2}
+\citation{sandler2018mobilenetv2}
+\citation{scharstein2002middlebury}
+\citation{schoenberger2016sfm}
+\citation{schoofs2020UAVFireBlightPearSpectral}
+\citation{Silwal2021FlashCamera}
+\citation{Silwal2021FlashCamera}
+\citation{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}
+\citation{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf,Kurihara2022DetectionValsaCankerHyperspectralCanker}
+\citation{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf,Kurihara2022DetectionValsaCankerHyperspectralCanker}
+\citation{Sun2023CurrentSituationChina,acimovic2026fireblight}
+\citation{tancik2023nerfstudio}
+\citation{van1979FireBlight}
+\citation{van1979FireBlight,acimovic2026fireblight}
+\citation{van1979FireBlight,acimovic2026fireblight}
+\citation{van1979FireBlight,Zeng2023PathogenSpotlightErwiniaAmylovora}
+\citation{veres2024DetectionFireBlightPearMultiChannel}
+\citation{wen2025foundationstereozeroshotstereomatching}
+\citation{wen2025foundationstereozeroshotstereomatching}
+\citation{wen2025foundationstereozeroshotstereomatching}
+\citation{Xiao2022UAVFireBlightAppleMultispectral}
+\citation{yolo26_ultralytics}
+\citation{Zeng2020View}
+\fi}
+\fi}
+\gdef \@abspage@last{129}
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\global\let\hyper@last\relax 
+\global\let\oldcontentsline\contentsline
+\global\let\oldnewlabel\newlabel
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\hyper@newdestlabel[2]{}
+\@setckpt{thesis-background}{
+\@setckpt{thesis-conclusions}{
+\@setckpt{thesis-dataset}{
+\@setckpt{thesis-erwin}{
+\@setckpt{thesis-introduction}{
+\@setckpt{thesis-nbv}{
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@line}{0}
+\setcounter{ALG@line}{0}
+\setcounter{ALG@line}{0}
+\setcounter{ALG@line}{11}
+\setcounter{ALG@line}{11}
+\setcounter{ALG@line}{11}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@nested}{0}
+\setcounter{ALG@nested}{0}
+\setcounter{ALG@nested}{0}
+\setcounter{ALG@nested}{0}
+\setcounter{ALG@nested}{0}
+\setcounter{ALG@nested}{0}
+\setcounter{algorithm}{0}
+\setcounter{algorithm}{0}
+\setcounter{algorithm}{0}
+\setcounter{algorithm}{1}
+\setcounter{algorithm}{1}
+\setcounter{algorithm}{1}
+\setcounter{ALG@rem}{0}
+\setcounter{ALG@rem}{0}
+\setcounter{ALG@rem}{0}
+\setcounter{ALG@rem}{0}
+\setcounter{ALG@rem}{0}
+\setcounter{ALG@rem}{0}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{bookmark@seq@number}{18}
+\setcounter{bookmark@seq@number}{42}
+\setcounter{bookmark@seq@number}{6}
+\setcounter{bookmark@seq@number}{60}
+\setcounter{bookmark@seq@number}{77}
+\setcounter{bookmark@seq@number}{83}
+\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{0}
+\setcounter{caption@flags}{2}
+\setcounter{chapter}{1}
+\setcounter{chapter}{2}
+\setcounter{chapter}{3}
+\setcounter{chapter}{4}
+\setcounter{chapter}{5}
+\setcounter{chapter}{6}
+\setcounter{continuedfloat}{0}
+\setcounter{continuedfloat}{0}
+\setcounter{continuedfloat}{0}
+\setcounter{continuedfloat}{0}
+\setcounter{continuedfloat}{0}
+\setcounter{continuedfloat}{0}
+\setcounter{enumi}{0}
+\setcounter{enumi}{0}
+\setcounter{enumi}{0}
+\setcounter{enumi}{0}
+\setcounter{enumi}{0}
+\setcounter{enumi}{0}
+\setcounter{enumii}{0}
+\setcounter{enumii}{0}
+\setcounter{enumii}{0}
+\setcounter{enumii}{0}
+\setcounter{enumii}{0}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{enumiv}{0}
+\setcounter{enumiv}{0}
+\setcounter{enumiv}{0}
+\setcounter{enumiv}{0}
+\setcounter{enumiv}{0}
+\setcounter{equation}{0}
+\setcounter{equation}{0}
+\setcounter{equation}{0}
+\setcounter{equation}{0}
+\setcounter{equation}{1}
+\setcounter{equation}{9}
+\setcounter{figure}{0}
+\setcounter{figure}{0}
+\setcounter{figure}{12}
+\setcounter{figure}{15}
+\setcounter{figure}{2}
+\setcounter{figure}{7}
+\setcounter{float@type}{16}
+\setcounter{float@type}{16}
+\setcounter{float@type}{16}
+\setcounter{float@type}{16}
+\setcounter{float@type}{16}
+\setcounter{float@type}{16}
+\setcounter{footnote}{0}
+\setcounter{footnote}{0}
+\setcounter{footnote}{0}
+\setcounter{footnote}{0}
+\setcounter{footnote}{0}
+\setcounter{footnote}{0}
+\setcounter{Hfootnote}{0}
+\setcounter{Hfootnote}{0}
+\setcounter{Hfootnote}{0}
+\setcounter{Hfootnote}{0}
+\setcounter{Hfootnote}{0}
+\setcounter{Hfootnote}{0}
+\setcounter{Item}{0}
+\setcounter{Item}{0}
+\setcounter{Item}{0}
+\setcounter{Item}{0}
+\setcounter{Item}{0}
+\setcounter{Item}{0}
+\setcounter{KVtest}{1}
+\setcounter{KVtest}{1}
+\setcounter{KVtest}{1}
+\setcounter{KVtest}{1}
+\setcounter{KVtest}{1}
+\setcounter{KVtest}{1}
+\setcounter{lofdepth}{1}
+\setcounter{lofdepth}{1}
+\setcounter{lofdepth}{1}
+\setcounter{lofdepth}{1}
+\setcounter{lofdepth}{1}
+\setcounter{lofdepth}{1}
+\setcounter{lotdepth}{1}
+\setcounter{lotdepth}{1}
+\setcounter{lotdepth}{1}
+\setcounter{lotdepth}{1}
+\setcounter{lotdepth}{1}
+\setcounter{lotdepth}{1}
+\setcounter{mpfootnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{page}{16}
+\setcounter{page}{49}
+\setcounter{page}{5}
+\setcounter{page}{73}
+\setcounter{page}{92}
+\setcounter{page}{98}
+\setcounter{paragraph}{0}
+\setcounter{paragraph}{0}
+\setcounter{paragraph}{0}
+\setcounter{paragraph}{0}
+\setcounter{paragraph}{0}
+\setcounter{paragraph}{0}
+\setcounter{parentequation}{0}
+\setcounter{parentequation}{0}
+\setcounter{parentequation}{0}
+\setcounter{parentequation}{0}
+\setcounter{parentequation}{0}
+\setcounter{parentequation}{0}
+\setcounter{part}{0}
+\setcounter{part}{0}
+\setcounter{part}{0}
+\setcounter{part}{0}
+\setcounter{part}{0}
+\setcounter{part}{0}
+\setcounter{@pps}{0}
+\setcounter{@pps}{0}
+\setcounter{@pps}{0}
+\setcounter{@pps}{0}
+\setcounter{@pps}{0}
+\setcounter{@pps}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{@ppsaveapp}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{@ppsavesec}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{section}{2}
+\setcounter{section}{2}
+\setcounter{section}{4}
+\setcounter{section}{5}
+\setcounter{section}{5}
+\setcounter{section}{8}
+\setcounter{section@level}{0}
+\setcounter{section@level}{0}
+\setcounter{section@level}{0}
+\setcounter{section@level}{0}
+\setcounter{section@level}{0}
+\setcounter{section@level}{0}
+\setcounter{subfigure}{0}
+\setcounter{subfigure}{0}
+\setcounter{subfigure}{0}
+\setcounter{subfigure}{0}
+\setcounter{subfigure}{0}
+\setcounter{subfigure}{0}
+\setcounter{subfigure@save}{0}
+\setcounter{subfigure@save}{0}
+\setcounter{subfigure@save}{2}
+\setcounter{subfigure@save}{2}
+\setcounter{subfigure@save}{2}
+\setcounter{subfigure@save}{2}
+\setcounter{subparagraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{subsection}{0}
+\setcounter{subsection}{0}
+\setcounter{subsection}{0}
+\setcounter{subsection}{0}
+\setcounter{subsection}{0}
+\setcounter{subsection}{2}
+\setcounter{subsubsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{subtable}{0}
+\setcounter{subtable}{0}
+\setcounter{subtable}{0}
+\setcounter{subtable}{0}
+\setcounter{subtable}{0}
+\setcounter{subtable}{0}
+\setcounter{subtable@save}{0}
+\setcounter{subtable@save}{0}
+\setcounter{subtable@save}{0}
+\setcounter{subtable@save}{0}
+\setcounter{subtable@save}{0}
+\setcounter{subtable@save}{0}
+\setcounter{table}{0}
+\setcounter{table}{0}
+\setcounter{table}{0}
+\setcounter{table}{2}
+\setcounter{table}{2}
+\setcounter{table}{8}
+\@writefile{brf}{\backcite{Acimovic2023RootstockFireBlight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{Acimovic2023RootstockFireBlight}{{93}{6}{chapter.6}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{10}{2.3}{section.2.3}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{11}{2.3.2}{subsection.2.3.2}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{11}{2.3.2}{subsection.2.3.2}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{1}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{13}{2.3.3}{subsection.2.3.3}}}
+\@writefile{brf}{\backcite{acimovic2026fireblight}{{93}{6}{chapter.6}}}
+\@writefile{brf}{\backcite{Bagheri2018DetectionFireBlightPearHyperspectral}{{11}{2.3.2}{figure.caption.3}}}
+\@writefile{brf}{\backcite{Bagheri2018DetectionFireBlightPearHyperspectral}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Bagheri2020AerialDetectionFireBlightPear}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Bagheri2020AerialDetectionFireBlightPear}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Bagheri2020AerialDetectionFireBlightPear}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{Bagheri2020AerialDetectionFireBlightPear}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{Bajcsy1988ActivePerception}{{7}{2.2.1}{subsection.2.2.1}}}
+\@writefile{brf}{\backcite{Burusa2024AttentionDrivenNBVPlantParts}{{15}{2.4.2}{subsection.2.4.2}}}
+\@writefile{brf}{\backcite{Burusa2024AttentionDrivenNBVPlantParts}{{6}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{Burusa2024AttentionDrivenNBVPlantParts}{{9}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{Burusa2024SemanticsAwareNBVPlantParts}{{15}{2.4.2}{subsection.2.4.2}}}
+\@writefile{brf}{\backcite{Burusa2024SemanticsAwareNBVPlantParts}{{53}{4.1.2}{figure.caption.28}}}
+\@writefile{brf}{\backcite{Burusa2024SemanticsAwareNBVPlantParts}{{6}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{Burusa2024SemanticsAwareNBVPlantParts}{{9}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{Connolly1985NextBestViewDetermination}{{8}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{cvat}{{35}{3.5}{section.3.5}}}
+\@writefile{brf}{\backcite{Delmerico2018VolumeticIGFormulation}{{61}{4.3.3}{subsection.4.3.3}}}
+\@writefile{brf}{\backcite{Delmerico2018VolumeticIGFormulation}{{9}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{detone2018superpoint}{{84}{5.3.3}{subsection.5.3.3}}}
+\@writefile{brf}{\backcite{droukas2023survey}{{15}{2.4.2}{subsection.2.4.2}}}
+\@writefile{brf}{\backcite{droukas2023survey}{{2}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{droukas2023survey}{{5}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{droukas2023survey}{{5}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{droukas2023survey}{{5}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{droukas2023survey}{{6}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{Freeman2024AppleFruitletSizing}{{15}{2.4.2}{subsection.2.4.2}}}
+\@writefile{brf}{\backcite{Freeman2024AppleFruitletSizing}{{15}{2.4.2}{subsection.2.4.2}}}
+\@writefile{brf}{\backcite{Freeman2024AppleFruitletSizing}{{59}{4.3.1}{subsubsection*.34}}}
+\@writefile{brf}{\backcite{Freeman2024AppleFruitletSizing}{{6}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{Freeman2024AppleFruitletSizing}{{9}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{Gaci2023VisibleNIRDataset}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{1}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{1}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{1}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{13}{2.3.3}{subsection.2.3.3}}}
+\@writefile{brf}{\backcite{gerlach2025usapple}{{93}{6}{chapter.6}}}
+\@writefile{brf}{\backcite{hirschmuller2008sgm}{{79}{5.2.3}{subsection.5.2.3}}}
+\@writefile{brf}{\backcite{Holland2025WisconsinFireBlightManagement}{{13}{2.3.3}{subsection.2.3.3}}}
+\@writefile{brf}{\backcite{Holland2025WisconsinFireBlightManagement}{{13}{2.3.3}{subsection.2.3.3}}}
+\@writefile{brf}{\backcite{hornung13octomap}{{50}{4.1.1}{subsection.4.1.1}}}
+\@writefile{brf}{\backcite{hornung13octomap}{{50}{4.1}{section.4.1}}}
+\@writefile{brf}{\backcite{Isler2016IGFormulation}{{61}{4.3.3}{subsection.4.3.3}}}
+\@writefile{brf}{\backcite{Isler2016IGFormulation}{{9}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{Ivey2016OhioAdvicePost}{{11}{2.3.2}{subsection.2.3.2}}}
+\@writefile{brf}{\backcite{kang2020DroneDetectionFireBlightPear}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{kang2020DroneDetectionFireBlightPear}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{kerbl20233dgs}{{84}{5.3.3}{subsection.5.3.3}}}
+\@writefile{brf}{\backcite{Kurihara2022DetectionValsaCankerHyperspectralCanker}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Kurihara2022DetectionValsaCankerHyperspectralCanker}{{20}{3.1.2}{subsection.3.1.2}}}
+\@writefile{brf}{\backcite{Kurihara2022DetectionValsaCankerHyperspectralCanker}{{35}{3.4}{figure.caption.16}}}
+\@writefile{brf}{\backcite{lindenberger2023lightglue}{{84}{5.3.3}{subsection.5.3.3}}}
+\@writefile{brf}{\backcite{Linker2024MappingFireBlightCankersFRCNN}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Linker2024MappingFireBlightCankersFRCNN}{{15}{2.4.2}{subsection.2.4.2}}}
+\@writefile{brf}{\backcite{Linker2024MappingFireBlightCankersFRCNN}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{liu2023groundingdino}{{35}{3.5}{section.3.5}}}
+\@writefile{brf}{\backcite{Mahmud2023MaskRCNNFireBlight}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Mahmud2023MaskRCNNFireBlight}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Mahmud2023MaskRCNNFireBlight}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{Mahmud2023MaskRCNNFireBlight}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{Mass2024ErwiamDataset}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{Norelli2003FireBlightManagementTwentyFirst}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{Norelli2003FireBlightManagementTwentyFirst}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{Norelli2003FireBlightManagementTwentyFirst}{{1}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{Norelli2003FireBlightManagementTwentyFirst}{{13}{2.3.3}{subsection.2.3.3}}}
+\@writefile{brf}{\backcite{Norelli2003FireBlightManagementTwentyFirst}{{93}{6}{chapter.6}}}
+\@writefile{brf}{\backcite{Peter2023PennStateExtension}{{11}{2.3.2}{figure.caption.3}}}
+\@writefile{brf}{\backcite{Peter2023PennStateExtension}{{12}{2.3.3}{subsection.2.3.3}}}
+\@writefile{brf}{\backcite{Peter2023PennStateExtension}{{93}{6}{chapter.6}}}
+\@writefile{brf}{\backcite{ravi2024sam2}{{17}{3}{chapter.3}}}
+\@writefile{brf}{\backcite{ravi2024sam2}{{37}{3.5.2}{subsection.3.5.2}}}
+\@writefile{brf}{\backcite{sandler2018mobilenetv2}{{31}{3.3.2}{subsection.3.3.2}}}
+\@writefile{brf}{\backcite{scharstein2002middlebury}{{79}{5.2.3}{subsection.5.2.3}}}
+\@writefile{brf}{\backcite{schoenberger2016sfm}{{84}{5.3.3}{subsection.5.3.3}}}
+\@writefile{brf}{\backcite{schoofs2020UAVFireBlightPearSpectral}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{schoofs2020UAVFireBlightPearSpectral}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{Silwal2021FlashCamera}{{18}{3.1.1}{subsection.3.1.1}}}
+\@writefile{brf}{\backcite{Silwal2021FlashCamera}{{6}{2.1}{section.2.1}}}
+\@writefile{brf}{\backcite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}{{11}{2.3.2}{figure.caption.3}}}
+\@writefile{brf}{\backcite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}{{20}{3.1.2}{subsection.3.1.2}}}
+\@writefile{brf}{\backcite{Skoneczny2020DetectionFireBlightAppleHyperspectralLeaf}{{35}{3.4}{figure.caption.16}}}
+\@writefile{brf}{\backcite{Sun2023CurrentSituationChina}{{10}{2.3.1}{subsection.2.3.1}}}
+\@writefile{brf}{\backcite{tancik2023nerfstudio}{{84}{5.3.3}{subsection.5.3.3}}}
+\@writefile{brf}{\backcite{van1979FireBlight}{{10}{2.3}{section.2.3}}}
+\@writefile{brf}{\backcite{van1979FireBlight}{{11}{2.3.2}{subsection.2.3.2}}}
+\@writefile{brf}{\backcite{van1979FireBlight}{{11}{2.3.2}{subsection.2.3.2}}}
+\@writefile{brf}{\backcite{van1979FireBlight}{{1}{1}{chapter.1}}}
+\@writefile{brf}{\backcite{veres2024DetectionFireBlightPearMultiChannel}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{wen2025foundationstereozeroshotstereomatching}{{19}{3.1.1}{subsection.3.1.1}}}
+\@writefile{brf}{\backcite{wen2025foundationstereozeroshotstereomatching}{{38}{3.5.3}{subsection.3.5.3}}}
+\@writefile{brf}{\backcite{wen2025foundationstereozeroshotstereomatching}{{79}{5.2.3}{subsection.5.2.3}}}
+\@writefile{brf}{\backcite{Xiao2022UAVFireBlightAppleMultispectral}{{14}{2.4.1}{subsection.2.4.1}}}
+\@writefile{brf}{\backcite{Xiao2022UAVFireBlightAppleMultispectral}{{30}{3.3.1}{subsection.3.3.1}}}
+\@writefile{brf}{\backcite{yolo26_ultralytics}{{41}{3.6.1}{subsection.3.6.1}}}
+\@writefile{brf}{\backcite{Zeng2020View}{{8}{2.2.2}{subsection.2.2.2}}}
+\@writefile{brf}{\backcite{Zeng2023PathogenSpotlightErwiniaAmylovora}{{11}{2.3.2}{subsection.2.3.2}}}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces Motivation for active perception in orchard disease detection. \textit  {Top left:} a fixed camera's line of sight to a target is blocked by an occluding branch, while an articulated camera can move around the obstruction to keep the target in view. \textit  {Top right:} keeping the camera's field of view inside the flash's field of view keeps the frame evenly illuminated, whereas a camera view wider than the flash's leaves part of the frame unlit. \textit  {Bottom:} the same shepherd's crook imaged from farther away, at lower spatial resolution, and from closer, at higher spatial resolution.\relax }}{8}{figure.caption.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces Primary dormant-season fire blight symptoms used for detection. \textit  {Left:} a shepherd's crook, the wilted, blackened shoot tip that curls downward following systemic infection. \textit  {Right:} a fire blight canker, the dark, sunken bark lesion that shelters the bacteria through the dormant season and seeds the following spring's epidemic.\relax }}{12}{figure.caption.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.10}{\ignorespaces Mean spectral reflectance of diseased (positive) and healthy (negative) bark tissue across the Ximea NIR bands, averaged over the annotated regions of the 14 analyzed images. Healthy bark reflects more strongly across the full range, with the steepest divergence over the 675--760\,nm red-edge region.\relax }}{34}{figure.caption.16}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.11}{\ignorespaces Symptom annotation taxonomy. \textit  {Top row:} the one crook type and four canker subtypes originally defined in the labeling protocol, each shown with an example bounding box. \textit  {Bottom:} the four canker subtypes are merged into a single \emph  {canker} class for training and evaluation, leaving the two-class taxonomy (shepherd's crook, canker) used throughout this work.\relax }}{37}{figure.caption.18}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.12}{\ignorespaces Cross-modal label transfer from the flash RGB frame to the registered Ximea NIR frame. (1) A symptom is labeled with a bounding box on the RGB frame; (2) SAM2 converts the box to a mask; (3) per-pixel depth is read from the Foundation Stereo disparity map and the masked pixels are back-projected into 3D; (4) the 3D points are reprojected into the NIR frame using the calibrated inter-camera transform, yielding the transferred mask and box. A final SAM2 refinement on the NIR frame (not shown) optionally tightens the transferred mask.\relax }}{39}{figure.caption.19}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.13}{\ignorespaces Ground truth (left) versus the cross-modal label transfer pipeline's output (right), for two representative frames. Top: \subref {figCrossModalMedian}\nobreakspace  {}the median-quality case (mean IoU 0.458), the typical residual correction of tightening a box around the correct symptom. Bottom: \subref {figCrossModalBest}\nobreakspace  {}the best case (mean IoU 1.000), a perfect match requiring no annotator edit.\relax }}{41}{figure.caption.21}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.14}{\ignorespaces Precision--recall curves for the RGB (left) and NIR (right) detectors on the test split, shown per class (shepherd's crook, canker) and averaged across classes.\relax }}{44}{figure.caption.24}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.15}{\ignorespaces False negatives arising from ambiguous symptom boundaries. A prediction and its corresponding ground-truth box are colored red and yellow, respectively, when unmatched, and green and magenta, respectively, once matched. Top row: under the standard IoU\nobreakspace  {}$\geq 0.5$ matching rule, the detector's predictions (red, with confidence) correctly land on diseased branches, but their bounding boxes do not overlap the ground-truth boxes (yellow) closely enough, so the ground truth is scored as a false negative (``FN'') and the prediction as a false positive. Bottom row: the same boxes become true positives (green predictions, magenta ground truth) once the matching threshold is relaxed to IoU\nobreakspace  {}$\geq 0.3$.\relax }}{46}{figure.caption.25}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces Exploded view of the multi-modal camera rig showing the placement and mounting of each sensor.\relax }}{18}{figure.caption.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces The same fire blight canker viewed by each camera on the rig, at nearly the same position. \textit  {From left to right:} the flash stereo RGB camera (FLIR Firefly), the 25-band NIR multispectral camera (Ximea), the wide-angle stereo RGB camera (ZED2i), and, for reference, an iPhone 15 Pro Max.\relax }}{22}{figure.caption.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.3}{\ignorespaces Handheld data collection in the orchard. The operator holds the multi-modal camera rig by its rear handle, framing a young tree on the rig touchscreen and triggering capture by hand, while the Jetson and battery enclosure is carried in a backpack and connected to the rig by a cable bundle.\relax }}{23}{figure.caption.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.4}{\ignorespaces The initial, back-loaded camera rig design (Version 1, top) and the revised, front-loaded design (Version 2, bottom), each shown as an isometric CAD model, a side-profile CAD model, and the assembled hardware. Between Version 1 and Version 2, the flash stereo Firefly (gold, top, with its two imagers and central flash) and Ximea NIR (blue) mounts were reworked for front-loading and sliding locks were added for quick camera swaps in the field, and the spacing between the Firefly and Ximea cameras was reduced to increase field-of-view overlap; the ZED2i (black, bottom) remained mounted beneath both versions.\relax }}{24}{figure.caption.8}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.5}{\ignorespaces The final handheld capture interface, with large START and RECORD buttons, a readable status log, a slider column for flash duration, frame rate, Firefly exposure, and Ximea gain and exposure, dark-calibration and mid-calibration for flat-field correction (FFC) buttons, and enlarged flash RGB and Ximea NIR previews.\relax }}{25}{figure.caption.9}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.6}{\ignorespaces Intrinsic calibration of the flash stereo camera using the ROS 2 camera calibration tool with a ChArUco board. The inset shows the detected board pose, with identified ArUco marker IDs and the estimated board corners overlaid on the live camera feed.\relax }}{26}{figure.caption.10}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.7}{\ignorespaces The three orchards used in this work. \textit  {From left to right:} the severe, high-density commercial site near Pittsburgh, Pennsylvania; the mild, free-standing research block at the Alson H. Smith Jr.\ Agricultural Research and Extension Center in Frederick County, Virginia; and the moderate-severity, held-out test orchard at the Penn State Fruit Research and Extension Center in Adams County, Pennsylvania. \textit  {Top:} aerial maps of each block, with collection points marked in red. \textit  {Bottom:} representative sample trees from each site.\relax }}{29}{figure.caption.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.8}{\ignorespaces Assignment of images to the train (blue), validation (yellow), and test (red) splits along the capture timeline. The horizontal axis is time elapsed since the first capture; vertical grey lines mark the chunk boundaries used for the split. These chunks are assigned to splits by a randomized search that balances the canker-to-crook ratio across partitions, which as a result interspersed each split across the entire field walk rather than confining it to one contiguous block of time.\relax }}{32}{figure.caption.13}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3.9}{\ignorespaces Distribution of MobileNetV2 embedding cosine similarity over all image pairs, split into same-split pairs (top, blue) and cross-split pairs (bottom, red); counts are on a log scale and only pairs with similarity $\geq 0.7$ are shown. The same-split distribution crosses the 0.95 duplicate threshold (dashed line), as expected for consecutive frames of the same lesion, whereas the cross-split distribution stops well short of it, indicating no near-duplicate leakage across split boundaries.\relax }}{33}{figure.caption.14}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.10}{\ignorespaces Candidate generation in the volumetric and semantic planners, starting from the same semantic OctoMap (top), where grey voxels are occupied surfaces, red voxels carry a symptomatic class label, and the transparent green volume is the known free space carved out by ray casting. \textit  {Left:} the volumetric planner clusters geometric frontier voxels with $k$-means (clusters shown in orange, yellow, and cyan) and samples viewpoint candidates on a hemisphere facing each cluster centroid. \textit  {Right:} the semantic planner instead clusters occupied voxels of low semantic confidence (yellow) and samples candidates facing that centroid, concentrating the candidate set on contested disease evidence rather than on geometric unknowns. Viewpoint candidates are drawn as RGB coordinate frames.\relax }}{65}{figure.caption.41}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.11}{\ignorespaces Planner performance averaged across the five simulated symptomatic apple trees and their $60^\circ $ rotational augmentations. Curves show mean mAP (top), max-F1 (middle), and ROI coverage (bottom) over 30 viewpoints for the baseline grid scan (dark blue), the volumetric NBV planner (orange), and the semantic NBV planner (light blue). The corresponding field curves are reported in Section\nobreakspace  {}\ref  {secFieldResults} of Chapter\nobreakspace  {}\ref  {chapErwin}.\relax }}{70}{figure.caption.49}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.12}{\ignorespaces Semantic maps and arm configurations for the baseline (left), volumetric (middle), and semantic (right) planners on the same simulated tree, shown at viewpoint indices 10, 20, and 30 (top to bottom). Grey voxels are occupied surfaces, red and blue voxels carry symptomatic class labels, and the blue wireframe marks the ROI. The volumetric planner spends its early views mapping the ROI as a whole and so builds up the canopy more slowly, whereas the semantic planner concentrates on the tree and recovers symptoms in the interior of the canopy earlier and refines them more in later views.\relax }}{72}{figure.caption.50}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces Ray-casting occupancy update for a single sensor ray. A ray traced from the camera through the ROI to a measured surface point is converted by OctoMap into voxels updated toward free space along its path, a voxel updated toward occupied space at the surface it strikes, and voxels outside the ray's path left unknown (not visible).\relax }}{51}{figure.caption.27}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces A semantic OctoMap (left) built from a simulated symptomatic apple tree (right), with matched insets zooming into a single symptomatic branch in both the voxelized map and the underlying Blender mesh. Occupied voxels are gray by default and colored by fused disease class where a symptom has been detected: red for canker and green for shepherd's crook, matching the pair of nearby cankers and single shepherd's crook visible on the corresponding branch in the mesh inset.\relax }}{52}{figure.caption.28}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces End-to-end perception pipeline from a single captured frame to the fused semantic map. \textit  {Left:} the 2D detector output on the RGB frame, with the predicted class and confidence overlaid on the instance mask. \textit  {Center:} the resulting semantic point cloud, back-projected from the detection using stereo depth and the camera pose, shown relative to the manipulator. \textit  {Right:} the semantic OctoMap after this and prior views have been fused, with occupied voxels colored by disease class (Section\nobreakspace  {}\ref  {secSemanticOctoMap}).\relax }}{54}{figure.caption.29}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces The Gazebo simulation environment: the simulated Amiga-xArm6 platform positioned in front of a single Blender-rendered symptomatic apple tree, with the ROI wireframe box (Section\nobreakspace  {}\ref  {secOctoMapBase}) enclosing the tree. Each of the five trees is loaded and evaluated individually in this way, one at a time, rather than as a combined multi-tree orchard scene.\relax }}{56}{figure.caption.30}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.5}{\ignorespaces Blender-rendered symptomatic apple trees used in the simulated Gazebo evaluations, with an inset detail view of a modeled shepherd's crook. Each tree contains randomly distributed shepherd's crooks and cankers to reproduce realistic outbreak variability and geometric complexity.\relax }}{57}{figure.caption.31}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.6}{\ignorespaces Incremental OctoMap construction across three successive viewpoints (left to right) selected by the volumetric NBV planner of Section\nobreakspace  {}\ref  {secVolNBVPlanner}, shown before the semantic extension of Section\nobreakspace  {}\ref  {secSemanticExtension} is applied. Green voxels are free space, red voxels are occupied surfaces (the tree canopy and surrounding trellis structure), and the blue wireframe marks the ROI. As the arm moves to each new viewpoint, ray casting fills in previously unknown space within the ROI, most visibly in the canopy region and the ground plane beneath it.\relax }}{58}{figure.caption.33}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.7}{\ignorespaces Offline construction of the reachable-workspace model, left to right: the manipulator with no end-effector samples yet recorded; a sparse point cloud (green) of sampled end-effector positions after $10^6$ configurations have been evaluated; and the resulting dense point cloud once sampling is complete, approximating a sphere of reachable positions about the manipulator base. Each candidate viewpoint is checked against this precomputed volume before any per-candidate inverse kinematics is run.\relax }}{60}{figure.caption.35}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.8}{\ignorespaces Fixed midplane viewpoint grid used by the baseline planner. Each red-green-blue coordinate frame marks a viewpoint at which the arm stops to capture an image, and the white arrows trace the boustrophedon execution order from Start to End. The white wireframe at one viewpoint shows the camera frustum, and the dashed red rectangle shows its cross-section on the ROI midplane relative to the neighboring viewpoint's footprint, illustrating the overlap fraction $\rho $ of Equation\nobreakspace  {}\ref  {eqFootprint}.\relax }}{61}{figure.caption.36}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4.9}{\ignorespaces Ray marching through a candidate viewpoint's 70 rays, shown in three orthographic projections (xz, xy, yz) against the simulated tree's point cloud. Each sampled point along a ray is colored by its queried occupancy state $\mathcal  {O}(p_{r,i})$: unknown (green), free (yellow), or occupied (blue), with rays terminating at the first occupied voxel or the ROI boundary. The black star marks the candidate camera position and the gray star the previous camera position.\relax }}{63}{figure.caption.39}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces The autonomous disease inspection robot, Erwin, deployed in a dormant apple orchard at the Penn State Fruit Research and Extension Center in Adams County, Pennsylvania. \textit  {Left:} the assembled platform, with its principal components labeled: a desktop-grade computing enclosure, a GPS receiver, a LiDAR unit, a ground-marking spray unit, the multi-modal camera rig, a UFACTORY xArm6 manipulator, and the Farm-ng Amiga mobile base. \textit  {Right:} the arm reaching towards a dormant apple tree to acquire a close viewpoint during a field inspection.\relax }}{74}{figure.caption.51}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces System diagram of Erwin's per-tree inspection routine. The dashed groups within the NBV inspection loop are the perception pipeline (blue, Section\nobreakspace  {}\ref  {secPerceptionPipeline}) and the NBV planner (green, Algorithm\nobreakspace  {}\ref  {algNBV}).\relax }}{77}{figure.caption.52}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.3}{\ignorespaces Disparity maps computed by SGBM (left) and FoundationStereo (right) from the same simulated stereo pair of a dormant apple tree. SGBM leaves large invalid regions (gray) and blocky artifacts along the thin branches, while FoundationStereo recovers smooth, complete disparity down to the finest structures, including the small branches.\relax }}{79}{figure.caption.53}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.4}{\ignorespaces Effect of disparity-space speckle filtering on the back-projected point cloud. \textit  {Left:} without filtering, trailing pixels at depth discontinuities produce streaks of floating points around the branches. \textit  {Right:} the speckle filter removes most of the stray points at negligible computational cost.\relax }}{81}{figure.caption.55}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.5}{\ignorespaces The experimental orchard site at the Penn State Fruit Research and Extension Center. The aerial view shows the orchard block, with the zoomed inset (right) locating the 12 study trees: red dots mark the 10 symptomatic trees and green dots the 2 healthy trees, with white scale bars for reference. The photo inset (top left) shows the view from within the orchard rows during the deployment.\relax }}{83}{figure.caption.56}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.6}{\ignorespaces Ground-truth annotation and detections on field tree 9, shown at successive positions along an orbit around the tree. \textit  {Left:} the annotated Gaussian splat, with the manually annotated symptomatic regions highlighted in neon green. \textit  {Right:} the matching viewpoint with the semantic planner's fused OctoMap detections overlaid, showing detected cankers in red. At every position around the orbit, the detections occupy the same regions of the canopy as the annotations.\relax }}{90}{figure.caption.57}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.7}{\ignorespaces Planner performance averaged across the 12 dormant apple trees inspected in the field. Curves show mean mAP (top), max-F1 (middle), and ROI coverage (bottom) over 30 viewpoints for the baseline grid scan (dark blue), the volumetric NBV planner (orange), and the semantic NBV planner (light blue). The corresponding simulation curves are reported in Figure\nobreakspace  {}\ref  {figSimResults} of Chapter\nobreakspace  {}\ref  {chapNBV}.\relax }}{91}{figure.caption.59}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {A.1}{\ignorespaces The SAM2 box-to-mask annotation tool. The current mask proposal is overlaid in blue, with the existing box annotation outlined in red; green boxes mark objects already saved in the current frame. The status bar reports the image and object index, which of the candidate mask proposals is being viewed, and whether it has been saved, with keyboard controls to cycle proposals, save, skip, or regenerate.\relax }}{100}{figure.caption.60}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {A.2}{\ignorespaces The alignment mode of the modified SuperSplat editor. The phone-video splat of a field tree (left, in color) and the robot's stereo-fused point cloud of the same tree (right, gray) are loaded together in the scene manager; corresponding points picked on each (blue and orange markers) define a similarity transform, with per-pair residuals and the root-mean-square error reported in the alignment panel at the bottom right.\relax }}{101}{figure.caption.61}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {A.3}{\ignorespaces The annotation mode of the modified SuperSplat editor. Gaussians selected on a symptomatic region of the splat are assigned to the canker class and recolored with an adjustable-opacity overlay (green). The annotation panel at the bottom right manages the class list, overlay opacity, instance clustering distance, and centroid computation and export.\relax }}{102}{figure.caption.62}\protected@file@percent }
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {Median case (mean IoU 0.458).}}}{41}{subfigure.13.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {Best case (mean IoU 1.000).}}}{41}{subfigure.13.2}\protected@file@percent }
+\@writefile{lop}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Next-Best-View selection}}{62}{algorithm.1}\protected@file@percent }
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{lot}{\contentsline {table}{\numberline {3.1}{\ignorespaces Center wavelengths (nm) of the 25 Ximea spectral bands by position within the repeating 5$\times $5 mosaic tile that covers the sensor array.\relax }}{20}{table.caption.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.2}{\ignorespaces Principal attributes of the three orchards used in this work. The first two are the primary image-collection sites: the Pittsburgh block supplies the detector's annotated training and validation data, while the Virginia block was collected but left unannotated. The Penn State block is used only to test the full system; its image-set count excludes the ZED2i stream.\relax }}{28}{table.caption.11}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.3}{\ignorespaces Composition of the annotated dataset by split. Instance counts are given per symptom class, with the canker share of instances in parentheses. The registered NIR dataset shares the same image membership, splits, and class balance.\relax }}{33}{table.caption.15}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.4}{\ignorespaces Symptom types defined in the annotation protocol. The four canker subtypes were later merged into a single \emph  {canker} class for training and evaluation.\relax }}{36}{table.caption.17}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.5}{\ignorespaces Class-agnostic accuracy and human correction workload of the cross-modal label transfer pipeline, evaluated on 1{,}231 frames (1{,}632 ground-truth, 1{,}788 predicted boxes) at three IoU thresholds. Mean IoU is computed over matched pairs only; \emph  {add} and \emph  {delete} counts are threshold-independent by construction.\relax }}{40}{table.caption.20}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.6}{\ignorespaces Detector training configuration. Settings are shared across modalities except where the RGB and NIR columns differ.\relax }}{43}{table.caption.22}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.7}{\ignorespaces Detection performance of the RGB and NIR YOLO26-L-seg models on the validation and held-out test splits. Max-F1 is the peak score over confidence, reported with the confidence threshold at which it occurs.\relax }}{43}{table.caption.23}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3.8}{\ignorespaces Detection performance of the RGB and NIR YOLO26-L-seg models on the test split, comparing the conventional IoU\nobreakspace  {}$\geq 0.5$ matching threshold (repeated from Table\nobreakspace  {}\ref  {tabDetectionResults}) to the relaxed IoU\nobreakspace  {}$\geq 0.3$ threshold. Max-F1 is the peak of the class-averaged $F_1$-confidence curve.\relax }}{45}{table.caption.26}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces Planning parameters used in all experiments.\relax }}{68}{table.caption.47}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces Planner performance in simulation, at viewpoints 15 and 30. Full 30-viewpoint inspections took on the order of 3--5 minutes to complete. Bold marks the top value(s) in each column, with ties (values within $0.01$ of the top) bolded together.\relax }}{69}{table.caption.48}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces FoundationStereo inference time per frame at each optimization step, measured on a laptop RTX 4090 GPU; the platform's desktop RTX 4070 showed similar performance. The online configuration (last row) additionally incurs $5$\,ms of preprocessing and $2$\,ms of postprocessing.\relax }}{80}{table.caption.54}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Planner performance in the field, at viewpoints 15 and 30. Full 30-viewpoint inspections took on the order of 3--5 minutes to complete. Bold marks the top value(s) in each column, with ties (values within $0.01$ of the top) bolded together.\relax }}{85}{table.caption.58}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{Bibliography}{103}{appendix*.63}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}Background}{5}{chapter.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}Data Collection and Disease Sensing}{17}{chapter.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Semantic Mapping and Next-Best-View Planning}{49}{chapter.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Integrated System and Field Validation}{73}{chapter.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Conclusions}{93}{chapter.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {A}Annotation Tools}{99}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Configurations and parameters.}{68}{paragraph*.46}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Coverage metric.}{67}{paragraph*.45}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Detection metrics.}{66}{paragraph*.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Predicted symptoms and matching.}{66}{paragraph*.43}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Semantic Information Gain.}{64}{paragraph*.42}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Semantic Viewpoint Generation.}{64}{paragraph*.40}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.1}Contributions}{2}{section.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}Thesis Organization}{4}{section.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Agricultural Robotics}{5}{section.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2.2}Active Perception}{7}{section.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2.3}Fire Blight Disease}{9}{section.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2.4}Remote Sensing for Fire Blight}{13}{section.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}Sensing Platform}{17}{section.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Data Collection Protocol}{26}{section.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}Dataset Description}{29}{section.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Spectral Analysis of Fire Blight Symptoms}{34}{section.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.5}Annotation Pipeline}{35}{section.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.6}2D Disease Detection Models}{40}{section.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.7}Limitations}{47}{section.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.8}Summary}{48}{section.3.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Semantic OctoMap Representation}{50}{section.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Simulation Environment}{55}{section.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}Next-Best-View Planning}{57}{section.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Simulation Experiments}{65}{section.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.5}Summary}{71}{section.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Robot Platform}{74}{section.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}System Architecture}{76}{section.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Field Experiments}{81}{section.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Discussion}{86}{section.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Summary}{88}{section.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Future Work}{94}{section.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Closing Remarks}{96}{section.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A.1}SAM2 Box-to-Mask Tool}{99}{section.A.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A.2}SuperSplat Alignment and Annotation Tool}{100}{section.A.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.1}Multi-Modal Dataset and Fire Blight Detection}{2}{subsection.1.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.2}Semantic Mapping and Active Viewpoint Selection}{3}{subsection.1.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.3}A Field-Validated Robotic System}{3}{subsection.1.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.1}Active Perception as a Design Principle}{7}{subsection.2.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.2}View Planning and Next-Best-View Algorithms}{8}{subsection.2.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}Why Fire Blight Matters}{10}{subsection.2.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.2}Disease Mechanism}{11}{subsection.2.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.3}Current Grower Management Practices and Their Limitations}{12}{subsection.2.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Datasets and Detection Approaches}{14}{subsection.2.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Orchard Robots}{15}{subsection.2.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}Flash Stereo RGB Camera (FLIR Firefly)}{18}{subsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}25-Band NIR Multispectral Camera (Ximea)}{19}{subsection.3.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.3}Wide-Angle Stereo RGB Camera (ZED2i)}{21}{subsection.3.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.4}Platform and Mounting}{21}{subsection.3.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.5}Design Iterations and Synchronization}{22}{subsection.3.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.6}Camera Calibration}{25}{subsection.3.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}Comparison to Existing Datasets}{30}{subsection.3.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.2}Dataset Composition and Splits}{31}{subsection.3.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.1}Expert Manual Annotation and the Symptom Taxonomy}{35}{subsection.3.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.2}SAM-Assisted Annotation}{37}{subsection.3.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5.3}Cross-Modal Label Transfer}{37}{subsection.3.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6.1}Model Architecture}{41}{subsection.3.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6.2}Training Details}{42}{subsection.3.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6.3}Detection Results}{42}{subsection.3.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6.4}Failure Mode Analysis}{45}{subsection.3.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.1}Volumetric Occupancy with OctoMap}{50}{subsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.2}Semantic Extension: Disease Class Labels}{51}{subsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1.3}Projection from 2D Detections to 3D Voxels}{54}{subsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Orchard Simulation Setup}{55}{subsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}Simulation Ground Truth}{57}{subsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}Problem Formulation}{58}{subsection.4.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}Baseline: Grid Scan Planner}{59}{subsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}Volumetric NBV Planner}{61}{subsection.4.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.4}Semantic NBV Planner}{63}{subsection.4.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.1}Experimental Setup}{66}{subsection.4.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.2}Results}{68}{subsection.4.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.3}Qualitative Analysis}{69}{subsection.4.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}Mobile Base: Amiga}{75}{subsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}Manipulator: xArm6}{75}{subsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.3}Sensor Integration}{76}{subsection.5.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}ROS 2 Integration}{77}{subsection.5.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Perception Pipeline}{78}{subsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.3}Real-Time Stereo Depth in the Field}{78}{subsection.5.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.4}Field Inspection Cycle}{80}{subsection.5.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Experimental Site}{82}{subsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Experimental Protocol}{82}{subsection.5.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.3}Ground Truth Generation with Gaussian Splatting}{83}{subsection.5.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.4}Field Results}{85}{subsection.5.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.1}Improved Detection Models}{94}{subsection.6.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.2}Faster Sensor Positioning and Continuous Detection}{95}{subsection.6.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1.3}Learning the Information Gain Function}{96}{subsection.6.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Simulation Detector}{56}{subsubsection*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Volumetric Information Gain}{62}{subsubsection*.38}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Volumetric Viewpoint Generation}{61}{subsubsection*.37}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Workspace Filtering}{59}{subsubsection*.34}\protected@file@percent }

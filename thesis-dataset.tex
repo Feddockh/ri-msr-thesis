@@ -30,6 +30,8 @@ stereo RGB camera, all rigidly mounted to a common frame and faced
 in the same direction so that a single operator could walk the
 orchard rows and capture closely registered, multi-modal imagery
 of trunks and branches at close range.
+Figure~\ref{figSensorRig} shows the arrangement of the three
+sensors on the shared mounting frame.
 The rig went through several physical and electrical revisions
 over the course of data collection, described in
 Section~\ref{secDesignIterations}; unless otherwise noted, the
@@ -140,8 +142,9 @@ roughly 38.4$^\circ$ horizontal by 21.0$^\circ$
 vertical, a narrower, more telephoto view than the Firefly
 stereo pair, concentrating spatial resolution on a smaller patch
 of bark at close range.
-After demosaicing, the effective spatial resolution per band is
-409$\times$216 pixels.
+The raw frame is first cropped to a whole number of 5$\times$5 mosaic
+tiles, so that after demosaicing the effective spatial resolution per
+band is 409$\times$216 pixels.
 The 25 bands span 675--951\,nm and are arranged in a 5$\times$5
 mosaic tile that repeats periodically across the entire sensor
 array, so that every 5$\times$5 block of raw pixels contains one
@@ -189,7 +192,7 @@ field of view of roughly 92.7$^\circ$ horizontal by
 coarser angular resolution, than either the Firefly stereo pair or
 the Ximea.
 At this 2K resolution the camera runs at up to 15\,fps; like the
-other sensors it was captured on command rather than streamed
+other sensors it was triggered on command rather than streamed
 continuously, but it supported only software triggering and so
 incurred some timing slop relative to the hardware-triggered flash
 stereo camera.
@@ -276,6 +279,8 @@ The spacing between cameras was also reduced in later versions to
 increase the overlap between their fields of view, improving the
 consistency of cross-modal label transfer between the flash RGB
 and NIR frames.
+Figure~\ref{figRigEvolution} contrasts the two designs, in CAD and
+as assembled hardware.
 
 \begin{figure}[h]
     \centering
@@ -1290,19 +1295,19 @@ test splits of Section~\ref{secDatasetSplits}, and their performance is
 summarized in Table~\ref{tabDetectionResults}.
 We report mean average precision at an IoU threshold of 0.5 (mAP@0.5)
 and averaged over IoU thresholds from 0.5 to 0.95 (mAP@0.5:0.95), along
-with the peak $F_1$ score and the confidence threshold at which it is
+with the max-F1 score and the confidence threshold at which it is
 attained.
 
 \begin{table}[h]
     \centering
     \caption{Detection performance of the RGB and NIR YOLO26-L-seg models
-             on the validation and held-out test splits. $F_1$ is the
+             on the validation and held-out test splits. Max-F1 is the
              peak score over confidence, reported with the confidence
              threshold at which it occurs.}
     \label{tabDetectionResults}
     \begin{tabular}{ll|cccc}
         \hline
-        Model & Split & mAP@0.5 & mAP@0.5:0.95 & $F_1$ & conf.\ at $F_1$ \\
+        Model & Split & mAP@0.5 & mAP@0.5:0.95 & Max-F1 & conf.\ at max-F1 \\
         \hline
         RGB & Val  & 0.671 & 0.285 & 0.63 & 0.241 \\
         RGB & Test & 0.605 & 0.300 & 0.62 & 0.302 \\
@@ -1337,7 +1342,7 @@ models (mAP@0.5:0.95 is in fact marginally higher on the test split
 than on validation), indicating that the leakage-free split of
 Section~\ref{secDatasetSplits} yields an honest estimate of
 generalization rather than a memorized one.
-Peak $F_1$ is reached at a moderate confidence (roughly 0.19--0.30 across
+Max-F1 is reached at a moderate confidence (roughly 0.19--0.30 across
 models), marking a sensible single-frame operating point; the semantic map
 of Chapter~\ref{chapNBV} itself admits every detection above a lower
 minimum-confidence floor ($\tau = 0.1$) and relies on multi-view fusion to
@@ -1418,7 +1423,7 @@ overlap requirement is loosened.
 This near-miss pattern is not isolated to the two examples shown:
 relaxing the matching threshold to IoU~$\geq 0.3$ on the test split
 recovers substantially more matches for both models, as shown by the
-jump in mAP and $F_1$ in Table~\ref{tabDetectionResults03} relative
+jump in mAP and max-F1 in Table~\ref{tabDetectionResults03} relative
 to the IoU~$\geq 0.5$ figures of Table~\ref{tabDetectionResults}.
 
 \begin{table}[h]
@@ -1427,12 +1432,12 @@ to the IoU~$\geq 0.5$ figures of Table~\ref{tabDetectionResults}.
              on the test split, comparing the conventional
              IoU~$\geq 0.5$ matching threshold (repeated from
              Table~\ref{tabDetectionResults}) to the relaxed
-             IoU~$\geq 0.3$ threshold. Max $F_1$ is the peak of the
+             IoU~$\geq 0.3$ threshold. Max-F1 is the peak of the
              class-averaged $F_1$-confidence curve.}
     \label{tabDetectionResults03}
     \begin{tabular}{l|cc|cc}
         \hline
-        Model & mAP@0.5 & mAP@0.3 & $F_1$@0.5 & $F_1$@0.3 \\
+        Model & mAP@0.5 & mAP@0.3 & Max-F1@0.5 & Max-F1@0.3 \\
         \hline
         RGB & 0.605 & 0.734 & 0.62 & 0.72 \\
         NIR & 0.565 & 0.703 & 0.56 & 0.65 \\
@@ -1441,9 +1446,9 @@ to the IoU~$\geq 0.5$ figures of Table~\ref{tabDetectionResults}.
 \end{table}
 
 Relaxing the matching criterion from IoU~$\geq 0.5$ to IoU~$\geq 0.3$
-raises both mAP and $F_1$ substantially for both models (RGB: 0.605 to
-0.734 mAP, 0.62 to 0.72 $F_1$; NIR: 0.565 to 0.703 mAP, 0.56 to 0.65
-$F_1$), indicating that a meaningful share of the apparent misses at
+raises both mAP and max-F1 substantially for both models (RGB: 0.605 to
+0.734 mAP, 0.62 to 0.72 max-F1; NIR: 0.565 to 0.703 mAP, 0.56 to 0.65
+max-F1), indicating that a meaningful share of the apparent misses at
 the conventional threshold are boxes that overlap the ground truth but
 not tightly enough to count, rather than symptoms missed outright.
 We show these relaxed-threshold results only to characterize how much
@@ -1534,7 +1539,7 @@ A spectral analysis of the resulting NIR labels confirmed that the
 red-edge and near-infrared region carries discriminative information
 for dormant fire blight, and separate YOLO26 detectors were trained on
 each modality; the RGB detector outperformed the NIR detector on both
-mAP and $F_1$, so the RGB model was carried forward as the detector
+mAP and max-F1, so the RGB model was carried forward as the detector
 used in the rest of the thesis.
 Finally, a failure-mode analysis showed that the ambiguous boundaries
 of these symptoms cause standard detection metrics to understate

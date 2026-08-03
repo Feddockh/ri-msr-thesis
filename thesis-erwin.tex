@@ -353,7 +353,7 @@ true-negative cases, testing whether the planners and detector avoid
 hallucinating symptoms on disease-free canopy, a case that pooled detection
 metrics explicitly penalize (Section~\ref{secSimSetup}). This site is
 deliberately distinct from the Pittsburgh orchard whose imagery was used to
-train the detector (Section~\ref{secDetectionResults}): no images from the
+train the detector (Section~\ref{secDataCollection}): no images from the
 evaluation site were used during training, so the field results measure
 performance under a genuine train--test domain gap. The number of trees was
 limited to 12 since each tree had to be inspected by
@@ -456,13 +456,14 @@ detected symptoms visibly coincide.
     \centering
     \includegraphics[width=0.8\linewidth, trim={500pt 0 500pt 0}, clip]{figs/splat_side-by-side.jpg}
     \caption{Ground-truth annotation and detections on field tree 9,
-             viewed from the front. \textit{Left:} the annotated
-             Gaussian splat, with the manually annotated symptomatic
-             regions highlighted in neon green. \textit{Right:} the
-             same view with the semantic planner's fused OctoMap
-             detections overlaid, showing detected cankers in red. The
-             detections occupy the same regions of the canopy as the
-             annotations.}
+             shown at successive positions along an orbit around the
+             tree. \textit{Left:} the annotated Gaussian splat, with the
+             manually annotated symptomatic regions highlighted in neon
+             green. \textit{Right:} the matching viewpoint with the
+             semantic planner's fused OctoMap detections overlaid,
+             showing detected cankers in red. At every position around
+             the orbit, the detections occupy the same regions of the
+             canopy as the annotations.}
     \label{figSplatAnnotation}
 \end{figure}
 
@@ -493,7 +494,7 @@ and the train--test domain gap.
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{l ccc}
 \toprule
-Planner & mAP & F1 & Cov. (\%) \\
+Planner & mAP & Max-F1 & Cov. (\%) \\
 \midrule
 \multicolumn{4}{l}{\textit{Viewpoint 15}} \\
 Baseline   & 0.089 & 0.124 & 33.77 \\
@@ -544,24 +545,31 @@ semantic planner's ($0.331$ versus $0.322$, a difference within evaluation
 noise) once it has exhausted the full scan, and its max-F1 gap narrows
 substantially, though the semantic planner still finishes ahead ($0.608$
 versus $0.560$). The volumetric planner closes far less of its detection
-gap (mAP $0.234$, max-F1 $0.411$, both still well behind the semantic
-planner), but it keeps its lead on coverage to the end ($71.41\%$ versus
-$60.36\%$). This front-loading of detection quality by the semantic
+gap (mAP $0.234$, max-F1 $0.411$), finishing behind not only the semantic
+planner but the baseline as well, but it keeps its lead on coverage to the
+end ($71.41\%$ versus $60.36\%$); Section~\ref{secFieldDiscussion} takes up
+why geometric exploration fares comparatively poorly in the field. This front-loading of detection quality by the semantic
 planner is the operationally relevant advantage for a system that must
 scale to many trees.
 
 \section{Discussion} \label{secFieldDiscussion}
 
 The field experiments confirm the central simulation finding under real
-conditions: adaptive, map-driven viewpoint selection substantially
-outperforms deterministic coverage, and the disease-aware semantic planner
-reaches high-quality detection maps markedly faster than either the baseline
-or the volumetric planner. The division of labor between the two adaptive
-planners also transfers: the volumetric planner remains the strongest at
-geometric coverage, and the semantic planner the strongest at detection, in
-the field as in simulation. The clearest difference between the two settings
-is the magnitude of the semantic planner's early advantage over the
-baseline, which is larger in the field. We attribute this partly to the
+conditions, though in a more qualified form: the disease-aware semantic
+planner reaches high-quality detection maps markedly faster than either the
+baseline or the volumetric planner, with its advantage concentrated in the
+first half of the viewpoint budget rather than sustained to the end. The
+division of labor between the two adaptive planners also transfers: the
+volumetric planner remains the strongest at geometric coverage, and the
+semantic planner the strongest at detection, in the field as in simulation.
+What does not transfer is the blanket superiority of adaptive planning over
+deterministic coverage. In simulation the baseline trailed on every metric at
+both checkpoints; in the field it recovers by the full budget to match the
+semantic planner on mAP and to overtake the volumetric planner on both
+detection metrics (Table~\ref{tabFieldResults}). The clearest difference
+between the two settings is therefore the magnitude of the semantic planner's
+early advantage over the baseline, which is larger in the field. We attribute
+this partly to the
 higher per-view uncertainty of real imagery: when any single observation is
 noisier, the value of deliberately revisiting ambiguous regions, precisely
 what the semantic information gain of Equation~\ref{eqSemIG} rewards, rises
@@ -571,6 +579,31 @@ semantic planner already targets voxels the map regards as possibly
 symptomatic (Section~\ref{secSemanticNBVPlanner}), even its first
 viewpoints could be biased toward likely-diseased regions rather than
 toward geometry in general, though we have not measured this directly.
+
+The volumetric planner's field result deserves specific comment, since it is
+the one place where the simulation ranking inverts: by the full budget it
+falls behind not only the semantic planner but the fixed scan as well
+(mAP $0.234$ versus $0.331$; max-F1 $0.411$ versus $0.560$), having beaten
+the baseline on every metric in simulation. The cause is a dependence on the
+ROI that simulation did not expose. The volumetric information gain of
+Equation~\ref{eqVolIG} counts unknown voxels inside the ROI bounding box, so
+the box is not merely a computational bound but the definition of the
+planner's objective. The simulated trees were modeled to sit within the
+$1.0 \times 1.0 \times 2.0$\,m box, so nearly all unknown volume the planner
+pursued was canopy. Real trees do not fit the box so obligingly: their
+canopies are irregular and the fitted ROI is inevitably somewhat misaligned
+with the tree it encloses, leaving substantial empty volume inside the box
+and some canopy outside it. The volumetric planner spends viewpoints
+resolving that empty space, because unknown air scores exactly as highly as
+unknown bark, and it has no mechanism to notice that those views return no
+symptoms. The baseline, tiling a plane positioned on the tree itself, is
+unaffected by the box; and the semantic planner is largely insulated because
+its gain term (Equation~\ref{eqSemGainRay}) accumulates over \emph{occupied}
+voxels carrying uncertain disease labels rather than over unknown volume, so
+empty space contributes nothing to its score regardless of where the box
+edges fall. This suggests that tying an exploration objective to a
+hand-placed bounding volume is itself a liability in the field, and that
+scoring against observed surfaces is the more robust choice.
 
 The flash-illuminated sensing behaved as
 intended under variable outdoor lighting, suppressing the cast shadows
@@ -627,5 +660,5 @@ fine-grained disease maps under real field conditions, though this
 evaluation was limited to 12 trees within a single three-day visit.
 Chapter~\ref{chapConclusions} draws together the contributions of the
 full thesis and discusses future work toward better detection models,
-faster and continuous inspection, and closing the loop from detection to
-treatment.
+faster and continuous inspection, and learning the information gain
+function.
